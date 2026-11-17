@@ -48,7 +48,7 @@ npm run preview  # sert dist/ en local
 
 `src/components/Photo.astro` et `Hero.astro` affichent l'encart beige tant que le fichier manque,
 puis la photo (WebP, chargement différé) dès qu'elle est déposée dans `src/assets/photos/`.
-Liste complète des 52 emplacements avec leur description : `src/assets/photos/LISTE.md`.
+Liste complète des 34 photos avec leur description : `src/assets/photos/LISTE.md`.
 
 ## Référencement
 
