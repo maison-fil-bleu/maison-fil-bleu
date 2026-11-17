@@ -145,6 +145,7 @@ async function persistSettings(){
   if(error) showToast("Réglage gardé sur l'appareil : il sera envoyé au retour du réseau.");
 }
 async function removeDossier(id){
+  clearTimeout(saveTimers[id]); delete saveTimers[id];   // annule un enregistrement en attente
   delete dossiers[id]; localSet(K_CACHE, dossiers);
   const f = fileAttente(); delete f[id]; localSet(K_FILE, f);
   const { error } = navigator.onLine ? await sb.from('dossiers').delete().eq('id', id) : { error: true };
@@ -457,8 +458,7 @@ function renderDossier(){
     <p class="small muted" style="margin:0">Devis n° ${esc(devisNo(d))} · valable 1 mois. Les mentions entre crochets (SIRET, médiateur…) sont à compléter dans Réglages.</p>
   </div>
   <div class="card"><h3>Statut du dossier</h3>${seg('statut', STATUTS.map(s=>[s,s]), d.statut)}</div>
-  <div class="card"><h3>Résumé à envoyer</h3><pre class="quote" id="quote">${esc(quoteText(d,c))}</pre><button class="btn ghost" id="b-copy">Copier le résumé</button></div>
-  <button class="btn danger" id="b-del">Supprimer ce dossier</button>`;
+  <div class="card"><h3>Résumé à envoyer</h3><pre class="quote" id="quote">${esc(quoteText(d,c))}</pre><button class="btn ghost" id="b-copy">Copier le résumé</button></div>`;
   if(tab==='suivi'){ const s = d.suivi, r = reel(d, c); const ck = (k,l) => `<label class="row" style="flex-direction:row;color:var(--ink);font-size:15px"><input type="checkbox" data-f="suivi.${k}" ${s[k]?'checked':''} style="width:auto"> ${l}</label>`;
     const nb = (k,l,st='0.5') => `<label>${esc(l)}<input type="number" inputmode="decimal" min="0" step="${st}" data-f="suivi.${k}" value="${s[k]||''}" placeholder="0"></label>`;
     const ecart = (a,b,fmt) => { const e = a-b; return `<span class="${e>0.05*Math.abs(b)?'good':e<-0.05*Math.abs(b)?'bad':''}">${e>0?'+':''}${fmt(e)}</span>`; };
@@ -503,7 +503,8 @@ function renderDossier(){
     ${ck('fini','Chantier terminé : compter ce dossier dans le bilan')}
     <label>Ce que j'ai appris sur ce chantier<textarea data-f="suivi.notes" placeholder="Ce qui a pris plus de temps que prévu, ce qu'il faudra demander au prochain diagnostic…">${esc(s.notes)}</textarea></label>
   </div>`; }
-  app.innerHTML = header(FORM[d.formule]) + `<div><h2>${esc(d.contact.nom||'Nouveau dossier')}</h2><p class="small muted" style="margin:4px 0 0">${esc(SITU[d.situation])} · ${esc(d.ville)}</p></div>` + tabs + resume + body;
+  app.innerHTML = header(FORM[d.formule]) + `<div><h2>${esc(d.contact.nom||'Nouveau dossier')}</h2><p class="small muted" style="margin:4px 0 0">${esc(SITU[d.situation])} · ${esc(d.ville)}</p></div>` + tabs + resume + body
+    + `<button class="btn danger" id="b-del" style="margin-top:8px">Supprimer ce dossier</button>`;
   bind(d);
 }
 function f_label(d){ return FORM[d.formule]; }
