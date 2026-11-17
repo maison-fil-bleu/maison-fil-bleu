@@ -7,6 +7,10 @@
 [build.environment]
   NODE_VERSION = "22"
 
+# Fonctions serveur (invitation à l'espace client) : netlify/functions
+[functions]
+  node_bundler = "esbuild"
+
 # Back-office : jamais indexé, jamais affiché dans un cadre, service worker toujours à jour.
 [[headers]]
   for = "/admin"
@@ -19,4 +23,12 @@
 [[headers]]
   for = "/admin-sw.js"
   [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/espace-client"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "same-origin"
     Cache-Control = "no-cache"

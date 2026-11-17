@@ -821,12 +821,12 @@ function renderEspace(d){
   ${L._nouveau ? `<div class="suggest">L'espace de cette famille n'est pas encore ouvert. Préparez-le ci-dessous, puis ajoutez les personnes qui y auront accès.</div>` : ''}
   <div class="card"><h3>Accès</h3>
     <p class="small muted" style="margin:0">La personne concernée et ses proches. Ils se connectent avec leur seule adresse e-mail, en recevant un lien.</p>
-    ${e.acces.length ? `<table>${e.acces.map(x => `<tr><td>${esc(x.email)}<br><span class="small muted">${x.role==='titulaire'?'Titulaire':'Proche'}${x.invite_le?` · invité le ${new Date(x.invite_le).toLocaleDateString('fr-FR')}`:' · pas encore invité'}</span></td><td class="n"><button type="button" class="btn ghost" data-retirer="${esc(x.email)}" style="padding:8px 12px">Retirer</button></td></tr>`).join('')}</table>` : `<p class="small" style="margin:0">Aucun accès pour l'instant.</p>`}
+    ${e.acces.length ? `<table>${e.acces.map(x => `<tr><td>${esc(x.email)}<br><span class="small muted">${x.role==='titulaire'?'Titulaire':'Proche'}${x.invite_le?` · invité le ${new Date(x.invite_le).toLocaleDateString('fr-FR')}`:' · pas encore invité'}</span></td><td class="n" style="white-space:nowrap"><button type="button" class="btn ${x.invite_le?'ghost':''}" data-inviter="${esc(x.email)}" style="padding:8px 12px">${x.invite_le?'Renvoyer':'Inviter'}</button> <button type="button" class="btn ghost" data-retirer="${esc(x.email)}" style="padding:8px 12px">Retirer</button></td></tr>`).join('')}</table>` : `<p class="small" style="margin:0">Aucun accès pour l'instant.</p>`}
     <div class="grid2"><label>E-mail<input id="ac-email" type="email" inputmode="email" placeholder="prenom.nom@exemple.fr" value="${e.acces.length ? '' : esc(d.contact.email||'')}"></label>
     <label>Rôle${seg('ac-role', [['titulaire','Titulaire'],['proche','Proche']], e.acces.some(x=>x.role==='titulaire') ? 'proche' : 'titulaire')}</label></div>
     <button type="button" class="btn ghost" id="ac-ajout">Ajouter cet accès</button>
-    <button type="button" class="btn" id="ac-inviter" disabled>Envoyer l'invitation</button>
-    <p class="small muted" style="margin:0">L'envoi des invitations par e-mail sera activé à l'étape suivante, avec la page de l'espace client.</p>
+    ${e.acces.some(x=>!x.invite_le) ? `<button type="button" class="btn" id="ac-inviter">Inviter ${e.acces.filter(x=>!x.invite_le).length>1?'les personnes pas encore invitées':'la personne pas encore invitée'}</button>` : ''}
+    <p class="small muted" style="margin:0">L'invitation envoie un e-mail avec un lien de connexion vers l'espace client du site. Vérifiez d'abord les étapes, photos et documents ci-dessous.</p>
   </div>
   <div class="card"><h3>Interlocuteur affiché</h3>
     <div class="grid2"><label>Nom<input data-esp="interlocuteur.nom" value="${esc(L.interlocuteur?.nom||'')}" placeholder="Prénom Nom"></label>
@@ -879,6 +879,29 @@ function bindEspace(d){
     const { data, error } = await sb.from('dossier_acces').insert({ dossier_id: d.id, email, role }).select().single();
     if(error){ showToast("L'accès n'a pas pu être ajouté : " + error.message); return; }
     e.acces.push(data); renderEspace(d); showToast('Accès ajouté.');
+  };
+  const inviter = async (email) => {
+    const { data: { session } } = await sb.auth.getSession();
+    if(L._nouveau) await new Promise(r => { enregistrerEspace(d, true); setTimeout(r, 400); });
+    let rep, corps = {};
+    try{
+      rep = await fetch('/api/inviter', { method:'POST', headers:{ 'content-type':'application/json', authorization:`Bearer ${session?.access_token||''}` }, body: JSON.stringify({ dossier_id: d.id, email }) });
+      corps = await rep.json().catch(() => ({}));
+    }catch(err){ showToast("Pas de réseau : l'invitation n'est pas partie."); return false; }
+    if(!rep.ok){ showToast(corps.erreur || "L'invitation n'a pas pu être envoyée."); return false; }
+    const x = e.acces.find(y => y.email===email); if(x) x.invite_le = corps.invite_le;
+    return true;
+  };
+  box.querySelectorAll('[data-inviter]').forEach(b => b.onclick = async () => {
+    b.disabled = true; b.textContent = 'Envoi…';
+    if(await inviter(b.dataset.inviter)) showToast(`Invitation envoyée à ${b.dataset.inviter}.`);
+    renderEspace(d);
+  });
+  const bi = val('#ac-inviter'); if(bi) bi.onclick = async () => {
+    bi.disabled = true; bi.textContent = 'Envoi…'; let n = 0;
+    for(const x of e.acces.filter(y => !y.invite_le)){ if(await inviter(x.email)) n++; else break; }
+    if(n) showToast(n>1 ? `${n} invitations envoyées.` : 'Invitation envoyée.');
+    renderEspace(d);
   };
   box.querySelectorAll('[data-retirer]').forEach(b => b.onclick = async () => {
     if(!b.dataset.ok){ b.dataset.ok = '1'; b.textContent = 'Confirmer'; return; }
