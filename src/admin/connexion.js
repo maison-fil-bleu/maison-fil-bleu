@@ -46,7 +46,7 @@ function ecranConnexion(info = '') {
     <button class="btn" type="submit">Se connecter</button>
     <div id="msg" class="suggest" hidden role="status"></div>
   </form>
-  <div class="card"><h3>Première connexion ou mot de passe oublié</h3>
+  <div class="card"><h2 style="font-size:20px">Première connexion ou mot de passe oublié</h2>
     <p class="small muted" style="margin:0">Recevez un lien de connexion par e-mail. Ouvrez-le sur cet appareil, dans ce navigateur.</p>
     <button class="btn ghost" type="button" id="b-lien">Recevoir un lien de connexion</button>
   </div>`);
@@ -84,12 +84,12 @@ async function ecranMfa() {
   const { data: enr, error: e2 } = await sb.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'Fil Bleu ' + new Date().toISOString().slice(0, 10), issuer: 'Fil Bleu' });
   if (e2) { ecranConnexion(traduire(e2)); return; }
   ecran(`<h1>Double authentification</h1>
-  <div class="card"><h3>1. Ajoutez Fil Bleu à votre application de codes</h3>
+  <div class="card"><h2 style="font-size:20px">1. Ajoutez Fil Bleu à votre application de codes</h2>
     <p class="small muted" style="margin:0">Avec l'appareil photo de votre téléphone, scannez ce code dans une application d'authentification (Mots de passe d'Apple, Google Authenticator, Microsoft Authenticator…).</p>
     <img src="${esc(enr.totp.qr_code)}" alt="QR code à scanner" width="200" height="200" style="background:#fff;border-radius:10px;padding:8px;align-self:center">
     <details><summary class="small" style="cursor:pointer">Impossible de scanner ? Saisir la clé à la main</summary><p class="small" style="word-break:break-all;margin:8px 0 0"><code>${esc(enr.totp.secret)}</code></p></details>
   </div>
-  <form class="card" id="f-mfa"><h3>2. Saisissez le code à 6 chiffres affiché</h3>
+  <form class="card" id="f-mfa"><h2 style="font-size:20px">2. Saisissez le code à 6 chiffres affiché</h2>
     <label>Code<input id="m-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}"></label>
     <button class="btn" type="submit">Activer</button>
     <div id="msg" class="suggest" hidden role="status"></div>

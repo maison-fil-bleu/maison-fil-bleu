@@ -33,11 +33,33 @@ npm run preview  # sert dist/ en local
 - [x] Étape 4 : formulaires Netlify et pages de remerciement
 - [x] Étape 5 : référencement (title/meta, données structurées, sitemap, robots, Open Graph)
 - [x] Étape 6 : vérifications (téléphone, tablette, ordinateur, clavier, contrastes, Lighthouse ≥ 95)
+- [x] Back-office : étapes 1 à 6 de PASSATION-APPLI.md (base et règles d'accès, appli /admin, onglet Espace client, page /espace-client et invitations, formulaires → dossiers, prix partagés) ; étape 7 sans objet (aucun dossier existant) ; étape 8 (vérifications) préparée le 17/11/2026
 - [x] Étape 7 : mise en ligne Netlify — https://maison-fil-bleu.netlify.app (dépôt GitHub `maison-fil-bleu/maison-fil-bleu`, public ; chaque envoi sur `main` republie le site). Formulaires `rappel`, `devis-pro`, `grille-pro` détectés, notification e-mail active, envoi d'essai reçu.
+
+## Back-office et espace client (PASSATION-APPLI.md)
+
+| Élément | Où |
+|---|---|
+| Back-office (appli « Fil Bleu Dossiers », installable sur téléphone) | `/admin` · `src/pages/admin.astro`, `src/admin/` |
+| Espace client des familles | `/espace-client` · `src/pages/espace-client.astro`, `src/espace/espace.js` |
+| Base de données, règles d'accès, tests | `supabase/migrations/`, `supabase/tests/regles-acces.sql` |
+| Invitation à l'espace client | `netlify/functions/inviter.mjs` (`/api/inviter`) |
+| Formulaires du site → dossiers | `netlify/functions/submission-created.mjs` (déclenchée par Netlify Forms) |
+| Mise à jour des prix du site | `netlify/functions/republier.mjs` (`/api/republier`) + `scripts/prix-publics.mjs` |
+
+- **Supabase** : projet `maison-fil-bleu` (région Paris), compte distinct de celui d'Hexalia. Clé publique dans `src/config/supabase.ts` ; la clé secrète n'est jamais dans le code.
+- **Variables Netlify** (secrètes) : `SUPABASE_SERVICE_ROLE_KEY` (clé secrète Supabase « netlify ») et `NETLIFY_BUILD_HOOK` (crochet de construction « Prix depuis l'appli »).
+- **Accès** : administrateurs listés dans la table `admins` (l'e-mail n'est pas dans le code), double authentification obligatoire ; inscriptions publiques fermées ; une famille ne lit que ses étapes, ses photos partagées et ses documents.
+- **Commandes** : `npm run test:acces` (règles d'accès), `npm run db:push` (nouvelles migrations).
+- **Sauvegarde** : bouton « Exporter mes dossiers » dans les Réglages de l'appli (fichier JSON). Les sauvegardes automatiques de Supabase demandent l'offre payante.
+
+**À faire avant d'ouvrir l'espace client aux familles** : nom de domaine + service d'envoi d'e-mails (Resend ou Brevo) branché en SMTP dans Supabase. Sans lui, Supabase n'envoie les e-mails qu'aux membres de l'équipe, en anglais et au plus 2 par heure. Le modèle d'e-mail en français est prêt : `supabase/templates/code-connexion.html` (à activer dans `supabase/config.toml`). Notifications aux familles lors d'un changement d'étape : à ajouter avec ce même service.
+
+**Quota Netlify (offre gratuite)** : chaque mise en ligne, y compris un clic sur « Mettre à jour les prix du site », consomme des crédits (environ 20 par mois). Regrouper les envois sur `main`.
 
 ## Simulateur d'estimation
 
-- **Prix : `src/config/tarifs.ts`** (seul fichier à modifier ; gardiennage passé à 150 € par mois).
+- **Prix : réglés dans l'appli** (back-office › Réglages › Prix TTC, puis « Mettre à jour les prix du site »). À chaque construction, `scripts/prix-publics.mjs` les recopie dans `src/config/prix-publics.json`, lu par `src/config/tarifs.ts` (coefficients et options propres au site).
 - Affichage choisi par le fondateur : la **formule adaptée** et son **prix de départ « à partir de … TTC »** selon la taille du logement (logement actuel en Transition). Les besoins cochés (caves, garage, grenier, futur logement, recherche de résidence, box, installation chez un proche, gardiennage, urgence, maison, étage sans ascenseur) sont listés **sans aucun montant** : ils sont chiffrés après le diagnostic offert.
 - Le bouton « Être rappelé pour un prix exact » ouvre `/contact` prérempli (situation, taille) avec un encadré « Votre sélection en ligne » et deux champs cachés `estimation` et `besoins` qui partiront avec le formulaire.
 - `/estimation?formule=liberation|transition|succession` présélectionne la formule.
@@ -86,7 +108,7 @@ Liste complète des 34 photos avec leur description : `src/assets/photos/LISTE.m
 - [ ] Délais de réponse des pages de remerciement (rappel « le jour même ou le lendemain », devis et grille « sous 24 heures ») à confirmer
 - [ ] Délais (ex. `[2 à 3 semaines]` sur la page Libération)
 - [ ] Exemple de compte rendu (page Notre méthode) : `[Nom]`, `[date]`
-- [ ] Textes : mentions légales, CGV, politique de confidentialité
+- [ ] Textes : mentions légales, CGV ; politique de confidentialité rédigée en projet (durées de conservation et prestataire d'e-mails entre crochets) : à faire valider
 - [ ] Nom de domaine définitif (`astro.config.mjs` et `public/robots.txt`, actuellement `https://www.maisonfilbleu.fr`)
 - [ ] Photos (voir `src/assets/photos/LISEZMOI.md`)
 - [ ] Après achat du domaine : le brancher dans Netlify (Domain management), puis Google Search Console et fiche Google Business Profile

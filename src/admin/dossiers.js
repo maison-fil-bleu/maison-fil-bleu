@@ -1047,9 +1047,20 @@ function renderSettings(){
   <div class="card"><h3>Rythmes de travail</h3><div class="grid2">${f('rythmeM3','Débarras, h/m³')}${f('rythmeM2','Nettoyage, h/m²')}${f('baie','Baie vitrée, h')}${f('partPorteur','Votre part des heures (0 à 1)')}</div>
   <p class="small muted" style="margin:0">Après vos 5 premiers chantiers, remplacez le rythme prudent (1,3 h/m³) par votre vraie vitesse.</p></div>
   <button class="btn ghost" id="b-reset">Revenir aux réglages d'origine</button>
+  <div class="card"><h3>Sauvegarde</h3><p class="small muted" style="margin:0">Téléchargez tous vos dossiers et réglages dans un fichier (format JSON). Gardez-le en lieu sûr : il contient des données personnelles de vos clients. Les photos et documents restent dans le stockage en ligne.</p>
+    <button class="btn ghost" id="b-export" type="button">Exporter mes dossiers</button></div>
   <div class="card"><h3>Mon compte</h3><p class="small muted" style="margin:0">Connecté : ${esc(utilisateur?.email||'')}</p>
     <button class="btn ghost" id="b-mdp">Choisir ou changer mon mot de passe</button>
     <button class="btn danger" id="b-deco">Se déconnecter de cet appareil</button></div>`;
+  $('#b-export').onclick = async () => {
+    let liste = Object.values(dossiers);
+    if(navigator.onLine){ try{ await viderFile(); await chargerDistant(); liste = Object.values(dossiers); }catch(e){} }
+    const contenu = JSON.stringify({ export: 'Fil Bleu Dossiers', date: new Date().toISOString(), nombre: liste.length, reglages: S, dossiers: liste }, null, 2);
+    const u = URL.createObjectURL(new Blob([contenu], { type: 'application/json' }));
+    const a = document.createElement('a'); a.href = u; a.download = `fil-bleu-dossiers-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000);
+    showToast(`${liste.length} dossier${liste.length>1?'s':''} exporté${liste.length>1?'s':''}.`);
+  };
   $('#b-mdp').onclick = () => actions.motDePasse();
   $('#b-deco').onclick = () => actions.deconnexion();
   app.querySelectorAll('[data-s]').forEach(el => el.addEventListener('change', () => { setPath(S, el.dataset.s, parseFloat(el.value)||0); persistSettings(); showToast('Réglage enregistré.'); }));
