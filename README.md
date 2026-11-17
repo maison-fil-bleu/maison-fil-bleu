@@ -33,7 +33,7 @@ npm run preview  # sert dist/ en local
 - [x] Étape 4 : formulaires Netlify et pages de remerciement
 - [x] Étape 5 : référencement (title/meta, données structurées, sitemap, robots, Open Graph)
 - [x] Étape 6 : vérifications (téléphone, tablette, ordinateur, clavier, contrastes, Lighthouse ≥ 95)
-- [ ] Étape 7 : mise en ligne Netlify (sur demande, avec le compte indiqué)
+- [x] Étape 7 : mise en ligne Netlify — https://maison-fil-bleu.netlify.app (dépôt GitHub `maison-fil-bleu/maison-fil-bleu`, public ; chaque envoi sur `main` republie le site). Formulaires `rappel`, `devis-pro`, `grille-pro` détectés, notification e-mail active, envoi d'essai reçu.
 
 ## Simulateur d'estimation
 
@@ -89,6 +89,8 @@ Liste complète des 52 emplacements avec leur description : `src/assets/photos/L
 - [ ] Textes : mentions légales, CGV, politique de confidentialité
 - [ ] Nom de domaine définitif (`astro.config.mjs` et `public/robots.txt`, actuellement `https://www.maisonfilbleu.fr`)
 - [ ] Photos (voir `src/assets/photos/LISEZMOI.md`)
+- [ ] Après achat du domaine : le brancher dans Netlify (Domain management), puis Google Search Console et fiche Google Business Profile
+- [ ] Date de publication des articles (`DATE_PUBLICATION_ARTICLES` dans `src/config/seo.ts`)
 
 ## Écarts volontaires par rapport aux maquettes
 
