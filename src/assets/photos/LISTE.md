@@ -11,8 +11,8 @@ automatiquement la photo du haut de cet article (`article-…-haut`) : une seule
 | `accueil-01.jpg` | pièce vide et lumineuse | height: 380px |
 | `accueil-02.jpg` | chambre de résidence installée | height: 380px |
 | `accueil-03.jpg` | objets de famille, album photo | height: 380px |
-| `accueil-04.jpg` | l'équipe emballe un service de vaisselle avec soin | height: 520px |
-| `accueil-05.jpg` | portrait du fondateur, lumière naturelle | height: 600px |
+| `accueil-04.jpg` | mains qui emballent un service de vaisselle avec soin, visages hors champ | height: 520px |
+| `accueil-05.jpg` | mains posées sur un carnet de notes, trousseau de clés à côté, lumière naturelle | height: 600px |
 | `liberation-haut.jpg` | pièce vide et lumineuse, parquet propre | Haut de page (photo en fond, voile clair à gauche) |
 | `liberation-01.jpg` | cartons de dons étiquetés pour une association | height: 500px |
 | `transition-haut.jpg` | chambre de résidence installée avec ses meubles et ses cadres | Haut de page (photo en fond, voile clair à gauche) |
@@ -26,8 +26,8 @@ automatiquement la photo du haut de cet article (`article-…-haut`) : une seule
 | `methode-04.jpg` | photo d'illustration | height: 90px; padding: 0 |
 | `tarifs-haut.jpg` | trousseau de clés sur une commode ancienne | Haut de page (photo en fond, voile clair à gauche) |
 | `qui-sommes-nous-haut.jpg` | toits de Marseille, lumière du soir | Haut de page (photo en fond, voile clair à gauche) |
-| `qui-sommes-nous-01.jpg` | l'équipe Maison Fil Bleu, lumière naturelle | height: 600px |
-| `qui-sommes-nous-02.jpg` | une famille et l'équipe autour d'une table, en confiance | height: 500px |
+| `qui-sommes-nous-01.jpg` | carnet de visite, mètre ruban et stylo sur une table en bois, lumière naturelle | height: 600px |
+| `qui-sommes-nous-02.jpg` | deux tasses de café et un dossier ouvert sur une table de cuisine, en confiance | height: 500px |
 | `conseils-haut.jpg` | carnet et lunettes posés sur une table | Haut de page (photo en fond, voile clair à gauche) |
 | `article-logement-proche-haut.jpg` | clés posées sur une commode ancienne | Haut de page (photo en fond, voile clair à gauche) |
 | `article-logement-proche-01.jpg` | fenêtre ouverte sur un salon calme, lumière douce | height: 400px; margin: 36px 0 40px |
