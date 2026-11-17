@@ -1,0 +1,235 @@
+---
+/**
+ * Maquette : Estimation.dc.html · adresse : /estimation
+ * Choix du fondateur : on oriente vers la formule adaptée et on affiche son prix de départ « à partir de ».
+ * Les besoins cochés sont listés SANS montant, puis transmis au formulaire de contact.
+ */
+import Famille from '../layouts/Famille.astro';
+import { META } from '../config/meta';
+import { FORMULES_PRIX, TAILLES, PAR_DEFAUT, DEPENDANCES, FUTUR_LOGEMENT, type CleFormule } from '../config/tarifs';
+import { resumer, residenceProposee, installationProposee, futurPropose, boxComprise, CHOIX_VIDE, type Choix } from '../lib/estimation';
+
+const meta = META['/estimation'];
+const initial: Choix = { formule: PAR_DEFAUT.formule, taille: PAR_DEFAUT.taille, ...CHOIX_VIDE };
+const r = resumer(initial);
+const cles = Object.keys(FORMULES_PRIX) as CleFormule[];
+---
+<Famille title={meta.title} description={meta.description} onglet="tarifs">
+<section class="w" style="padding-top: 96px; padding-bottom: 56px; display: flex; flex-direction: column; gap: 22px">
+<span class="lbl">Tarifs et estimation</span>
+<h1 class="h1">Estimez votre accompagnement</h1>
+<p class="lead" style="max-width: 760px">Quelques questions pour trouver la formule adaptée à votre situation et son prix de départ. Le prix exact, avec vos besoins particuliers, est fixé après le diagnostic offert, selon le volume réel et l'accès.</p>
+<a href="/tarifs" class="tl" style="align-self: flex-start">Voir la grille complète des tarifs</a>
+</section>
+
+<section class="w est-sec" id="simulateur">
+<div class="split">
+<div style="display: flex; flex-direction: column; gap: 48px">
+
+<div class="step" role="group" aria-labelledby="est-e1">
+<span class="lbl lbl-laiton" id="est-e1">01 · Votre situation</span>
+<div class="g2c">
+{cles.map((k) => (
+  <button type="button" class="choice" data-formule={k} aria-pressed={String(k === initial.formule)}>
+    <span class="choice-t">{FORMULES_PRIX[k].nom}</span><span class="choice-d">{FORMULES_PRIX[k].ligne}</span>
+  </button>
+))}
+</div>
+</div>
+
+<div class="step" role="group" aria-labelledby="est-e2">
+<span class="lbl lbl-laiton" id="est-e2">02 · Le logement</span>
+<span class="sous-t" id="est-actuel" data-sortie="titreTaille">{futurPropose(initial.formule) ? 'Logement actuel' : 'Taille du logement'}</span>
+<div class="pills" role="group" aria-labelledby="est-actuel">
+{TAILLES.map((t, i) => <button type="button" class="pill" data-taille={i} aria-pressed={String(i === initial.taille)}>{t}</button>)}
+</div>
+<div class="pills">
+<button type="button" class="pill" data-maison="0" aria-pressed="true">Appartement</button>
+<button type="button" class="pill" data-maison="1" aria-pressed="false">Maison</button>
+</div>
+<button type="button" class="pill" data-bascule="sansAscenseur" aria-pressed="false" style="align-self: flex-start">Étage sans ascenseur</button>
+<div class="futur" data-si="futur" hidden={!futurPropose(initial.formule)} role="group" aria-labelledby="est-futur">
+<span class="sous-t" id="est-futur">Futur logement</span>
+<div class="pills">
+{FUTUR_LOGEMENT.choix.map((f, i) => <button type="button" class="pill" data-futur={i} aria-pressed="false">{f.nom}</button>)}
+</div>
+</div>
+</div>
+
+<div class="step" role="group" aria-labelledby="est-e3">
+<span class="lbl lbl-laiton" id="est-e3">03 · Vos besoins</span>
+<div style="display: flex; flex-direction: column">
+<div class="opt opt-dep" role="group" aria-labelledby="o-caves">
+<span class="opt-l"><span id="o-caves">Caves, garages, greniers à vider</span><span class="p">Cochez ce qui vous concerne</span></span>
+<div class="deps">
+{DEPENDANCES.map((d) => <button type="button" class="dep" data-dep={d.cle} aria-pressed="false">{d.nom}</button>)}
+</div>
+</div>
+<div class="opt" data-si="residence" hidden={!residenceProposee(initial.formule)}><span class="opt-l"><span>Recherche de résidence</span><span class="p">Nous vous aidons à trouver la résidence adaptée</span></span><button type="button" class="pill" data-bascule="residence" aria-pressed="false">Ajouter</button></div>
+<div class="opt"><span class="opt-l"><span>Recherche d'un box de stockage</span><span class="p" data-sortie="infoBox">{boxComprise(initial.formule) ? 'Comprise dans la formule · location réglée par vous' : 'Location réglée par vous'}</span></span><button type="button" class="pill" data-bascule="box" aria-pressed="false">Ajouter</button></div>
+<div class="opt" data-si="installation" hidden={!installationProposee(initial.formule)}><span class="opt-l"><span>Installation des objets gardés chez un proche</span></span><button type="button" class="pill" data-bascule="installation" aria-pressed="false">Ajouter</button></div>
+<div class="opt"><span class="opt-l"><span>Gardiennage du logement</span><span class="p">Pendant la vente ou la location</span></span><button type="button" class="pill" data-bascule="gardiennage" aria-pressed="false">Ajouter</button></div>
+<div class="opt"><span class="opt-l"><span>Intervention en urgence, sous 7 jours</span></span><button type="button" class="pill" data-bascule="urgence" aria-pressed="false">Ajouter</button></div>
+</div>
+</div>
+</div>
+
+<aside class="est-res" aria-labelledby="est-res-t">
+<span class="lbl" id="est-res-t">La formule adaptée</span>
+<div class="est-f" aria-live="polite" aria-atomic="true">
+<span class="est-titre" data-sortie="formule">{r.formule}</span>
+<span class="est-ligne-f" data-sortie="ligne">{r.ligne}</span>
+</div>
+<div class="est-fourchette" aria-live="polite" aria-atomic="true">
+<span class="p">À partir de</span>
+<span class="est-montant" data-sortie="prix">{r.prixTxt}</span>
+<span class="p">TTC, pour un <span data-sortie="logement">{r.logement}</span></span>
+</div>
+<div class="est-besoins" data-si="besoins" hidden>
+<span class="est-besoins-t">Vos besoins</span>
+<ul data-sortie="besoins"></ul>
+</div>
+<p class="p" style="font-size: 14px">Vos besoins sont chiffrés sur mesure lors du diagnostic offert, sur place et sans engagement. Des facilités de paiement sont possibles, à voir ensemble.</p>
+<a class="btn" href="/contact#formulaire" data-sortie="cta">Être rappelé pour un prix exact</a>
+<span class="p" style="font-size: 13px; text-align: center">Laissez-nous votre nom et votre téléphone : nous reprenons votre sélection avec vous.</span>
+</aside>
+</div>
+</section>
+
+<a class="est-barre" href="#est-res-t" data-sortie="barre" aria-hidden="true" tabindex="-1">
+<span class="est-barre-l" data-sortie="barre-formule">{r.formule}</span>
+<span class="est-barre-m">dès <span data-sortie="barre-prix">{r.prixTxt}</span></span>
+</a>
+</Famille>
+
+<script>
+  import { resumer, residenceProposee, installationProposee, futurPropose, boxComprise, CHOIX_VIDE, type Choix } from '../lib/estimation';
+  import { PAR_DEFAUT, TAILLES, type CleFormule } from '../config/tarifs';
+
+  const racine = document.getElementById('simulateur')!;
+  const $ = (sel: string) => racine.querySelector<HTMLElement>(sel)!;
+  const $$ = (sel: string) => Array.from(racine.querySelectorAll<HTMLElement>(sel));
+
+  const etat: Choix = { formule: PAR_DEFAUT.formule, taille: PAR_DEFAUT.taille, ...CHOIX_VIDE, dependances: [] };
+
+  // Préselection depuis l'adresse : /estimation?formule=liberation|transition|succession
+  const noms: Record<string, CleFormule> = { liberation: 'L', transition: 'T', succession: 'S' };
+  const demande = new URLSearchParams(location.search).get('formule');
+  if (demande && noms[demande]) etat.formule = noms[demande];
+
+  type Bascule = 'sansAscenseur' | 'residence' | 'box' | 'installation' | 'gardiennage' | 'urgence';
+
+  function afficher() {
+    const r = resumer(etat);
+    $$('[data-formule]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.formule === etat.formule)));
+    $$('[data-taille]').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.taille) === etat.taille)));
+    $$('[data-maison]').forEach((b) => b.setAttribute('aria-pressed', String((b.dataset.maison === '1') === etat.maison)));
+    $$('[data-dep]').forEach((b) => b.setAttribute('aria-pressed', String(etat.dependances.includes(b.dataset.dep!))));
+    $$('[data-futur]').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.futur) === etat.futur)));
+    $$('[data-bascule]').forEach((b) => {
+      const cle = b.dataset.bascule as Bascule;
+      b.setAttribute('aria-pressed', String(etat[cle]));
+      if (cle !== 'sansAscenseur') b.textContent = etat[cle] ? 'Ajouté' : 'Ajouter';
+    });
+    $('[data-si="futur"]').hidden = !futurPropose(etat.formule);
+    $('[data-si="residence"]').hidden = !residenceProposee(etat.formule);
+    $('[data-si="installation"]').hidden = !installationProposee(etat.formule);
+    $('[data-sortie="titreTaille"]').textContent = futurPropose(etat.formule) ? 'Logement actuel' : 'Taille du logement';
+    $('[data-sortie="infoBox"]').textContent = boxComprise(etat.formule) ? 'Comprise dans la formule · location réglée par vous' : 'Location réglée par vous';
+
+    $('[data-sortie="formule"]').textContent = r.formule;
+    $('[data-sortie="ligne"]').textContent = r.ligne;
+    $('[data-sortie="prix"]').textContent = r.prixTxt;
+    $('[data-sortie="logement"]').textContent = r.logement;
+    $('[data-si="besoins"]').hidden = r.besoins.length === 0;
+    $('[data-sortie="besoins"]').replaceChildren(...r.besoins.map((t) => {
+      const li = document.createElement('li');
+      li.textContent = t;
+      return li;
+    }));
+    document.querySelector('[data-sortie="barre-formule"]')!.textContent = r.formule;
+    document.querySelector('[data-sortie="barre-prix"]')!.textContent = r.prixTxt;
+
+    // Bouton vers le formulaire de contact, prérempli
+    const p = new URLSearchParams({ formule: r.formule, taille: TAILLES[etat.taille], depart: r.prixTxt });
+    if (r.besoins.length) p.set('besoins', r.besoins.join(' · '));
+    (racine.querySelector('[data-sortie="cta"]') as HTMLAnchorElement).href = `/contact?${p.toString()}#formulaire`;
+  }
+
+  racine.addEventListener('click', (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLElement>('button');
+    if (!b) return;
+    if (b.dataset.formule) etat.formule = b.dataset.formule as CleFormule;
+    else if (b.dataset.taille) etat.taille = Number(b.dataset.taille);
+    else if (b.dataset.maison) etat.maison = b.dataset.maison === '1';
+    else if (b.dataset.futur) etat.futur = etat.futur === Number(b.dataset.futur) ? null : Number(b.dataset.futur);
+    else if (b.dataset.dep) {
+      const d = b.dataset.dep;
+      etat.dependances = etat.dependances.includes(d) ? etat.dependances.filter((x) => x !== d) : [...etat.dependances, d];
+    } else if (b.dataset.bascule) {
+      const cle = b.dataset.bascule as Bascule;
+      etat[cle] = !etat[cle];
+    } else return;
+    afficher();
+  });
+
+  afficher();
+
+  // Sur téléphone : bandeau fixé en bas avec la formule et le prix de départ, tant que le résultat n'est pas visible
+  const barre = document.querySelector<HTMLElement>('[data-sortie="barre"]')!;
+  const resultat = document.querySelector('.est-res')!;
+  const premiereEtape = racine.querySelector('.step')!;
+  let resultatVisible = false;
+  let simulateurAtteint = false;
+  const maj = () => barre.classList.toggle('on', simulateurAtteint && !resultatVisible);
+  new IntersectionObserver(([e]) => { resultatVisible = e.isIntersecting; maj(); }).observe(resultat);
+  new IntersectionObserver(([e]) => { simulateurAtteint = e.isIntersecting || e.boundingClientRect.top < 0; maj(); }).observe(premiereEtape);
+</script>
+
+<style is:global>
+.est-sec{padding-bottom:128px}
+.lbl-laiton{color:#735A33}
+.split{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:72px;align-items:start}
+.g2c{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.step{display:flex;flex-direction:column;gap:18px;border-top:1px solid #CFC5B4;padding-top:28px}
+.sous-t{font-size:13px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:#5B606A;margin-bottom:-6px}
+.pills{display:flex;flex-wrap:wrap;gap:10px}
+.futur{display:flex;flex-direction:column;gap:18px;padding-top:6px}
+.futur[hidden],.opt[hidden],.est-besoins[hidden]{display:none}
+.choice,.pill,.dep{font-family:'Nunito Sans',sans-serif;cursor:pointer;background:#FFFFFF;color:#18202C;border:1px solid #CFC5B4;border-radius:0;transition:background-color .15s,color .15s,border-color .15s}
+.choice{font-size:15px;font-weight:400;text-align:left;padding:16px 18px;display:flex;flex-direction:column;gap:3px;min-height:44px}
+.choice-t{font-family:'Cormorant Garamond',Georgia,serif;font-size:24px;font-weight:600;line-height:1.2}
+.choice-d{font-size:13.5px;opacity:.85}
+.pill{font-size:14px;font-weight:400;padding:12px 18px;min-height:44px}
+.dep{font-size:15px;font-weight:400;padding:12px 14px;min-height:44px;text-align:center}
+.choice:hover,.pill:hover,.dep:hover{border-color:#15233A}
+.choice[aria-pressed="true"],.pill[aria-pressed="true"],.dep[aria-pressed="true"]{background:#15233A;color:#F8F5EF;border-color:#15233A}
+.opt{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid #DDD4C5}
+.opt-l{display:flex;flex-direction:column}
+.opt .p{font-size:15px;line-height:1.6}
+.opt-dep{flex-direction:column;align-items:stretch;gap:14px}
+.deps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.est-res{background:#FFFFFF;border:1px solid #E3DCCF;padding:40px;display:flex;flex-direction:column;gap:22px;position:sticky;top:24px}
+.est-f{display:flex;flex-direction:column;gap:2px}
+.est-titre{font-family:'Cormorant Garamond',Georgia,serif;font-size:40px;font-weight:500;line-height:1.1;color:#15233A}
+.est-ligne-f{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-size:21px;color:#3D5A80}
+.est-fourchette{display:flex;flex-direction:column;gap:4px;border-top:1px solid #15233A;padding-top:22px}
+.est-montant{font-family:'Cormorant Garamond',Georgia,serif;font-size:52px;font-weight:500;line-height:1.05;color:#15233A;white-space:nowrap}
+.est-besoins{display:flex;flex-direction:column;gap:10px;border-top:1px solid #EAE4D9;padding-top:18px}
+.est-besoins-t{font-size:11.5px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:#5B606A}
+.est-besoins ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.est-besoins li{position:relative;padding-left:22px;font-size:15px;line-height:1.5}
+.est-besoins li::before{content:'';position:absolute;left:0;top:11px;width:12px;height:1px;background:#8A6D43}
+.est-barre{display:none}
+@media (max-width:960px){
+  .est-barre{position:fixed;left:0;right:0;bottom:0;z-index:15;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 22px calc(12px + env(safe-area-inset-bottom));background:#15233A;color:#F8F5EF;text-decoration:none;transform:translateY(110%);transition:transform .2s}
+  .est-barre.on{transform:none}
+  .est-barre-l{font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;font-weight:500}
+  .est-barre-m{font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;font-weight:500;white-space:nowrap}
+  .split,.g2c{grid-template-columns:minmax(0,1fr)!important;gap:32px!important}
+  .g2c{gap:10px!important}
+  .est-sec{padding-bottom:80px}
+  .est-res{position:static;padding:28px 22px}
+  .est-montant{font-size:44px}
+}
+</style>

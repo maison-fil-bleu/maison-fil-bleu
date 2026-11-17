@@ -1,0 +1,76 @@
+---
+/** Pied de page des pages famille (maquette Footer.dc.html). */
+import Logo from './Logo.astro';
+import { SITE, FORMULES, ARTICLES, lienTel } from '../config/site';
+const tel = lienTel(SITE.telephone);
+const a = SITE.agencePartenaire;
+---
+<footer class="ft">
+  <div class="w w-l ft-in">
+    <div class="ft-cols">
+      <div class="ft-pres">
+        <Logo variante="clair" />
+        <p class="ft-txt">Transition et accompagnement des familles : entrée en résidence, logement à libérer, succession. {SITE.zone}.</p>
+        {tel ? <a href={tel} class="ft-tel">{SITE.telephone}</a> : <span class="ft-tel">{SITE.telephone}</span>}
+      </div>
+      <nav class="ft-col" aria-labelledby="ft-acc">
+        <h2 id="ft-acc" class="ft-t">Accompagnements</h2>
+        {FORMULES.map((f) => <a href={`/${f.slug}`}>{f.nom}</a>)}
+        <a href="/tarifs">Recherche de résidence</a>
+        <a href="/tarifs">Vide-maison</a>
+        <a href="/tarifs">Gardiennage</a>
+      </nav>
+      <nav class="ft-col" aria-labelledby="ft-cons">
+        <h2 id="ft-cons" class="ft-t">Conseils</h2>
+        {ARTICLES.map((ar) => <a href={ar.href}>{ar.titre}</a>)}
+      </nav>
+      <nav class="ft-col" aria-labelledby="ft-mais">
+        <h2 id="ft-mais" class="ft-t">La maison</h2>
+        <a href="/qui-sommes-nous">Qui sommes-nous</a>
+        <a href="/notre-methode">Notre méthode</a>
+        <a href="/tarifs">Tarifs</a>
+        <a href="/estimation">Estimation en ligne</a>
+        <a href="/contact">Contact</a>
+        <a href="/pro">Professionnels</a>
+        <a href="/contact#espace-client">Espace client</a>
+      </nav>
+    </div>
+    <div class="ft-legal">
+      <p>© Maison Fil Bleu, une marque de la {SITE.societe}, {SITE.adresse}, {SITE.codePostal} {SITE.ville} · SIRET {SITE.siret}. Accompagnement à la vente ou à la location : {a.agent}, agent commercial de l'agence {a.agence}, RSAC {a.rsacVille} n° {a.rsacNumero}, carte professionnelle de l'agence n° {a.carte} CCI {a.cci}. Médiateur de la consommation : {SITE.mediateur}.</p>
+      <nav class="ft-legal-nav" aria-label="Informations légales">
+        <a href="/mentions-legales">Mentions légales</a>
+        <a href="/cgv">CGV</a>
+        <a href="/confidentialite">Confidentialité</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .ft{background:var(--nuit);color:#B9C1CE;font-family:var(--sans);font-size:15px;font-weight:300}
+  .ft-in{padding-top:88px;padding-bottom:36px;display:flex;flex-direction:column;gap:64px}
+  .ft-cols{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:48px}
+  .ft-pres{display:flex;flex-direction:column;gap:22px}
+  .ft-txt{max-width:300px;line-height:1.7;margin:0}
+  .ft-tel{font-family:var(--serif);font-size:30px;color:var(--ivoire);font-weight:500;text-decoration:none;line-height:1.2}
+  a.ft-tel:hover{color:var(--bleu-clair)}
+  .ft-col{display:flex;flex-direction:column;gap:12px}
+  .ft-t{font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:2.6px;text-transform:uppercase;color:var(--ivoire);margin:0 0 6px;line-height:1.7}
+  .ft-col a{color:#B9C1CE;text-decoration:none;line-height:1.5}
+  .ft-col a:hover{color:var(--ivoire);text-decoration:underline}
+  .ft-legal{border-top:1px solid #2E3D57;padding-top:26px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:18px;font-size:12.5px;color:#8F99A8;line-height:1.7}
+  .ft-legal p{max-width:820px;margin:0}
+  .ft-legal-nav{display:flex;gap:22px;flex-wrap:wrap}
+  .ft-legal-nav a{color:#8F99A8}
+  .ft-legal-nav a:hover{color:var(--ivoire)}
+  .ft :focus-visible{outline-color:var(--bleu-clair)}
+  @media (max-width:960px){
+    .ft-in{padding-top:64px;gap:48px}
+    .ft-cols{grid-template-columns:repeat(2,minmax(0,1fr));gap:44px 32px}
+    .ft-pres{grid-column:1 / -1}
+    .ft-col a{padding:3px 0}
+  }
+  @media (max-width:560px){
+    .ft-cols{grid-template-columns:minmax(0,1fr)}
+  }
+</style>

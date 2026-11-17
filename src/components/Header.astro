@@ -1,0 +1,181 @@
+---
+/** En-tête des pages famille (maquette Header.dc.html). */
+import Logo from './Logo.astro';
+import { SITE, FORMULES, lienTel, type Onglet } from '../config/site';
+
+interface Props { onglet?: Onglet }
+const { onglet = null } = Astro.props;
+const chemin = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '') || '/';
+const courant = (href: string) => (chemin === href ? 'page' : undefined);
+const tel = lienTel(SITE.telephone);
+---
+<header class="hd">
+  <div class="hd-top fb-nav">
+    <div class="w w-l hd-top-in">
+      <span class="hd-top-txt">{SITE.zone} · Diagnostic offert et sans engagement</span>
+      <nav aria-label="Liens secondaires" class="hd-top-nav">
+        <a href="/notre-methode" aria-current={courant('/notre-methode')}>Notre méthode</a>
+        <a href="/contact#espace-client">Espace client</a>
+        <a href={tel ?? '/contact'} class="hd-tel">{SITE.telephone}</a>
+      </nav>
+    </div>
+  </div>
+
+  <div class="hd-main">
+    <div class="w w-l hd-bar">
+      <a href="/" class="hd-logo" aria-label="Maison Fil Bleu, accueil"><Logo /></a>
+
+      <nav class="hd-nav fb-nav" aria-label="Navigation principale">
+        <a href="/qui-sommes-nous" class:list={['hd-tab', { on: onglet === 'qui' }]} aria-current={courant('/qui-sommes-nous')}>Qui sommes-nous</a>
+        <details class="fb-dd hd-dd" data-menu data-hover>
+          <summary class:list={['hd-tab', { on: onglet === 'prestations' }]}>
+            Nos prestations
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#15233A" stroke-width="2.4" aria-hidden="true"><path d="M5 9l7 7 7-7" /></svg>
+          </summary>
+          <div class="hd-panel">
+            {FORMULES.map((f) => (
+              <a href={`/${f.slug}`} aria-current={courant(`/${f.slug}`)}>
+                <span class="hd-panel-t">{f.nom}</span>
+                <span class="hd-panel-d">{f.ligne}</span>
+              </a>
+            ))}
+          </div>
+        </details>
+        <a href="/estimation" class:list={['hd-tab', { on: onglet === 'tarifs' }]} aria-current={courant('/estimation')}>Tarifs</a>
+        <a href="/conseils" class:list={['hd-tab', { on: onglet === 'conseils' }]} aria-current={courant('/conseils')}>Conseils</a>
+      </nav>
+
+      <div class="hd-right fb-nav">
+        <a href="/pro" class="hd-pro">
+          <span class="hd-pro-q">Vous êtes professionnel ?</span>
+          <span class="hd-pro-n">Fil Bleu <span>Pro</span> →</span>
+        </a>
+        <a href="/contact" class="btn hd-cta">Nous contacter</a>
+      </div>
+
+      <details class="fb-burger fb-dd" data-menu>
+        <summary aria-label="Menu">
+          <svg class="ic-ouvrir" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#15233A" stroke-width="1.6" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+          <svg class="ic-fermer" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#15233A" stroke-width="1.6" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+        </summary>
+        <div class="hd-m">
+          <nav class="hd-m-in" aria-label="Menu mobile">
+            <a href="/qui-sommes-nous" class="hd-m-l" aria-current={courant('/qui-sommes-nous')}>Qui sommes-nous</a>
+            <span class="hd-m-cat">Nos prestations</span>
+            {FORMULES.map((f, i) => (
+              <a href={`/${f.slug}`} class:list={['hd-m-f', { last: i === FORMULES.length - 1 }]} aria-current={courant(`/${f.slug}`)}>{f.nom}</a>
+            ))}
+            <a href="/estimation" class="hd-m-l" aria-current={courant('/estimation')}>Tarifs</a>
+            <a href="/notre-methode" class="hd-m-l" aria-current={courant('/notre-methode')}>Notre méthode</a>
+            <a href="/conseils" class="hd-m-l" aria-current={courant('/conseils')}>Conseils</a>
+            <a href="/contact#espace-client" class="hd-m-l hd-m-gris">Espace client</a>
+            <a href="/contact" class="btn hd-m-cta">Nous contacter</a>
+          </nav>
+          <a href="/pro" class="hd-m-pro">
+            <span class="hd-m-pro-q">Vous êtes professionnel ?</span>
+            <span class="hd-m-pro-n">Fil Bleu <span>Pro</span> →</span>
+          </a>
+        </div>
+      </details>
+    </div>
+  </div>
+</header>
+
+<script>
+  import '../scripts/menus';
+</script>
+
+<style>
+  .hd{width:100%;font-family:var(--sans);color:var(--encre);position:relative;z-index:20}
+  details summary::-webkit-details-marker{display:none}
+  summary{list-style:none}
+
+  /* Bandeau fin sable */
+  .hd-top{background:var(--sable);border-bottom:1px solid var(--filet-3)}
+  .hd-top-in{height:40px;display:flex;align-items:center;justify-content:space-between;gap:24px;font-size:12.5px;color:var(--gris)}
+  .hd-top-txt{letter-spacing:.5px}
+  .hd-top-nav{display:flex;align-items:center;gap:26px}
+  .hd-top-nav a{color:var(--gris);text-decoration:none}
+  .hd-top-nav a:hover{color:var(--nuit);text-decoration:underline}
+  .hd-top-nav .hd-tel{color:var(--nuit);font-weight:500}
+
+  /* Bandeau principal */
+  .hd-main{background:var(--ivoire);border-bottom:1px solid var(--filet-3)}
+  .hd-bar{height:88px;display:flex;align-items:center;justify-content:space-between;gap:32px}
+  .hd-logo{text-decoration:none;flex:none}
+  .hd-nav{display:flex;align-items:stretch;height:88px;font-size:13px;font-weight:500;letter-spacing:1.6px;text-transform:uppercase}
+  .hd-tab{display:flex;align-items:center;gap:6px;padding:0 20px;color:var(--encre);text-decoration:none;cursor:pointer;position:relative;white-space:nowrap}
+  .hd-tab::after{content:'';position:absolute;left:20px;right:20px;bottom:-1px;height:2px;background:var(--laiton);transform:scaleX(0);transition:transform .2s}
+  .hd-tab:hover{color:var(--nuit)}
+  .hd-tab:hover::after{transform:scaleX(.35)}
+  .hd-tab.on::after{transform:none}
+  .hd-dd{position:relative;display:flex;align-items:stretch}
+  .hd-dd svg{transition:transform .2s}
+  .hd-dd[open] svg{transform:rotate(180deg)}
+  .hd-panel{position:absolute;top:88px;left:0;z-index:30;min-width:340px;background:#fff;border:1px solid var(--filet-3);box-shadow:0 18px 40px rgba(21,35,58,.10);display:flex;flex-direction:column;padding:6px 0;text-transform:none;letter-spacing:0}
+  .hd-panel a{display:flex;flex-direction:column;gap:2px;padding:14px 22px;border-bottom:1px solid var(--sable);text-decoration:none;color:var(--encre);border-left:2px solid transparent}
+  .hd-panel a:last-child{border-bottom:0}
+  .hd-panel a:hover,.hd-panel a:focus-visible{background:#FBF9F5;border-left-color:var(--laiton)}
+  .hd-panel a[aria-current='page']{border-left-color:var(--laiton)}
+  .hd-panel-t{font-family:var(--serif);font-size:21px;font-weight:600}
+  .hd-panel-d{font-size:13px;font-weight:400;color:var(--gris)}
+
+  .hd-right{display:flex;align-items:center;gap:22px;flex:none}
+  .hd-pro{display:flex;flex-direction:column;align-items:flex-end;gap:1px;text-decoration:none;padding-right:22px;border-right:1px solid var(--filet);line-height:1.2}
+  .hd-pro-q{font-size:11px;color:var(--gris);letter-spacing:.4px}
+  .hd-pro-n{font-size:15px;font-weight:600;color:var(--nuit)}
+  .hd-pro-n span{color:var(--bleu)}
+  .hd-pro:hover .hd-pro-n{text-decoration:underline}
+  .hd-cta{padding:15px 24px;font-size:12px;letter-spacing:1.9px;white-space:nowrap}
+
+  /* Hamburger (sous 960 px) */
+  .fb-burger{display:none;position:relative}
+  .fb-burger>summary{width:46px;height:46px;border:1px solid var(--filet);display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--ivoire)}
+  .fb-burger .ic-fermer{display:none}
+  .fb-burger[open] .ic-fermer{display:block}
+  .fb-burger[open] .ic-ouvrir{display:none}
+  .hd-m{position:absolute;right:0;top:56px;z-index:40;width:320px;max-width:calc(100vw - 44px);max-height:calc(100vh - 110px);max-height:calc(100dvh - 110px);overflow-y:auto;background:#fff;border:1px solid var(--filet-3);box-shadow:0 18px 40px rgba(21,35,58,.12);font-size:13px;font-weight:500;letter-spacing:1.4px;text-transform:uppercase}
+  .hd-m-in{display:flex;flex-direction:column;padding:8px 22px 18px}
+  .hd-m-l{display:block;padding:14px 0;color:var(--encre);text-decoration:none;border-bottom:1px solid var(--sable)}
+  .hd-m-gris{color:var(--gris)}
+  .hd-m-cat{display:block;padding:14px 0 4px;color:var(--laiton-texte);font-size:11px;letter-spacing:2.2px}
+  .hd-m-f{display:block;padding:10px 0 10px 16px;color:var(--encre);text-decoration:none;font-family:var(--serif);font-size:20px;font-weight:600;text-transform:none;letter-spacing:0}
+  .hd-m-f.last{border-bottom:1px solid var(--sable);padding-bottom:14px}
+  .hd-m a[aria-current='page']{color:var(--nuit);box-shadow:inset 2px 0 0 var(--laiton);padding-left:12px}
+  .hd-m a.hd-m-f[aria-current='page']{padding-left:16px}
+  .hd-m-cta{margin-top:16px;padding:15px;letter-spacing:1.4px}
+  .hd-m-pro{display:flex;flex-direction:column;gap:2px;padding:16px 22px;background:var(--sable);text-decoration:none;text-transform:none;letter-spacing:0}
+  .hd-m-pro-q{font-size:12px;font-weight:400;color:var(--gris)}
+  .hd-m-pro-n{font-size:16px;font-weight:600;color:var(--nuit)}
+  .hd-m-pro-n span{color:var(--bleu)}
+
+  /* Largeurs intermédiaires : on resserre la navigation */
+  @media (max-width:1240px){
+    .hd-bar{gap:20px}
+    .hd-tab{padding:0 13px;letter-spacing:1.2px}
+    .hd-tab::after{left:13px;right:13px}
+    .hd-right{gap:16px}
+    .hd-pro{padding-right:16px}
+  }
+  @media (max-width:1180px){
+    .hd-pro-q{display:none}
+    .hd-cta{padding:14px 18px;letter-spacing:1.4px}
+    .hd-tab{padding:0 10px;font-size:12.5px}
+    .hd-tab::after{left:10px;right:10px}
+  }
+  @media (max-width:1080px){
+    .hd-bar,.hd-top-in{padding-left:28px;padding-right:28px}
+    .hd-bar{gap:14px}
+    .hd-tab{padding:0 8px;font-size:12px;letter-spacing:.9px}
+    .hd-tab::after{left:8px;right:8px}
+    .hd-right{gap:14px}
+    .hd-pro{padding-right:14px}
+    .hd-pro-n{font-size:14px}
+    .hd-cta{padding:13px 14px;letter-spacing:1.1px;font-size:11.5px}
+  }
+  @media (max-width:960px){
+    .fb-nav{display:none!important}
+    .fb-burger{display:block}
+    .hd-bar{height:76px}
+  }
+</style>

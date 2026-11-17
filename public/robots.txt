@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /merci
+Disallow: /pro/merci-devis
+Disallow: /pro/merci-grille
+
+Sitemap: https://www.maisonfilbleu.fr/sitemap-index.xml

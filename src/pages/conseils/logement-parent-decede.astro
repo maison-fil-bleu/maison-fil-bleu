@@ -1,0 +1,96 @@
+---
+/** Maquette : Article-Logement-Proche.dc.html · adresse : /conseils/logement-parent-decede */
+import Famille from '../../layouts/Famille.astro';
+import { SITE } from '../../config/site';
+import Hero from '../../components/Hero.astro';
+import Photo from '../../components/Photo.astro';
+import { META } from '../../config/meta';
+import { article, filAriane } from '../../config/seo';
+const meta = META['/conseils/logement-parent-decede'];
+---
+<Famille title={meta.title} description={meta.description} onglet="conseils" type="article" jsonld={[article({ titre: 'Que faire du logement d\'un proche qui nous a quittés ?', description: meta.description, chemin: '/conseils/logement-parent-decede' }), filAriane([{ nom: 'Accueil', chemin: '/' }, { nom: 'Conseils', chemin: '/conseils' }, { nom: 'Que faire du logement d\'un proche qui nous a quittés ?', chemin: '/conseils/logement-parent-decede' }])]}>
+<!-- Photo en fond : src/assets/photos/article-logement-proche-haut.jpg · clés posées sur une commode ancienne -->
+<Hero photo="article-logement-proche-haut" desc="clés posées sur une commode ancienne">
+<div class="w" style="position: relative; padding-top: 96px; padding-bottom: 104px">
+<div style="max-width: 780px; display: flex; flex-direction: column; gap: 24px">
+<a class="tl" href="/conseils" style="align-self: flex-start">← Tous les conseils</a>
+<span class="lbl" style="margin-top: 14px">Conseils · Succession</span>
+<h1 class="h1" style="color: #15233A; font-size: 58px">Que faire du logement d'un proche qui nous a quittés ?</h1>
+<p class="lead" style="color: #4A4F58">Après un décès, le logement arrive vite dans les préoccupations, souvent au pire moment. Voici, étape par étape, ce qu'il faut faire, ce qui peut attendre, et comment avancer à plusieurs sans se déchirer.</p>
+<span style="font-size: 13px; letter-spacing: .08em; color: #735A33">Lecture 4 min · Maison Fil Bleu, Marseille et région PACA</span>
+</div>
+</div>
+</Hero>
+
+<section class="sec">
+<div class="w alayout">
+<aside class="aside" style="position: sticky; top: 24px; display: flex; flex-direction: column; gap: 36px">
+<div class="toc"><span class="lbl" style="display: block; margin-bottom: 10px">Sommaire</span><a href="#s1">Les premiers jours : protéger le logement, rien de plus</a><a href="#s2">Contacter le notaire, et comprendre qui décide</a><a href="#s3">Locataire ou propriétaire : deux situations très différentes</a><a href="#s4">Quand et comment libérer le logement</a><a href="#s5">Ne rien perdre d'important</a><a href="#s6">Vous n'êtes pas obligé de tout faire seul</a></div>
+<div style="background: #EFE9DE; padding: 28px; display: flex; flex-direction: column; gap: 16px"><p class="h3" style="font-size: 24px">Besoin d'aide pour votre situation ?</p><span class="p" style="font-size: 15px">Diagnostic offert et sans engagement, à Marseille et dans la région PACA.</span><a class="tl" href="/succession" style="align-self: flex-start">Découvrir la formule Succession</a><a class="tl" href="/contact" style="align-self: flex-start">Nous contacter</a></div>
+</aside>
+<article class="art" style="max-width: 760px">
+<h2 id="s1">Les premiers jours : protéger le logement, rien de plus</h2>
+<p>Dans les jours qui suivent, personne ne vous demande de vider quoi que ce soit. L'urgence est ailleurs : mettre le logement à l'abri, et ne rien perdre d'important.</p>
+<ul><li><strong>Récupérer toutes les clés</strong> et savoir qui en détient un double (voisin, aide à domicile, gardien).</li><li><strong>Garder l'assurance habitation active</strong> : un dégât des eaux ou un cambriolage dans un logement inoccupé doit rester couvert.</li><li><strong>Faire suivre le courrier</strong>, auprès de La Poste, vers l'un des proches : c'est souvent là qu'arrivent les relevés, factures et contrats à connaître.</li><li><strong>Couper ce qui peut l'être sans risque</strong> (eau au compteur si le logement reste vide), mais ne résilier aucun contrat dans la précipitation.</li><li><strong>Ne rien jeter</strong>, surtout pas les papiers : relevés bancaires, avis d'imposition, contrats, titres de propriété serviront au notaire.</li></ul>
+<h2 id="s2">Contacter le notaire, et comprendre qui décide</h2>
+<p>Dès qu'il y a un bien immobilier, le passage chez le notaire est obligatoire. C'est lui qui identifie les héritiers, établit les actes et vous explique les options possibles. Si votre proche avait un notaire habituel, commencez par lui ; sinon, les héritiers choisissent ensemble.</p>
+<p>Tant que la succession n'est pas réglée, le logement et ce qu'il contient appartiennent à <strong>tous les héritiers ensemble</strong>. Concrètement, les décisions importantes (vider le logement, donner ou vendre des meubles, mettre le bien en vente) se prennent d'un commun accord. C'est souvent là que naissent les tensions : mieux vaut poser les choses tôt, par écrit, et tenir tout le monde informé de la même façon.</p>
+<div class="box"><span class="bt">Un point de prudence</span><ul><li>Évitez de vendre ou de donner des biens de valeur avant d'en avoir parlé avec le notaire : selon les cas, cela peut avoir des conséquences sur la succession.</li><li>La déclaration de succession doit en principe être déposée dans les six mois suivant le décès. Le notaire s'en charge et vous dit ce dont il a besoin.</li></ul></div>
+<!-- Photo : src/assets/photos/article-logement-proche-01.jpg · fenêtre ouverte sur un salon calme, lumière douce -->
+<Photo nom="article-logement-proche-01" alt="Fenêtre ouverte sur un salon calme, lumière douce" tag="Photo · fenêtre ouverte sur un salon calme, lumière douce" style="height: 400px; margin: 36px 0 40px" />
+<h2 id="s3">Locataire ou propriétaire : deux situations très différentes</h2>
+<p><strong>Si votre proche était locataire</strong>, le bail prend fin avec le décès, sauf si un conjoint ou un proche qui vivait avec lui souhaite le reprendre. Prévenez le bailleur rapidement, par écrit. Il faudra ensuite libérer le logement, faire l'état des lieux de sortie et rendre les clés : c'est à ce moment que le dépôt de garantie peut être restitué. Tant que le logement n'est pas rendu, le bailleur peut réclamer une indemnité d'occupation : ici, le temps compte.</p>
+<p><strong>Si votre proche était propriétaire</strong>, il y a moins d'urgence, mais les frais continuent de courir : charges de copropriété, taxe foncière, assurance, énergie. Rien n'oblige à décider tout de suite entre garder, louer ou vendre. Prenez le temps d'en parler entre héritiers, avec le notaire.</p>
+<h2 id="s4">Quand et comment libérer le logement</h2>
+<p>Il n'y a pas de bon moment universel. Certaines familles ont besoin de quelques semaines avant de pouvoir entrer à nouveau dans le logement ; d'autres préfèrent avancer vite. Dans tous les cas, une méthode simple évite bien des regrets :</p>
+<ul><li><strong>Photographier chaque pièce</strong> avant de toucher à quoi que ce soit, et partager les photos avec tous les héritiers, surtout ceux qui vivent loin.</li><li><strong>Laisser chacun dire ce qu'il souhaite garder</strong>, puis organiser le partage ensemble, en une ou deux journées sur place.</li><li><strong>Mettre de côté les papiers et les photos de famille</strong> : ils se trient au calme, après coup, jamais dans l'urgence.</li><li><strong>Prévoir ensuite les dons, le débarras et le nettoyage</strong>, et si besoin un box de stockage pour ce qu'on ne peut pas reprendre tout de suite.</li></ul>
+<h2 id="s5">Ne rien perdre d'important</h2>
+<p>Lettres, photos, objets de famille, documents administratifs : ce qui compte vraiment tient souvent dans quelques cartons, mais il faut savoir où chercher. Tiroirs de commode, boîtes à chaussures, livres, dessous de meubles, poches de manteaux : vérifiez avant tout débarras. Et si un objet fait débat, mettez-le de côté : il sera toujours temps d'en reparler.</p>
+<h2 id="s6">Vous n'êtes pas obligé de tout faire seul</h2>
+<p>Entre le deuil, la distance et le travail, beaucoup de familles n'ont ni le temps ni la force de s'occuper du logement. C'est précisément le rôle d'un accompagnement : un seul interlocuteur pour tous les héritiers, des étapes claires, et des décisions qui restent toujours les vôtres.</p>
+<p style="margin-top: 40px; font-size: 14px; color: #735A33">Ces informations sont générales et ne remplacent pas le conseil de votre notaire ou d'un professionnel du droit.</p>
+</article>
+</div>
+</section>
+
+<section class="sec" style="padding-top: 0">
+<div class="w" style="display: flex; flex-direction: column; gap: 40px">
+<span class="lbl">À lire aussi</span>
+<div class="g2a"><a href="/conseils/gerer-logement-a-distance" style="display: flex; flex-direction: column; gap: 16px; text-decoration: none; color: #18202C; border-top: 1px solid #CFC5B4; padding-top: 28px"><!-- Photo : src/assets/photos/article-logement-proche-02.jpg · Illustration de l'article : Gérer le logement d'un proche quand on habite loin -->
+<Photo nom="article-logement-proche-02" alt="Illustration de l'article : Gérer le logement d'un proche quand on habite loin" style="height: 200px" /><span class="lbl">Succession · 3 min</span><h3 class="h3">Gérer le logement d'un proche quand on habite loin</h3></a><a href="/conseils/preparer-entree-ehpad" style="display: flex; flex-direction: column; gap: 16px; text-decoration: none; color: #18202C; border-top: 1px solid #CFC5B4; padding-top: 28px"><!-- Photo : src/assets/photos/article-logement-proche-03.jpg · Illustration de l'article : Préparer une entrée en EHPAD sans stress -->
+<Photo nom="article-logement-proche-03" alt="Illustration de l'article : Préparer une entrée en EHPAD sans stress" style="height: 200px" /><span class="lbl">Entrée en résidence · 3 min</span><h3 class="h3">Préparer une entrée en EHPAD sans stress</h3></a></div>
+</div>
+</section>
+
+<section style="background: #EFE9DE; color: #18202C">
+<div class="w sec" style="display: flex; flex-direction: column; align-items: center; gap: 26px; text-align: center">
+<h2 class="h2" style="max-width: 760px">Votre situation est particulière ? Parlons-en.</h2>
+<a class="btn" href="/contact">Être rappelé</a>
+</div>
+</section>
+</Famille>
+
+<style is:global>
+/* Styles propres à cette page (repris de la maquette) */
+.h3{font-family:'Cormorant Garamond',Georgia,serif;font-weight:600;font-size:28px;line-height:1.2;margin:0}
+.flt{font-family:'Nunito Sans',sans-serif;font-size:12px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;text-decoration:none;color:#15233A;padding:12px 20px;border:1px solid #CFC5B4}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:48px}
+.feat{display:grid;grid-template-columns:3fr 2fr;gap:64px;align-items:center}
+.art h2{font-family:'Cormorant Garamond',Georgia,serif;font-weight:500;font-size:36px;line-height:1.15;color:#15233A;margin:56px 0 18px;scroll-margin-top:24px}
+.art h2:first-child{margin-top:0}
+.art p{font-size:17px;line-height:1.85;color:#3E434C;margin:0 0 18px;font-weight:300}
+.art ul{margin:0 0 22px;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
+.art li{font-size:17px;line-height:1.75;color:#3E434C;font-weight:300;padding-left:26px;position:relative}
+.art li::before{content:'';position:absolute;left:0;top:13px;width:12px;height:1px;background:#8A6D43}
+.art strong{font-weight:500;color:#18202C}
+.box{background:#EFE9DE;border-left:2px solid #8A6D43;padding:30px 34px;margin:30px 0}
+.box .bt{font-family:'Nunito Sans',sans-serif;font-size:12px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:#735A33;display:block;margin-bottom:14px}
+.box ul{margin:0}
+.toc a{display:block;padding:10px 0;border-bottom:1px solid #DDD4C5;color:#18202C;text-decoration:none;font-size:15px;line-height:1.5}
+.alayout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:88px;align-items:start}
+.g2a{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:48px}
+@media (max-width:960px){.alayout,.g2a{grid-template-columns:minmax(0,1fr) !important;gap:40px !important}.aside{position:static !important}.art h2{font-size:30px}}
+@media (max-width:960px){
+  .g3,.feat{grid-template-columns:minmax(0,1fr) !important;gap:40px !important}
+}
+</style>

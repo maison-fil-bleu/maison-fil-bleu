@@ -1,0 +1,86 @@
+---
+/** En-tête des pages Fil Bleu Pro (maquettes Pro.dc.html et Pro-Tarifs.dc.html). */
+import Logo from './Logo.astro';
+
+interface Props { onglet?: 'services' | 'tarifs' | 'partenariats' | null }
+const { onglet = null } = Astro.props;
+const chemin = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '');
+const liens = [
+  { href: '/pro#services', label: 'Services', cle: 'services' },
+  { href: '/pro/tarifs', label: 'Tarifs', cle: 'tarifs' },
+  { href: '/pro#partenariats', label: 'Partenariats', cle: 'partenariats' },
+] as const;
+---
+<div class="pr-retour">
+  <div class="w w-l pr-retour-in">
+    <a href="/" class="pr-back">← Retour au site Maison Fil Bleu</a>
+    <span class="pr-fam">Vous accompagnez une famille ? <a href="/">Découvrir Maison Fil Bleu</a></span>
+  </div>
+</div>
+<header class="pr-hd">
+  <div class="w w-l pr-bar">
+    <a href="/pro" class="pr-logo"><Logo variante="pro" /><span class="sr-only">, accueil Fil Bleu Pro</span></a>
+    <nav class="pnav" aria-label="Navigation professionnels">
+      {liens.map((l) => (
+        <a href={l.href} class:list={['pr-tab', { on: onglet === l.cle }]} aria-current={chemin === l.href ? 'page' : undefined}>{l.label}</a>
+      ))}
+      <a href="/" class="pr-tab pr-gris">Maison Fil Bleu</a>
+      <a class="btn pr-cta" href="/pro#devis">Devis sous 24 h</a>
+    </nav>
+
+    <details class="pr-burger" data-menu>
+      <summary aria-label="Menu">
+        <svg class="ic-ouvrir" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#15233A" stroke-width="1.6" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+        <svg class="ic-fermer" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#15233A" stroke-width="1.6" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </summary>
+      <nav class="pr-m" aria-label="Menu mobile professionnels">
+        {liens.map((l) => <a href={l.href} class="pr-m-l" aria-current={chemin === l.href ? 'page' : undefined}>{l.label}</a>)}
+        <a href="/" class="pr-m-l pr-gris">Maison Fil Bleu</a>
+        <a href="/pro#devis" class="btn pr-m-cta">Devis sous 24 h</a>
+      </nav>
+    </details>
+  </div>
+</header>
+
+<script>
+  import '../scripts/menus';
+</script>
+
+<style>
+  details summary::-webkit-details-marker{display:none}
+  summary{list-style:none}
+  .pr-retour{background:var(--sable);border-bottom:1px solid var(--filet-3)}
+  .pr-retour-in{min-height:44px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 20px;padding-top:8px;padding-bottom:8px;font-size:13px}
+  .pr-back{color:var(--nuit);text-decoration:none;font-weight:500}
+  .pr-back:hover{text-decoration:underline}
+  .pr-fam{color:var(--gris)}
+  .pr-fam a{color:var(--bleu)}
+
+  .pr-hd{background:var(--ivoire);border-bottom:1px solid var(--filet-3);position:relative;z-index:20}
+  .pr-bar{height:92px;display:flex;align-items:center;justify-content:space-between;gap:32px}
+  .pr-logo{text-decoration:none;flex:none}
+  .pnav{display:flex;align-items:center;gap:32px;font-size:13px;letter-spacing:1.6px;text-transform:uppercase}
+  .pr-tab{color:var(--encre);text-decoration:none;position:relative;padding:6px 0}
+  .pr-tab::after{content:'';position:absolute;left:0;right:0;bottom:-2px;height:2px;background:var(--laiton);transform:scaleX(0);transition:transform .2s}
+  .pr-tab:hover::after{transform:scaleX(.35)}
+  .pr-tab.on::after{transform:none}
+  .pr-gris{color:var(--gris)}
+  .pr-cta{padding:15px 24px;font-size:12px}
+
+  .pr-burger{display:none;position:relative}
+  .pr-burger>summary{width:46px;height:46px;border:1px solid var(--filet);display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .pr-burger .ic-fermer{display:none}
+  .pr-burger[open] .ic-fermer{display:block}
+  .pr-burger[open] .ic-ouvrir{display:none}
+  .pr-m{position:absolute;right:0;top:56px;z-index:40;width:300px;max-width:calc(100vw - 44px);background:#fff;border:1px solid var(--filet-3);box-shadow:0 18px 40px rgba(21,35,58,.12);display:flex;flex-direction:column;padding:8px 22px 18px;font-size:13px;font-weight:500;letter-spacing:1.4px;text-transform:uppercase}
+  .pr-m-l{display:block;padding:14px 0;color:var(--encre);text-decoration:none;border-bottom:1px solid var(--sable)}
+  .pr-m a[aria-current='page']{box-shadow:inset 2px 0 0 var(--laiton);padding-left:12px}
+  .pr-m-cta{margin-top:16px;padding:15px;letter-spacing:1.4px}
+
+  @media (max-width:1060px){ .pnav{gap:22px;letter-spacing:1.2px} }
+  @media (max-width:960px){
+    .pnav{display:none!important}
+    .pr-burger{display:block}
+    .pr-bar{height:76px}
+  }
+</style>

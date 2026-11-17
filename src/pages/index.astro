@@ -1,0 +1,151 @@
+---
+/** Maquette : Main.dc.html · adresse : / */
+import Famille from '../layouts/Famille.astro';
+import { SITE } from '../config/site';
+import Hero from '../components/Hero.astro';
+import Photo from '../components/Photo.astro';
+import { META } from '../config/meta';
+const meta = META['/'];
+---
+<Famille title={meta.title} description={meta.description}>
+<!-- Héros : photo en fond -->
+<!-- Photo en fond : src/assets/photos/accueil-haut.jpg · intérieur provençal lumineux, mains qui tiennent un cadre -->
+<Hero photo="accueil-haut" desc="intérieur provençal lumineux, mains qui tiennent un cadre">
+<div class="w" style="position: relative; padding-top: 168px; padding-bottom: 152px">
+<div style="max-width: 720px; display: flex; flex-direction: column; gap: 30px">
+<span style="display: flex; flex-direction: column; gap: 8px"><span class="lbl">Transition &amp; accompagnement</span><span style="font-family: 'Nunito Sans', sans-serif; font-size: 10.5px; font-weight: 400; letter-spacing: 0.22em; text-transform: uppercase; color: #735A33">Marseille et région PACA</span></span>
+<h1 class="h1" style="color: #15233A">Pour que chaque départ soit une belle arrivée.</h1>
+<p class="lead" style="color: #4A4F58">Entrée en résidence, logement à libérer, succession d'un proche : nous organisons tout, du tri à la remise des clés, avec un seul interlocuteur et un prix fixé d'avance.</p>
+<div style="display: flex; flex-wrap: wrap; gap: 14px; margin-top: 6px"><a class="btn" href="/contact">Demander un diagnostic offert</a><a class="btn2" href="/notre-methode">Découvrir la maison</a></div>
+<a href="/contact" style="color: #3D5A80; font-size: 15px; text-decoration: none; border-bottom: 1px solid #8A6D43; align-self: flex-start; padding-bottom: 3px">Ou appelez-nous au {SITE.telephone}</a>
+</div>
+</div>
+</Hero>
+
+<!-- Trois accompagnements -->
+<section class="sec">
+<div class="w" style="display: flex; flex-direction: column; gap: 72px">
+<div class="g2" style="align-items: end">
+<div style="display: flex; flex-direction: column; gap: 18px"><span class="lbl">Nos accompagnements</span><h2 class="h2">Une formule pour chaque situation.</h2></div>
+<p class="lead">Le logement doit être vidé et rendu propre ? C'est la Libération. Si un déménagement suit, c'est la Transition. Quand un proche vous a quittés, c'est la Succession. Chaque formule a son forfait fixé d'avance : vous savez dès le départ ce qui sera fait, par qui et combien cela vous coûtera.</p>
+</div>
+<div class="g3">
+<a href="/liberation" style="display: flex; flex-direction: column; gap: 22px; text-decoration: none; color: #18202C">
+<!-- Photo : src/assets/photos/accueil-01.jpg · pièce vide et lumineuse -->
+<Photo nom="accueil-01" alt="Pièce vide et lumineuse" tag="Photo · pièce vide et lumineuse" style="height: 380px" />
+<span class="lbl">01 · Libération</span>
+<span style="font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-size: 22px; color: #3D5A80; margin-top: -10px">Le logement est à vider</span>
+<h3 class="h3" style="font-size: 30px">Vider, nettoyer et rendre le logement</h3>
+<span class="p">Un logement plein bloque tout : la fin d'un bail, une vente, la remise des clés. Nous trions avec vous ce que vous gardez, ce qui revient à vos proches et ce qui peut aider une association, puis nous rendons le logement vide et propre, prêt à être rendu, loué ou vendu.</span>
+<span style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #DDD4C5; padding-top: 16px; font-size: 15px; color: #18202C"><span>Tri accompagné, accompagnement à la vente et dons</span><span>Débarras en filières agréées et nettoyage complet</span><span>Reportage photo et remise des clés</span></span>
+<span class="tl" style="align-self: flex-start">Découvrir · dès 1 560 €</span>
+</a>
+<a href="/transition" style="display: flex; flex-direction: column; gap: 22px; text-decoration: none; color: #18202C">
+<!-- Photo : src/assets/photos/accueil-02.jpg · chambre de résidence installée -->
+<Photo nom="accueil-02" alt="Chambre de résidence installée" tag="Photo · chambre de résidence installée" style="height: 380px" />
+<span class="lbl">02 · Transition</span>
+<span style="font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-size: 22px; color: #3D5A80; margin-top: -10px">Vous ou un proche changez de logement</span>
+<h3 class="h3" style="font-size: 30px">Libérer l'ancien logement et installer le nouveau</h3>
+<span class="p">Quitter la maison de toute une vie, c'est choisir ce qu'on emporte dans un espace souvent plus petit. Nous faisons ce tri avec vous, à votre rythme, nous organisons le déménagement et nous installons le nouveau logement pour qu'elle s'y sente chez elle dès le premier soir.</span>
+<span style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #DDD4C5; padding-top: 16px; font-size: 15px; color: #18202C"><span>Tout ce que comprend la Libération</span><span>+ plan du nouveau logement et déménagement coordonné</span><span>+ installation complète, démarches, suivi à J+15</span></span>
+<span class="tl" style="align-self: flex-start">Découvrir · dès 3 200 €</span>
+</a>
+<a href="/succession" style="display: flex; flex-direction: column; gap: 22px; text-decoration: none; color: #18202C">
+<!-- Photo : src/assets/photos/accueil-03.jpg · objets de famille, album photo -->
+<Photo nom="accueil-03" alt="Objets de famille, album photo" tag="Photo · objets de famille, album photo" style="height: 380px" />
+<span class="lbl">03 · Succession</span>
+<span style="font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-size: 22px; color: #3D5A80; margin-top: -10px">Un proche vous a quittés</span>
+<h3 class="h3" style="font-size: 30px">Libérer son logement, avec délicatesse</h3>
+<span class="p">Après un décès, le logement devient une épreuve de plus, souvent à plusieurs et à distance. Nous vous accompagnons immédiatement, et tout au long du processus : partage organisé avec vous, papiers classés, lien avec le notaire, jusqu'à la vente si vous le souhaitez.</span>
+<span style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #DDD4C5; padding-top: 16px; font-size: 15px; color: #18202C"><span>Tout ce que comprend la Libération</span><span>+ reportage photo pour les héritiers, partage des objets</span><span>+ papiers, lien notaire, accompagnement à la vente</span></span>
+<span class="tl" style="align-self: flex-start">Découvrir · dès 2 600 €</span>
+</a>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 26px; border-top: 1px solid #DDD4C5; padding-top: 28px"><span class="p">Prix de départ : le prix exact est fixé après le diagnostic offert.</span><a class="btn" href="/estimation">Estimer mon accompagnement</a></div>
+</div>
+</section>
+
+<!-- Coupure photo -->
+<!-- Photo : src/assets/photos/accueil-04.jpg · l'équipe emballe un service de vaisselle avec soin -->
+<Photo nom="accueil-04" alt="L'équipe emballe un service de vaisselle avec soin" tag="Photo pleine largeur · l'équipe emballe un service de vaisselle avec soin" style="height: 520px" />
+
+<!-- Méthode -->
+<section class="sec">
+<div class="w" style="display: flex; flex-direction: column; gap: 72px">
+<div style="display: flex; flex-direction: column; gap: 18px; max-width: 720px"><span class="lbl">Notre méthode</span><h2 class="h2">Vous décidez. Nous nous occupons du reste.</h2></div>
+<div class="g4">
+<div class="card"><span class="num">01</span><h3 class="h3">Diagnostic offert</h3><span class="p">Nous venons sur place et nous écoutons, avec vos proches si vous le souhaitez.</span></div>
+<div class="card"><span class="num">02</span><h3 class="h3">Un prix fixé d'avance</h3><span class="p">Un devis forfaitaire et clair, établi après le diagnostic. Vous savez exactement ce qui est compris, sans supplément caché.</span></div>
+<div class="card"><span class="num">03</span><h3 class="h3">Une intervention coordonnée</h3><span class="p">Une équipe encadrée, un seul interlocuteur, des nouvelles et des photos à chaque étape.</span></div>
+<div class="card"><span class="num">04</span><h3 class="h3">La remise des clés</h3><span class="p">Le nouveau logement prêt à vivre, l'ancien vidé, nettoyé et rendu.</span></div>
+</div>
+<a class="tl" href="/notre-methode" style="align-self: flex-start">Notre méthode en détail</a>
+</div>
+</section>
+
+<!-- Engagements, bandeau nuit -->
+<section style="background: #EFE9DE; color: #18202C">
+<div class="w sec" style="display: flex; flex-direction: column; gap: 72px">
+<div class="g2" style="align-items: end">
+<div style="display: flex; flex-direction: column; gap: 22px">
+<span class="lbl">Nos engagements</span>
+<h2 class="h2">Nous accompagnons les personnes dans tous les aspects de ce moment, bien au-delà d'un simple changement de logement.</h2>
+</div>
+<p class="lead" style="color: #5B606A">Un départ, ce sont des émotions, des décisions difficiles et une montagne de démarches. Nous prenons tout en charge, de A à Z, pour que vous retrouviez du temps, de la sérénité, et que vous puissiez vous consacrer à vos proches.</p>
+</div>
+<div class="g3" style="row-gap: 52px">
+<div style="border-top: 1px solid #CFC5B4; padding-top: 28px; display: flex; flex-direction: column; gap: 12px"><span class="num" style="color: #735A33; font-size: 38px">01</span><h3 class="h3" style="color: #15233A">À l'écoute, à votre rythme</h3><span class="p" style="color: #5B606A">Nous prenons le temps de comprendre la situation, les attachements et les inquiétudes. Rien n'est brusqué, chaque étape vous est expliquée.</span></div>
+<div style="border-top: 1px solid #CFC5B4; padding-top: 28px; display: flex; flex-direction: column; gap: 12px"><span class="num" style="color: #735A33; font-size: 38px">02</span><h3 class="h3" style="color: #15233A">Un seul interlocuteur, de A à Z</h3><span class="p" style="color: #5B606A">Du premier appel à la remise des clés, une seule personne coordonne tout. Vous n'avez plus à tout organiser, ni à tout porter seul.</span></div>
+<div style="border-top: 1px solid #CFC5B4; padding-top: 28px; display: flex; flex-direction: column; gap: 12px"><span class="num" style="color: #735A33; font-size: 38px">03</span><h3 class="h3" style="color: #15233A">Le tri, avec vous</h3><span class="p" style="color: #5B606A">Garder, transmettre à un proche, donner : chaque décision vous appartient. Une liste signée avant chaque évacuation, rien ne part sans votre accord.</span></div>
+<div style="border-top: 1px solid #CFC5B4; padding-top: 28px; display: flex; flex-direction: column; gap: 12px"><span class="num" style="color: #735A33; font-size: 38px">04</span><h3 class="h3" style="color: #15233A">Les papiers et les démarches</h3><span class="p" style="color: #5B606A">Énergie, courrier, assurances, résiliations, échanges avec la résidence ou le notaire : nous nous en chargeons pour vous.</span></div>
+<div style="border-top: 1px solid #CFC5B4; padding-top: 28px; display: flex; flex-direction: column; gap: 12px"><span class="num" style="color: #735A33; font-size: 38px">05</span><h3 class="h3" style="color: #15233A">Des nouvelles à chaque étape</h3><span class="p" style="color: #5B606A">Comptes rendus et photos, même si vous vivez loin. Vous êtes rassuré sans avoir à vous déplacer.</span></div>
+<div style="border-top: 1px solid #CFC5B4; padding-top: 28px; display: flex; flex-direction: column; gap: 12px"><span class="num" style="color: #735A33; font-size: 38px">06</span><h3 class="h3" style="color: #15233A">Conseillé, puis libre de choisir</h3><span class="p" style="color: #5B606A">Garder, louer ou vendre ? Nous faisons le point avec vous pour vous conseiller. Ensuite, l'agence de votre choix ou notre agence partenaire : vous décidez.</span></div>
+</div>
+</div>
+</section>
+
+<!-- Fondateur -->
+<section class="sec">
+<div class="w g2" style="align-items: center">
+<!-- Photo : src/assets/photos/accueil-05.jpg · portrait du fondateur, lumière naturelle -->
+<Photo nom="accueil-05" alt="Portrait du fondateur, lumière naturelle" tag="Photo · portrait du fondateur, lumière naturelle" style="height: 600px" />
+<div style="display: flex; flex-direction: column; gap: 26px">
+<span class="lbl">La maison</span>
+<p style="margin: 0; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 38px; line-height: 1.25; font-weight: 500; font-style: italic; color: #15233A">« Pendant plus de quinze ans, j'ai accompagné des clients dans la vente ou la gestion de leurs biens. Derrière, il y avait souvent une famille démunie face à un logement plein, des démarches à n'en plus finir et des moments éprouvants. »</p>
+<p class="p">Nous avons réuni tous les métiers d'un départ, le tri, le déménagement, le débarras, le nettoyage et les démarches, pour que les familles n'aient plus à porter seules la charge mentale.</p>
+<a class="tl" href="/qui-sommes-nous" style="align-self: flex-start">Qui sommes-nous</a>
+</div>
+</div>
+</section>
+
+<!-- Conseils -->
+<section style="background: #EFE9DE">
+<div class="w sec" style="display: flex; flex-direction: column; gap: 60px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 24px"><div style="display: flex; flex-direction: column; gap: 18px"><span class="lbl">Conseils</span><h2 class="h2">Pour y voir plus clair.</h2></div><a class="tl" href="/conseils">Tous les conseils</a></div>
+<div class="g3">
+<a href="/conseils/logement-parent-decede" style="display: flex; flex-direction: column; gap: 18px; text-decoration: none; color: #18202C"><!-- Photo : src/assets/photos/accueil-06.jpg · Illustration de l'article : Que faire du logement d'un proche qui nous a quittés ? -->
+<Photo nom="accueil-06" alt="Illustration de l'article : Que faire du logement d'un proche qui nous a quittés ?" style="height: 250px" /><span class="lbl">Succession</span><h3 class="h3">Que faire du logement d'un proche qui nous a quittés ?</h3></a>
+<a href="/conseils/preparer-entree-ehpad" style="display: flex; flex-direction: column; gap: 18px; text-decoration: none; color: #18202C"><!-- Photo : src/assets/photos/accueil-07.jpg · Illustration de l'article : Préparer une entrée en EHPAD sans stress -->
+<Photo nom="accueil-07" alt="Illustration de l'article : Préparer une entrée en EHPAD sans stress" style="height: 250px" /><span class="lbl">Entrée en résidence</span><h3 class="h3">Préparer une entrée en EHPAD sans stress</h3></a>
+<a href="/conseils/vider-maison-avant-vente" style="display: flex; flex-direction: column; gap: 18px; text-decoration: none; color: #18202C"><!-- Photo : src/assets/photos/accueil-08.jpg · Illustration de l'article : Vider une maison avant de la vendre : par où commencer ? -->
+<Photo nom="accueil-08" alt="Illustration de l'article : Vider une maison avant de la vendre : par où commencer ?" style="height: 250px" /><span class="lbl">Libérer un logement</span><h3 class="h3">Vider une maison avant de la vendre : par où commencer ?</h3></a>
+</div>
+</div>
+</section>
+
+<!-- Appel final -->
+<section class="sec">
+<div class="w" style="display: flex; flex-direction: column; align-items: center; gap: 28px; text-align: center">
+<span class="lbl">Diagnostic offert</span>
+<h2 class="h2" style="max-width: 760px">Un départ à préparer, un logement à libérer ?</h2>
+<p class="lead" style="max-width: 620px">Un premier échange au téléphone, puis un diagnostic sur place, offert et sans engagement.</p>
+<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 14px"><a class="btn" href="/contact">Demander un diagnostic</a><a class="btn2" href="/tarifs">Voir les tarifs</a></div>
+</div>
+</section>
+</Famille>
+
+<style is:global>
+/* Styles propres à cette page (repris de la maquette) */
+.h1{font-family:'Cormorant Garamond',Georgia,serif;font-weight:500;font-size:72px;line-height:1.04;margin:0;letter-spacing:-.01em}
+.h2{font-family:'Cormorant Garamond',Georgia,serif;font-weight:500;font-size:48px;line-height:1.1;margin:0}
+</style>

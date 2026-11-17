@@ -1,0 +1,8 @@
+# Configuration Netlify (utilisée à la mise en ligne, étape 7).
+# Si le dépôt contient le dossier site/ à sa racine, indiquer « site » comme dossier de base dans Netlify.
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"

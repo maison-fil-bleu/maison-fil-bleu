@@ -1,0 +1,26 @@
+---
+/** Pied de page des pages Fil Bleu Pro. */
+import { SITE } from '../config/site';
+---
+<footer class="pft">
+  <div class="w w-l pft-in">
+    <p>Fil Bleu Pro est une marque de la {SITE.societe}, {SITE.adresse}, {SITE.codePostal} {SITE.ville} · SIRET {SITE.siret} · TVA {SITE.tva} · RC professionnelle {SITE.rcPro} · Récépissé de transport de déchets n° {SITE.recepisseDechets}.</p>
+    <nav aria-label="Informations légales" class="pft-nav">
+      <a href="/mentions-legales">Mentions légales</a>
+      <a href="/cgv">CGV</a>
+      <a href="/confidentialite">Confidentialité</a>
+      <a href="/">Maison Fil Bleu</a>
+    </nav>
+  </div>
+</footer>
+
+<style>
+  .pft{background:var(--nuit);color:#8F99A8;font-size:12.5px;line-height:1.7}
+  .pft-in{padding-top:36px;padding-bottom:36px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px}
+  .pft p{max-width:860px;margin:0}
+  .pft-nav{display:flex;flex-wrap:wrap;gap:22px}
+  /* #5B606A de la maquette est trop peu contrasté sur bleu nuit : éclairci */
+  .pft-nav a{color:#B9C1CE}
+  .pft-nav a:hover{color:var(--ivoire)}
+  .pft :focus-visible{outline-color:var(--bleu-clair)}
+</style>

@@ -1,0 +1,23 @@
+---
+/** Mise en page des pages Fil Bleu Pro : en-tête et pied de page dédiés. */
+import Base from './Base.astro';
+import ProHeader from '../components/ProHeader.astro';
+import ProFooter from '../components/ProFooter.astro';
+import { localBusinessPro } from '../config/seo';
+
+interface Props {
+  title: string;
+  description: string;
+  onglet?: 'services' | 'tarifs' | 'partenariats' | null;
+  noindex?: boolean;
+  image?: string;
+  jsonld?: object[];
+}
+const { onglet = null, jsonld = [], image = '/og/fil-bleu-pro.png', ...rest } = Astro.props;
+---
+<Base {...rest} image={image} nomSite="Fil Bleu Pro" jsonld={[localBusinessPro(), ...jsonld]}>
+  <slot name="head" slot="head" />
+  <ProHeader onglet={onglet} />
+  <main id="contenu" tabindex="-1"><slot /></main>
+  <ProFooter />
+</Base>

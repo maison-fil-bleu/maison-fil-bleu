@@ -1,0 +1,116 @@
+---
+/** Maquette : Methode.dc.html · adresse : /notre-methode */
+import Famille from '../layouts/Famille.astro';
+import { SITE } from '../config/site';
+import Hero from '../components/Hero.astro';
+import Photo from '../components/Photo.astro';
+import { META } from '../config/meta';
+const meta = META['/notre-methode'];
+---
+<Famille title={meta.title} description={meta.description}>
+<!-- Photo en fond : src/assets/photos/methode-haut.jpg · séjour en cours de tri, lumière douce -->
+<Hero photo="methode-haut" desc="séjour en cours de tri, lumière douce">
+<div class="w" style="position: relative; padding-top: 140px; padding-bottom: 128px">
+<div style="max-width: 760px; display: flex; flex-direction: column; gap: 28px">
+<span class="lbl">Notre méthode</span>
+<h1 class="h1" style="color: #15233A">Anticiper avec douceur, accompagner avec exigence.</h1>
+<p class="lead" style="color: #4A4F58">Un départ, cela s'anticipe. Nous prenons le temps de vous écouter, de préparer chaque étape avec vous et de veiller à votre sérénité comme à celle de vos proches. Et quand ce moment s'inscrit dans un calendrier, une entrée en résidence, une succession ou un projet de vente, nous organisons tout pour que chaque échéance soit tenue, sans précipitation.</p>
+</div>
+</div>
+</Hero>
+
+<section class="sec">
+<div class="w">
+<div class="step"><span class="num">01</span><div style="display: flex; flex-direction: column; gap: 12px"><h2 class="h3">Le diagnostic offert</h2><span class="p" style="font-size: 17px">Nous venons sur place, avec vous et vos proches si vous le souhaitez. Nous écoutons d'abord : les délais, les attachements, les inquiétudes, ce qui compte pour vous. Puis nous regardons le logement, le volume, l'accès, et le nouveau logement s'il y en a un.</span></div></div>
+<div class="step"><span class="num">02</span><div style="display: flex; flex-direction: column; gap: 12px"><h2 class="h3">Un devis clair, adapté à votre situation</h2><span class="p" style="font-size: 17px">Nous définissons ensemble ce dont vous avez besoin, et seulement cela. Vous savez exactement ce qui est compris, sans supplément caché. Une personne de confiance peut signer avec vous.</span></div></div>
+<div class="step"><span class="num">03</span><div style="display: flex; flex-direction: column; gap: 12px"><h2 class="h3">La préparation</h2><span class="p" style="font-size: 17px">Nous organisons chaque étape avec vous : le tri de ce que vous gardez, transmettez ou donnez, le classement des papiers importants, la mise en cartons et leur étiquetage pour le déménageur, l'organisation d'un vide-maison si besoin, et les démarches à anticiper.</span></div></div>
+<div class="step"><span class="num">04</span><div style="display: flex; flex-direction: column; gap: 12px"><h2 class="h3">Les interventions, coordonnées de bout en bout</h2><span class="p" style="font-size: 17px">Une équipe encadrée, un seul interlocuteur, sur toutes les journées planifiées ensemble : le déménagement avec le déménageur que vous avez choisi, les dons aux associations, le débarras en filières agréées, le nettoyage, l'installation du nouveau logement. Nous orchestrons chaque intervention, aux dates prévues.</span></div></div>
+<div class="step" style="border-bottom: 1px solid #CFC5B4"><span class="num">05</span><div style="display: flex; flex-direction: column; gap: 12px"><h3 class="h3">La remise des clés, et la suite</h3><span class="p" style="font-size: 17px">Compte rendu photo, clés rendues, contrats résiliés. Pour une Transition, une visite quinze jours après l'installation. Et si vous le souhaitez, un conseil pour garder, louer ou vendre le logement.</span></div></div>
+</div>
+</section>
+
+<section style="background: #EFE9DE">
+<div class="w sec" style="display: flex; flex-direction: column; gap: 56px">
+<div style="display: flex; flex-direction: column; gap: 18px; max-width: 780px"><span class="lbl">Tout ce que nous prenons en charge</span><h2 class="h2">Un seul interlocuteur pour tout ce qu'un départ demande.</h2></div>
+<div class="g3" style="row-gap: 0">
+<div style="display: flex; flex-direction: column">
+<span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 24px; font-weight: 600; color: #15233A; padding-bottom: 12px; border-bottom: 1px solid #15233A">Avant</span>
+<span style="padding: 14px 0; border-bottom: 1px solid #CFC5B4">Diagnostic et plan du nouveau logement</span>
+<span style="padding: 14px 0; border-bottom: 1px solid #CFC5B4">Tri accompagné de vos affaires</span>
+<span style="padding: 14px 0; border-bottom: 1px solid #CFC5B4">Classement des papiers importants</span>
+<span style="padding: 14px 0; border-bottom: 1px solid #CFC5B4">Recherche de résidence, si besoin</span>
+<span style="padding: 14px 0; border-bottom: 1px solid #CFC5B4">Comparaison des devis de déménageurs</span>
+</div>
+<div style="display: flex; flex-direction: column">
+<span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 24px; font-weight: 600; color: #15233A; padding-bottom: 12px; border-bottom: 1px solid #15233A">Pendant</span>
+<span style="padding: 14px 0; border-bottom: 1px solid #CFC5B4">Mise en cartons et étiquetage</span>
+<span style="padding: 14px 0; border-bottom: 1px solid #CFC5B4">Coordination du déménagement</span>
+<span style="padding: 14px 0; border-bottom: 1px solid #CFC5B4">Dons aux associations, vide-maison</span>
+<span style="padding: 14px 0; border-bottom: 1px solid #CFC5B4">Débarras en filières agréées</span>
+<span style="padding: 14px 0; border-bottom: 1px solid #CFC5B4">Recherche d'un box de stockage</span>
+</div>
+<div style="display: flex; flex-direction: column">
+<span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 24px; font-weight: 600; color: #15233A; padding-bottom: 12px; border-bottom: 1px solid #15233A">Après</span>
+<span style="padding: 14px 0; border-bottom: 1px solid #CFC5B4">Installation du nouveau logement</span>
+<span style="padding: 14px 0; border-bottom: 1px solid #CFC5B4">Nettoyage complet de l'ancien</span>
+<span style="padding: 14px 0; border-bottom: 1px solid #CFC5B4">Démarches : énergie, courrier, assurances</span>
+<span style="padding: 14px 0; border-bottom: 1px solid #CFC5B4">Lien avec le notaire, partage entre héritiers</span>
+<span style="padding: 14px 0; border-bottom: 1px solid #CFC5B4">Conseil pour garder, louer ou vendre</span>
+</div>
+</div>
+<p class="p">Chaque accompagnement est adapté à votre situation : nous ne retenons que ce dont vous avez besoin.</p>
+</div>
+</section>
+
+<!-- Photo : src/assets/photos/methode-01.jpg · mains qui rangent des photos de famille dans une boîte -->
+<Photo nom="methode-01" alt="Mains qui rangent des photos de famille dans une boîte" tag="Photo pleine largeur · mains qui rangent des photos de famille dans une boîte" style="height: 500px" />
+
+<section style="background: #EFE9DE; color: #18202C">
+<div class="w sec" style="display: flex; flex-direction: column; gap: 64px">
+<div style="display: flex; flex-direction: column; gap: 18px; max-width: 760px"><span class="lbl">Le respect des objets</span><h2 class="h2">Un logement, c'est l'histoire d'une vie.</h2></div>
+<div class="g3">
+<div style="border-top: 1px solid #CFC5B4; padding-top: 28px; display: flex; flex-direction: column; gap: 12px"><h3 class="h3" style="font-size: 27px">Rien ne part sans votre accord</h3><span class="p" style="color: #5B606A">Une liste signée avant chaque évacuation : vous décidez de ce qui part et de ce qui reste.</span></div>
+<div style="border-top: 1px solid #CFC5B4; padding-top: 28px; display: flex; flex-direction: column; gap: 12px"><h3 class="h3" style="font-size: 27px">Rien n'est jeté par erreur</h3><span class="p" style="color: #5B606A">Photos, lettres, papiers, souvenirs : tout ce qui compte est repéré, mis de côté et vous est rendu.</span></div>
+<div style="border-top: 1px solid #CFC5B4; padding-top: 28px; display: flex; flex-direction: column; gap: 12px"><h3 class="h3" style="font-size: 27px">Tout ce qui peut servir sert</h3><span class="p" style="color: #5B606A">Dons aux associations partenaires, le reste en filières agréées, justificatifs sur demande.</span></div>
+</div>
+</div>
+</section>
+
+<section class="sec">
+<div class="w g2" style="align-items: center">
+<div style="display: flex; flex-direction: column; gap: 22px">
+<span class="lbl">Prochainement · espace client</span>
+<h2 class="h2">Suivre chaque étape, même de loin.</h2>
+<p class="p" style="font-size: 17px">Chaque famille disposera de son espace en ligne : les étapes, les photos avant et après, les documents signés. Les proches et les héritiers pourront le consulter ensemble.</p>
+</div>
+<div style="background: #FFFFFF; border: 1px solid #E3DCCF; padding: 36px; display: flex; flex-direction: column; gap: 20px">
+<div style="display: flex; justify-content: space-between; align-items: baseline; gap: 16px; border-bottom: 1px solid #E3DCCF; padding-bottom: 16px"><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 26px; font-weight: 600">Appartement de Mme [Nom]</span><span class="lbl" style="font-size: 10px">En cours</span></div>
+<div style="display: flex; justify-content: space-between; font-size: 15px"><span>Diagnostic</span><span style="color: #5B606A">fait le [date]</span></div>
+<div style="display: flex; justify-content: space-between; font-size: 15px"><span>Tri accompagné</span><span style="color: #5B606A">fait</span></div>
+<div style="display: flex; justify-content: space-between; font-size: 15px; color: #3D5A80; font-weight: 400"><span>Déménagement et installation</span><span>[date]</span></div>
+<div style="display: flex; justify-content: space-between; font-size: 15px; color: #6B7079"><span>Remise des clés</span><span>à venir</span></div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px"><!-- Photo : src/assets/photos/methode-02.jpg · photo d'illustration -->
+<Photo nom="methode-02" alt="Photo d'illustration" style="height: 90px; padding: 0" /><!-- Photo : src/assets/photos/methode-03.jpg · photo d'illustration -->
+<Photo nom="methode-03" alt="Photo d'illustration" style="height: 90px; padding: 0" /><!-- Photo : src/assets/photos/methode-04.jpg · photo d'illustration -->
+<Photo nom="methode-04" alt="Photo d'illustration" style="height: 90px; padding: 0" /></div>
+</div>
+</div>
+</section>
+
+<section style="border-top: 1px solid #DDD4C5">
+<div class="w sec" style="display: flex; flex-direction: column; align-items: center; gap: 26px; text-align: center">
+<h2 class="h2" style="max-width: 760px">Parlons de votre situation.</h2>
+<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 14px"><a class="btn" href="/contact">Demander un diagnostic</a><a class="btn2" href="/tarifs">Voir les tarifs</a></div>
+</div>
+</section>
+</Famille>
+
+<style is:global>
+/* Styles propres à cette page (repris de la maquette) */
+.h3{font-family:'Cormorant Garamond',Georgia,serif;font-weight:600;font-size:30px;line-height:1.2;margin:0}
+.num{font-family:'Cormorant Garamond',Georgia,serif;font-size:64px;font-weight:500;color:#735A33;line-height:1}
+.step{display:grid;grid-template-columns:160px minmax(0,1fr);gap:48px;padding:44px 0;border-top:1px solid #CFC5B4}
+@media (max-width:960px){
+  .g2,.g3,.step{grid-template-columns:minmax(0,1fr) !important;gap:24px !important}
+}
+</style>

@@ -1,0 +1,76 @@
+---
+/** Maquette : Qui-sommes-nous.dc.html · adresse : /qui-sommes-nous */
+import Famille from '../layouts/Famille.astro';
+import { SITE } from '../config/site';
+import Hero from '../components/Hero.astro';
+import Photo from '../components/Photo.astro';
+import { META } from '../config/meta';
+const meta = META['/qui-sommes-nous'];
+---
+<Famille title={meta.title} description={meta.description} onglet="qui">
+<!-- Photo en fond : src/assets/photos/qui-sommes-nous-haut.jpg · toits de Marseille, lumière du soir -->
+<Hero photo="qui-sommes-nous-haut" desc="toits de Marseille, lumière du soir">
+<div class="w" style="position: relative; padding-top: 140px; padding-bottom: 128px">
+<div style="max-width: 780px; display: flex; flex-direction: column; gap: 28px">
+<span class="lbl">Qui sommes-nous</span>
+<h1 class="h1" style="color: #15233A">Plus de quinze ans aux côtés des familles.</h1>
+<p class="lead" style="color: #4A4F58">Plus de quinze ans dans l'immobilier marseillais à accompagner des centaines de clients, dans la vente, la location ou la gestion de leur bien, et lors de successions. Et une conviction : derrière chaque logement, il y a une histoire, et souvent une famille qui a besoin d'être épaulée.</p>
+</div>
+</div>
+</Hero>
+
+<section class="sec">
+<div class="w g2" style="align-items: start">
+<div style="display: flex; flex-direction: column; gap: 22px">
+<span class="lbl">L'histoire</span>
+<h2 class="h2">Notre histoire, et pourquoi Maison Fil Bleu</h2>
+<p class="p">Après avoir accompagné des centaines de ventes immobilières à Marseille et dans la région PACA, nous avons connu toutes les situations : des ventes menées à distance pour des investisseurs, des parents dont les enfants vivent à l'autre bout de la France ou à l'étranger, des héritiers qui ne pouvaient pas se libérer, des personnes âgées seules face à un logement devenu trop grand.</p>
+<p class="p">Aujourd'hui, les familles vivent souvent loin les unes des autres. Et le jour où il faut libérer un logement, il n'y a parfois personne sur place pour s'en occuper, seulement un calendrier qui presse et des souvenirs à préserver.</p>
+<p class="p">Maison Fil Bleu est née de ce constat : un seul interlocuteur pour vous aider à tout organiser et prendre la charge mentale à son compte, des devis et des prix clairs et transparents, sans mauvaise surprise, et le temps qu'il faut, en douceur, pour chaque décision, qui reste toujours celle de la famille.</p>
+<p class="p"><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; font-style: italic; color: #3D5A80">Et notre nom ?</span> Il raconte notre métier. Notre logo dessine deux maisons reliées par un fil bleu : l'ancien logement et le nouveau, la vie d'avant et celle qui commence. Ce fil, c'est nous. Un lien continu, de la première visite à la prochaine histoire.</p>
+</div>
+<!-- Photo : src/assets/photos/qui-sommes-nous-01.jpg · l'équipe Maison Fil Bleu, lumière naturelle -->
+<Photo nom="qui-sommes-nous-01" alt="L'équipe Maison Fil Bleu, lumière naturelle" tag="Photo · l'équipe Maison Fil Bleu, lumière naturelle" style="height: 600px" />
+</div>
+</section>
+
+<section style="background: #EFE9DE">
+<div class="w sec" style="display: flex; flex-direction: column; gap: 64px">
+<div class="g2" style="align-items: end"><div style="display: flex; flex-direction: column; gap: 18px"><span class="lbl">Ce qui nous guide</span><h2 class="h2">Accompagner chaque étape de la vie d'un logement.</h2></div><p class="lead" style="color: #5B606A">Vente, location, succession : chaque client accompagné nous a appris quelque chose. C'est cette expérience que nous mettons aujourd'hui au service des familles.</p></div>
+<div class="g3">
+<div class="card"><span class="num">01</span><h3 class="h3">L'écoute</h3><span class="p">Prendre le temps de comprendre chaque situation, les attachements et les inquiétudes. Chaque décision vous appartient.</span></div>
+<div class="card"><span class="num">02</span><h3 class="h3">L'organisation</h3><span class="p">Un seul interlocuteur qui coordonne tout, une équipe encadrée sur chaque intervention, des échéances tenues.</span></div>
+<div class="card"><span class="num">03</span><h3 class="h3">L'expérience du terrain</h3><span class="p">Des centaines de ventes, de locations et de successions accompagnées, en lien avec les notaires : nous connaissons chaque étape, chaque difficulté, chaque interlocuteur et chaque besoin. Nous vous accompagnons, quelle que soit votre transition.</span></div>
+</div>
+</div>
+</section>
+
+<!-- Photo : src/assets/photos/qui-sommes-nous-02.jpg · une famille et l'équipe autour d'une table, en confiance -->
+<Photo nom="qui-sommes-nous-02" alt="Une famille et l'équipe autour d'une table, en confiance" tag="Photo pleine largeur · une famille et l'équipe autour d'une table, en confiance" style="height: 500px" />
+
+<section class="sec">
+<div class="w" style="max-width: 900px; display: flex; flex-direction: column; align-items: center; gap: 26px; text-align: center">
+<p style="margin: 0; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 40px; line-height: 1.25; font-style: italic; font-weight: 500; color: #15233A">« Un logement, c'est une vie. Notre travail, c'est que la suite commence bien. »</p>
+<span class="lbl">Maison Fil Bleu</span>
+</div>
+</section>
+
+<section style="background: #EFE9DE; color: #18202C">
+<div class="w sec g2" style="position: relative; align-items: end">
+<div style="display: flex; flex-direction: column; gap: 20px"><span class="lbl">Aujourd'hui</span><h2 class="h2">Marseille et la région PACA</h2></div>
+<p class="lead" style="color: #5B606A">Marseille, Aix-en-Provence, Aubagne, Martigues, La Ciotat et toute la région Provence-Alpes-Côte d'Azur. Nous coordonnons aussi pour les familles qui vivent loin.</p>
+</div>
+</section>
+
+<section class="sec">
+<div class="w" style="display: flex; flex-direction: column; align-items: center; gap: 26px; text-align: center">
+<h2 class="h2">Une question sur votre situation ?</h2>
+<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 14px"><a class="btn" href="/contact">Nous contacter</a><a class="btn2" href="/notre-methode">Notre méthode</a></div>
+</div>
+</section>
+</Famille>
+
+<style is:global>
+/* Styles propres à cette page (repris de la maquette) */
+.p{font-size:16.5px;line-height:1.85;color:#5B606A;margin:0;font-weight:300}
+</style>

@@ -1,0 +1,125 @@
+---
+/** Maquette : Contact.dc.html · adresse : /contact */
+import Famille from '../layouts/Famille.astro';
+import { SITE } from '../config/site';
+import Hero from '../components/Hero.astro';
+import { META } from '../config/meta';
+const meta = META['/contact'];
+---
+<Famille title={meta.title} description={meta.description}>
+<!-- Photo en fond : src/assets/photos/contact-haut.jpg · porte d'entrée entrouverte sur un intérieur lumineux -->
+<Hero photo="contact-haut" desc="porte d'entrée entrouverte sur un intérieur lumineux">
+<div class="w" style="position: relative; padding-top: 116px; padding-bottom: 104px">
+<div style="max-width: 760px; display: flex; flex-direction: column; gap: 24px">
+<span class="lbl">Contact · diagnostic offert</span>
+<h1 class="h1" style="color: #15233A">Parlons de votre projet.</h1>
+<p class="lead" style="color: #4A4F58">Un premier échange au téléphone pour comprendre votre situation, puis un diagnostic sur place, offert et sans engagement.</p>
+</div>
+</div>
+</Hero>
+
+<section style="padding: 112px 0 128px">
+<div class="w split">
+<div style="display: flex; flex-direction: column; gap: 30px">
+<div style="display: flex; flex-direction: column; gap: 8px"><span class="lbl">Par téléphone</span><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 44px; font-weight: 500; line-height: 1.1">{SITE.telephone}</span><span class="p">Du lundi au samedi, de 9 h à 19 h</span></div>
+<div style="display: flex; flex-direction: column; gap: 8px"><span class="lbl">Par e-mail</span><span style="font-size: 18px">{SITE.emailContact}</span></div>
+<div style="display: flex; flex-direction: column; gap: 8px"><span class="lbl">Zone d'intervention</span><span class="p">Marseille et région PACA.</span></div>
+<div style="display: flex; flex-direction: column; border-top: 1px solid #15233A; margin-top: 10px">
+<span class="lbl" style="padding: 22px 0 8px">Et ensuite</span>
+<div style="display: flex; gap: 20px; padding: 16px 0; border-bottom: 1px solid #DDD4C5"><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 26px; color: #735A33; line-height: 1.2">01</span><span class="p">Nous vous rappelons, le jour même ou le lendemain.</span></div>
+<div style="display: flex; gap: 20px; padding: 16px 0; border-bottom: 1px solid #DDD4C5"><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 26px; color: #735A33; line-height: 1.2">02</span><span class="p">Nous fixons ensemble le diagnostic sur place.</span></div>
+<div style="display: flex; gap: 20px; padding: 16px 0"><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 26px; color: #735A33; line-height: 1.2">03</span><span class="p">Vous recevez un devis forfaitaire et clair, adapté à votre situation.</span></div>
+</div>
+<div id="espace-client" style="background: #EFE9DE; padding: 30px; display: flex; flex-direction: column; gap: 12px; margin-top: 6px"><span class="lbl">Espace client</span><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 26px; font-weight: 500; line-height: 1.2">Vous êtes déjà accompagné ?</span><span class="p">Votre espace client vous permettra, à vous et à vos proches, de suivre chaque étape, photos et documents à l'appui. Bientôt disponible : en attendant, votre interlocuteur reste joignable directement.</span></div>
+<div style="display: flex; flex-direction: column; gap: 6px; padding-top: 8px"><span class="p" style="font-size: 14px">Vous êtes un professionnel (agence, bailleur, syndic, notaire) ?</span><a class="tl" href="/pro" style="align-self: flex-start">Fil Bleu Pro →</a></div>
+</div>
+<form class="g2f" id="formulaire" name="rappel" method="POST" action="/merci" data-netlify="true" netlify-honeypot="bot-field" style="background: #FFFFFF; border: 1px solid #E3DCCF; padding: 56px">
+<span style="grid-column: 1 / -1; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 36px; font-weight: 500">Être rappelé</span>
+<input type="hidden" name="form-name" value="rappel">
+<p class="hp" aria-hidden="true"><label>Ne pas remplir ce champ <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+<div class="est-rappel" data-estimation hidden>
+<span class="lbl lbl-laiton">Votre sélection en ligne</span>
+<span class="est-rappel-t" data-est-texte></span>
+<span class="p est-rappel-b" data-est-besoins hidden></span>
+<span class="p" style="font-size: 14px">Le prix exact est fixé après le diagnostic offert.</span>
+<input type="hidden" name="estimation" value="">
+<input type="hidden" name="besoins" value="">
+</div>
+<label class="f">Nom<input name="nom" autocomplete="name" required></label>
+<label class="f">Téléphone<input name="telephone" type="tel" autocomplete="tel" required></label>
+<label class="f" style="grid-column: 1 / -1">E-mail (facultatif)<input name="email" type="email" autocomplete="email"></label>
+<fieldset style="grid-column: 1 / -1; border: none; padding: 0; margin: 0"><legend class="f" style="margin-bottom: 14px">Vous nous contactez pour</legend>
+<div style="display: flex; flex-wrap: wrap; gap: 10px">
+<label class="chip"><input type="radio" name="pour" checked value="Vous-même">Vous-même</label>
+<label class="chip"><input type="radio" name="pour" value="Un proche">Un proche</label>
+</div></fieldset>
+<fieldset style="grid-column: 1 / -1; border: none; padding: 0; margin: 0"><legend class="f" style="margin-bottom: 14px">Votre situation</legend>
+<div style="display: flex; flex-wrap: wrap; gap: 10px">
+<label class="chip"><input type="radio" name="situation" checked value="Un logement à libérer">Un logement à libérer</label>
+<label class="chip"><input type="radio" name="situation" value="Un déménagement suit (résidence, logement plus petit…)">Un déménagement suit (résidence, logement plus petit…)</label>
+<label class="chip"><input type="radio" name="situation" value="Un proche nous a quittés">Un proche nous a quittés</label>
+<label class="chip"><input type="radio" name="situation" value="Autre">Autre</label>
+</div></fieldset>
+<label class="f">Commune du logement<input name="commune" autocomplete="address-level2" placeholder="Ex. : Marseille 8e"></label>
+<label class="f">Taille du logement<select name="taille"><option>1-2 pièces</option><option>3 pièces</option><option>4 pièces</option><option>5 pièces et plus</option><option>Je ne sais pas</option></select></label>
+<label class="f" style="grid-column: 1 / -1">Quelques mots (facultatif)<textarea name="message" rows="3" placeholder="Délais, résidence, notaire, ce qui vous préoccupe…"></textarea></label>
+<label style="grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; font-size: 15px; color: #3E434C; font-weight: 300"><input type="checkbox" name="distance" value="Oui" style="width: 18px; height: 18px; accent-color: #15233A">J'habite loin du logement</label>
+<label class="f" style="grid-column: 1 / -1">Quand vous rappeler ?<select name="rappel"><option>Dès que possible</option><option>Le matin</option><option>L'après-midi</option><option>En fin de journée</option></select></label>
+<p class="p" style="grid-column: 1 / -1; font-size: 13px">Vos coordonnées servent uniquement à vous recontacter au sujet de votre demande. Elles ne sont ni vendues ni transmises. <a href="/confidentialite">Politique de confidentialité</a></p>
+<button type="submit" style="grid-column: 1 / -1; font-family: 'Nunito Sans', sans-serif; font-size: 12.5px; font-weight: 500; letter-spacing: 2.2px; text-transform: uppercase; padding: 20px; border: 1px solid #15233A; background: #15233A; color: #F8F5EF; cursor: pointer">Être rappelé</button>
+</form>
+</div>
+</section>
+</Famille>
+
+<script>
+  // Préremplissage depuis le simulateur : /contact?formule=…&taille=…&depart=…&besoins=…
+  const p = new URLSearchParams(location.search);
+  const form = document.getElementById('formulaire') as HTMLFormElement | null;
+  if (form && p.get('formule') && p.get('depart')) {
+    const situations: Record<string, string> = {
+      'Libération': 'Un logement à libérer',
+      'Transition': 'Un déménagement suit (résidence, logement plus petit…)',
+      'Succession': 'Un proche nous a quittés',
+    };
+    const formule = p.get('formule') ?? '';
+    const radio = form.querySelector<HTMLInputElement>(`input[name="situation"][value="${CSS.escape(situations[formule] ?? '')}"]`);
+    if (radio) radio.checked = true;
+    const taille = form.querySelector<HTMLSelectElement>('select[name="taille"]');
+    const t = p.get('taille');
+    if (taille && t && Array.from(taille.options).some((o) => o.value === t)) taille.value = t;
+    const resume = `${formule}${t ? ', ' + t.toLowerCase() : ''} : à partir de ${p.get('depart')} TTC`;
+    const besoins = p.get('besoins') ?? '';
+    const bloc = form.querySelector<HTMLElement>('[data-estimation]')!;
+    bloc.querySelector('[data-est-texte]')!.textContent = resume;
+    const blocBesoins = bloc.querySelector<HTMLElement>('[data-est-besoins]')!;
+    if (besoins) {
+      blocBesoins.textContent = `Vos besoins : ${besoins}`;
+      blocBesoins.hidden = false;
+    }
+    (bloc.querySelector('input[name="estimation"]') as HTMLInputElement).value = resume;
+    (bloc.querySelector('input[name="besoins"]') as HTMLInputElement).value = besoins;
+    bloc.hidden = false;
+  }
+</script>
+
+<style is:global>
+/* Styles propres à cette page (repris de la maquette) */
+#formulaire{scroll-margin-top:24px}
+.est-rappel{grid-column:1 / -1;background:#EFE9DE;border-left:2px solid #8A6D43;padding:20px 24px;display:flex;flex-direction:column;gap:6px}
+.est-rappel[hidden],.est-rappel-b[hidden]{display:none}
+.est-rappel-b{color:#18202C;font-size:15px}
+.lbl-laiton{color:#735A33}
+.est-rappel-t{font-family:'Cormorant Garamond',Georgia,serif;font-size:24px;font-weight:600;color:#15233A;line-height:1.3}
+.chip:has(input:checked){border-color:#15233A;background:#15233A;color:#F8F5EF}
+.chip:has(input:checked) input{accent-color:#F8F5EF}
+.chip:has(input:focus-visible){outline:2px solid #3D5A80;outline-offset:2px}
+.f{display:flex;flex-direction:column;gap:9px;font-family:'Nunito Sans',sans-serif;font-size:11.5px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:#5B606A}
+.f input,.f select,.f textarea{font:inherit;font-family:'Nunito Sans',sans-serif;font-size:16px;font-weight:300;letter-spacing:0;text-transform:none;color:#18202C;background:transparent;border:none;border-bottom:1px solid #BDB2A0;padding:10px 0;width:100%;box-sizing:border-box;border-radius:0}
+.chip{display:flex;align-items:center;gap:10px;padding:13px 18px;border:1px solid #CFC5B4;font-size:15px;font-weight:300;color:#18202C;cursor:pointer}
+.split{display:grid;grid-template-columns:5fr 7fr;gap:96px;align-items:start}
+.g2f{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:32px 36px}
+@media (max-width:960px){
+  .split,.g2f{grid-template-columns:minmax(0,1fr) !important;gap:40px !important}
+}
+</style>

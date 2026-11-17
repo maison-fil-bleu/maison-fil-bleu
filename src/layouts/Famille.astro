@@ -1,0 +1,25 @@
+---
+/** Mise en page des pages Maison Fil Bleu : en-tête + contenu + pied de page. */
+import Base from './Base.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import type { Onglet } from '../config/site';
+import { localBusinessFamille } from '../config/seo';
+
+interface Props {
+  title: string;
+  description: string;
+  onglet?: Onglet;
+  noindex?: boolean;
+  image?: string;
+  type?: 'website' | 'article';
+  jsonld?: object[];
+}
+const { onglet = null, jsonld = [], ...rest } = Astro.props;
+---
+<Base {...rest} jsonld={[localBusinessFamille(), ...jsonld]}>
+  <slot name="head" slot="head" />
+  <Header onglet={onglet} />
+  <main id="contenu" tabindex="-1"><slot /></main>
+  <Footer />
+</Base>

@@ -1,0 +1,77 @@
+---
+/** Maquette : Conseils.dc.html · adresse : /conseils */
+import Famille from '../../layouts/Famille.astro';
+import { SITE } from '../../config/site';
+import Hero from '../../components/Hero.astro';
+import Photo from '../../components/Photo.astro';
+import { META } from '../../config/meta';
+const meta = META['/conseils'];
+---
+<Famille title={meta.title} description={meta.description} onglet="conseils">
+<!-- Photo en fond : src/assets/photos/conseils-haut.jpg · carnet et lunettes posés sur une table -->
+<Hero photo="conseils-haut" desc="carnet et lunettes posés sur une table">
+<div class="w" style="position: relative; padding-top: 128px; padding-bottom: 116px">
+<div style="max-width: 760px; display: flex; flex-direction: column; gap: 26px">
+<span class="lbl">Conseils</span>
+<h1 class="h1" style="color: #15233A">Des réponses simples à vos questions.</h1>
+<p class="lead" style="color: #4A4F58">Succession, entrée en résidence, logement à libérer : ce qu'il faut savoir, écrit à partir de notre expérience du terrain.</p>
+</div>
+</div>
+</Hero>
+
+<section class="sec">
+<div class="w" style="display: flex; flex-direction: column; gap: 72px">
+<nav aria-label="Thèmes" style="display: flex; flex-wrap: wrap; gap: 10px"><button type="button" class="flt" data-filtre="" aria-pressed="true">Tous</button><button type="button" class="flt" data-filtre="Succession" aria-pressed="false">Succession</button><button type="button" class="flt" data-filtre="Entrée en résidence" aria-pressed="false">Entrée en résidence</button><button type="button" class="flt" data-filtre="Libérer un logement" aria-pressed="false">Libérer un logement</button></nav>
+<a class="feat" href="/conseils/logement-parent-decede" style="text-decoration: none; color: #18202C">
+<!-- Photo : src/assets/photos/conseils-01.jpg · clés posées sur une commode ancienne -->
+<Photo nom="conseils-01" alt="Clés posées sur une commode ancienne" tag="Photo · clés posées sur une commode ancienne" style="height: 480px" />
+<div style="display: flex; flex-direction: column; gap: 20px"><span class="lbl">Succession · à la une</span><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 44px; line-height: 1.1; font-weight: 500">Que faire du logement d'un proche qui nous a quittés ?</span><span class="p">Les premières démarches, qui décide entre héritiers, quand libérer le logement, et comment ne rien perdre d'important.</span><span class="tl" style="align-self: flex-start">Lire l'article · 4 min</span></div>
+</a>
+<div class="g3" style="grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 64px 48px">
+<a href="/conseils/preparer-entree-ehpad" style="display: flex; flex-direction: column; gap: 18px; text-decoration: none; color: #18202C; border-top: 1px solid #CFC5B4; padding-top: 28px"><!-- Photo : src/assets/photos/conseils-02.jpg · Illustration de l'article : Préparer une entrée en EHPAD sans stress -->
+<Photo nom="conseils-02" alt="Illustration de l'article : Préparer une entrée en EHPAD sans stress" style="height: 260px" /><span class="lbl">Entrée en résidence · 3 min</span><h2 class="h3">Préparer une entrée en EHPAD sans stress</h2><span class="p">Ce qu'on peut emporter, comment choisir ensemble, la liste des démarches.</span></a>
+<a href="/conseils/vider-maison-avant-vente" style="display: flex; flex-direction: column; gap: 18px; text-decoration: none; color: #18202C; border-top: 1px solid #CFC5B4; padding-top: 28px"><!-- Photo : src/assets/photos/conseils-03.jpg · Illustration de l'article : Vider une maison avant de la vendre : par où commencer ? -->
+<Photo nom="conseils-03" alt="Illustration de l'article : Vider une maison avant de la vendre : par où commencer ?" style="height: 260px" /><span class="lbl">Libérer un logement · 3 min</span><h2 class="h3">Vider une maison avant de la vendre : par où commencer ?</h2><span class="p">Pièce par pièce, ce qu'on garde, ce qu'on donne, et pourquoi un logement vide se vend mieux.</span></a>
+<a href="/conseils/meubles-dont-personne-ne-veut" style="display: flex; flex-direction: column; gap: 18px; text-decoration: none; color: #18202C; border-top: 1px solid #CFC5B4; padding-top: 28px"><!-- Photo : src/assets/photos/conseils-04.jpg · Illustration de l'article : Que faire des meubles dont personne ne veut ? -->
+<Photo nom="conseils-04" alt="Illustration de l'article : Que faire des meubles dont personne ne veut ?" style="height: 260px" /><span class="lbl">Libérer un logement · 3 min</span><h2 class="h3">Que faire des meubles dont personne ne veut ?</h2><span class="p">Dons, associations, filières de recyclage : donner une seconde vie plutôt que jeter.</span></a>
+<a href="/conseils/gerer-logement-a-distance" style="display: flex; flex-direction: column; gap: 18px; text-decoration: none; color: #18202C; border-top: 1px solid #CFC5B4; padding-top: 28px"><!-- Photo : src/assets/photos/conseils-05.jpg · Illustration de l'article : Gérer le logement d'un proche quand on habite loin -->
+<Photo nom="conseils-05" alt="Illustration de l'article : Gérer le logement d'un proche quand on habite loin" style="height: 260px" /><span class="lbl">Succession · 3 min</span><h2 class="h3">Gérer le logement d'un proche quand on habite loin</h2><span class="p">Un seul point de contact, des photos, des procurations : s'organiser sans multiplier les allers-retours.</span></a>
+</div>
+</div>
+</section>
+
+<section style="background: #EFE9DE; color: #18202C">
+<div class="w sec" style="display: flex; flex-direction: column; align-items: center; gap: 26px; text-align: center">
+<h2 class="h2" style="max-width: 760px">Votre situation est particulière ? Parlons-en.</h2>
+<a class="btn" href="/contact">Être rappelé</a>
+</div>
+</section>
+</Famille>
+
+<script>
+  // Filtres par thème : affiche seulement les articles dont l'étiquette commence par le thème choisi
+  const boutons = document.querySelectorAll<HTMLButtonElement>('.flt[data-filtre]');
+  const articles = Array.from(document.querySelectorAll<HTMLAnchorElement>('main a[href^="/conseils/"]'));
+  boutons.forEach((b) => b.addEventListener('click', () => {
+    const f = b.dataset.filtre ?? '';
+    boutons.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    for (const a of articles) {
+      const lbl = a.querySelector('.lbl')?.textContent ?? '';
+      a.hidden = f !== '' && !lbl.startsWith(f);
+    }
+  }));
+</script>
+
+<style is:global>
+/* Styles propres à cette page (repris de la maquette) */
+.flt{background:transparent;cursor:pointer}
+.flt[aria-pressed="true"]{background:#15233A;color:#F8F5EF;border-color:#15233A}
+main a[hidden]{display:none!important}
+.h3{font-family:'Cormorant Garamond',Georgia,serif;font-weight:600;font-size:28px;line-height:1.2;margin:0}
+.flt{font-family:'Nunito Sans',sans-serif;font-size:12px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;text-decoration:none;color:#15233A;padding:12px 20px;border:1px solid #CFC5B4}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:48px}
+.feat{display:grid;grid-template-columns:3fr 2fr;gap:64px;align-items:center}
+@media (max-width:960px){
+  .g3,.feat{grid-template-columns:minmax(0,1fr) !important;gap:40px !important}
+}
+</style>

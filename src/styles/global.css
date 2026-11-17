@@ -1,0 +1,125 @@
+/* ==========================================================================
+   Maison Fil Bleu : styles communs (repris du <helmet> des maquettes)
+   Couleurs et mesures : PASSATION.md § 5
+   ========================================================================== */
+@import './fonts.css';
+
+:root{
+  --ivoire:#F8F5EF;
+  --encre:#18202C;
+  --nuit:#15233A;
+  --bleu:#3D5A80;
+  --bleu-clair:#9DB4D3;
+  --laiton:#8A6D43;
+  --laiton-texte:#735A33; /* laiton pour les petits textes (contraste suffisant) */
+  --sable:#EFE9DE;
+  --gris:#5B606A;
+  --filet:#CFC5B4;
+  --filet-2:#DDD4C5;
+  --filet-3:#E3DCCF;
+  --photo:#D6CDBE;
+  --serif:'Cormorant Garamond',Georgia,'Times New Roman',serif;
+  --sans:'Nunito Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --voile:linear-gradient(90deg,rgba(248,245,239,.97) 0%,rgba(248,245,239,.9) 42%,rgba(248,245,239,0) 78%);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;background:var(--ivoire);color:var(--encre);font-family:var(--sans);font-size:17px;font-weight:300;line-height:1.7;-webkit-font-smoothing:antialiased}
+img,svg{display:block;max-width:100%}
+img{height:auto}
+a{color:var(--bleu)}
+a:hover{color:var(--nuit)}
+button,input,select,textarea{font:inherit}
+:focus-visible{outline:2px solid var(--bleu);outline-offset:3px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.skip{position:absolute;left:12px;top:-60px;z-index:100;background:var(--nuit);color:var(--ivoire);padding:12px 18px;font-size:14px;text-decoration:none}
+.skip:focus{top:12px;color:var(--ivoire)}
+main:focus{outline:none}
+
+/* ---- Mise en page ---- */
+.w{max-width:1200px;margin:0 auto;padding:0 48px}
+.w-l{max-width:1296px}
+.sec{padding:112px 0}
+.sand{background:var(--sable)}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:88px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:56px}
+.g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:44px}
+
+/* ---- Typographie ---- */
+.lbl{font-family:var(--sans);font-size:12px;font-weight:500;letter-spacing:.26em;text-transform:uppercase;color:var(--bleu)}
+.lbl-l{color:var(--bleu-clair)}
+.h1{font-family:var(--serif);font-weight:500;font-size:68px;line-height:1.05;margin:0;letter-spacing:-.01em;color:var(--nuit)}
+.h2{font-family:var(--serif);font-weight:500;font-size:46px;line-height:1.1;margin:0}
+.h3{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.2;margin:0}
+.lead{font-size:19px;line-height:1.75;color:var(--gris);margin:0;font-weight:300}
+.p{font-size:16px;line-height:1.8;color:var(--gris);margin:0;font-weight:300}
+.num{font-family:var(--serif);font-size:44px;font-weight:500;color:var(--laiton);line-height:1}
+.big{font-family:var(--serif);font-size:48px;font-weight:500;line-height:1}
+
+/* ---- Boutons et liens ---- */
+.btn,.btn2,.btnl,.btno{display:inline-flex;align-items:center;justify-content:center;font-family:var(--sans);font-size:12.5px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;padding:18px 32px;border:1px solid var(--nuit);border-radius:0;cursor:pointer;line-height:1.3;text-align:center;transition:background-color .15s,border-color .15s,color .15s}
+.btn{background:var(--nuit);color:var(--ivoire)}
+.btn:hover{background:var(--bleu);border-color:var(--bleu);color:var(--ivoire)}
+.btn2{background:transparent;color:var(--nuit)}
+.btn2:hover{background:var(--nuit);color:var(--ivoire)}
+.btnl{background:var(--ivoire);color:var(--nuit);border-color:var(--ivoire)}
+.btno{background:transparent;color:var(--ivoire);border-color:rgba(248,245,239,.55)}
+.tl{font-family:var(--sans);font-size:12.5px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;color:var(--nuit);border-bottom:1px solid var(--laiton);padding-bottom:5px}
+.tl:hover{color:var(--bleu)}
+
+/* ---- Blocs ---- */
+.card{border-top:1px solid var(--filet);padding-top:30px;display:flex;flex-direction:column;gap:14px}
+.row{display:flex;justify-content:space-between;gap:20px;padding:16px 0;border-bottom:1px solid var(--filet-2)}
+
+/* Emplacement photo (en attendant les vraies photos) */
+.ph{position:relative;background:var(--photo);display:flex;align-items:flex-end;padding:20px;overflow:hidden}
+.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.tag{position:relative;font-family:var(--sans);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#4A453C;background:rgba(248,245,239,.88);padding:7px 12px;line-height:1.5}
+.htag{position:absolute;top:22px;right:22px;font-family:var(--sans);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#4A453C;border:1px dashed #8C8273;background:rgba(248,245,239,.7);padding:7px 12px;z-index:1;max-width:min(420px,calc(100% - 44px));line-height:1.5}
+
+/* Haut de page : photo en fond + voile ivoire à gauche */
+.hero{position:relative;background:var(--photo);color:var(--encre)}
+.hero>.hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.hero::before{content:'';position:absolute;inset:0;background:var(--voile);z-index:0}
+.hero>.w{position:relative;z-index:1}
+
+/* Questions fréquentes */
+details.q{border-bottom:1px solid var(--filet-2);padding:24px 0}
+details.q summary{cursor:pointer;font-family:var(--serif);font-size:25px;font-weight:600;color:var(--encre);list-style:none}
+details.q summary::-webkit-details-marker{display:none}
+
+/* ---- Mobile (bascule à 960 px) ---- */
+@media (max-width:960px){
+  .g2,.g3,.g4{grid-template-columns:minmax(0,1fr)!important;gap:44px!important}
+  .h1{font-size:46px}
+  .h2{font-size:36px}
+  .w{padding:0 22px}
+  .sec{padding:80px 0}
+  .hide-m{display:none!important}
+  /* Sur mobile le voile couvre toute la largeur pour garder le texte lisible */
+  .hero::before{background:linear-gradient(180deg,rgba(248,245,239,.94) 0%,rgba(248,245,239,.9) 100%)}
+}
+@media (max-width:400px){
+  .h1{font-size:40px}
+  .btn,.btn2,.btnl,.btno{padding:17px 22px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+/* Haut de page sur mobile : marges réduites, étiquette photo au-dessus du texte */
+@media (max-width:960px){
+  .hero>.w{padding-top:64px!important;padding-bottom:80px!important}
+  .hero>.htag{position:relative;top:auto;right:auto;display:block;margin:22px 22px 0;max-width:none}
+}
+
+/* Les pages peuvent redéfinir .h1/.h2 (tailles de maquette) : on garantit la taille mobile */
+@media (max-width:960px){
+  :root .h1{font-size:46px}
+  :root .h2{font-size:36px}
+}
+@media (max-width:400px){
+  :root .h1{font-size:40px}
+}
+
+/* Champ piège anti-spam des formulaires (invisible pour les visiteurs, rempli par les robots) */
+.hp{position:absolute!important;left:-10000px!important;top:auto;width:1px;height:1px;overflow:hidden}

@@ -1,0 +1,42 @@
+---
+/**
+ * Logo : deux maisons reliées par un fil bleu.
+ * variante « famille » (en-tête), « clair » (pied de page bleu nuit), « pro » (Fil Bleu Pro).
+ */
+interface Props { variante?: 'famille' | 'clair' | 'pro' }
+const { variante = 'famille' } = Astro.props;
+const clair = variante === 'clair';
+const trait = clair ? '#F8F5EF' : '#15233A';
+const fil = clair ? '#9DB4D3' : '#3D5A80';
+---
+<span class:list={['logo', `logo--${variante}`]}>
+  <svg width="52" height="26" viewBox="0 0 164 80" aria-hidden="true" focusable="false">
+    <path d="M8 74 V44 L34 22 L60 44 V74" fill="none" stroke={trait} stroke-width="3.4" stroke-linejoin="round" />
+    <path d="M104 74 V44 L130 22 L156 44 V74" fill="none" stroke={trait} stroke-width="3.4" stroke-linejoin="round" />
+    <path d="M34 60 C52 76, 64 40, 82 54 S112 70, 130 60" fill="none" stroke={fil} stroke-width="3.8" stroke-linecap="round" />
+  </svg>
+  {variante === 'pro' ? (
+    <span class="logo-txt logo-txt--pro">
+      <span class="logo-pro">Fil Bleu <span>Pro</span></span>
+      <span class="logo-sous">Débarras &amp; nettoyage</span>
+    </span>
+  ) : (
+    <span class="logo-txt">
+      <span class="logo-maison">Maison</span>
+      <span class="logo-fb">Fil Bleu</span>
+    </span>
+  )}
+</span>
+
+<style>
+  .logo{display:flex;align-items:center;gap:14px;color:#15233A}
+  .logo svg{flex:none}
+  .logo-txt{display:flex;flex-direction:column;gap:2px;line-height:1}
+  .logo-maison{font-family:var(--sans);font-size:10px;font-weight:500;letter-spacing:4px;text-transform:uppercase}
+  .logo-fb{font-family:var(--serif);font-weight:500;font-size:30px}
+  .logo--clair{color:#F8F5EF}
+  .logo-txt--pro{gap:3px}
+  .logo-pro{font-family:var(--sans);font-size:23px;font-weight:600;letter-spacing:.3px}
+  .logo-pro span{color:#3D5A80}
+  .logo-sous{font-family:var(--sans);font-size:9.5px;font-weight:500;letter-spacing:3.6px;text-transform:uppercase;color:#5B606A}
+</style>

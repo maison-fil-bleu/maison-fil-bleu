@@ -1,0 +1,19 @@
+---
+/** Gabarit des pages légales : textes à fournir par le fondateur (PASSATION.md § 11-12). */
+import Famille from '../layouts/Famille.astro';
+interface Props { titre: string; title: string; description: string }
+const { titre, title, description } = Astro.props;
+---
+<Famille title={title} description={description}>
+  <section class="sec">
+    <div class="w" style="max-width:860px;display:flex;flex-direction:column;gap:28px">
+      <span class="lbl">Informations légales</span>
+      <h1 class="h1">{titre}</h1>
+      <div class="legal"><slot /></div>
+    </div>
+  </section>
+</Famille>
+<style>
+  .legal :global(p){font-size:17px;line-height:1.85;color:#3E434C;margin:0 0 18px}
+  .legal :global(h2){font-family:var(--serif);font-weight:500;font-size:32px;color:var(--nuit);margin:40px 0 14px}
+</style>

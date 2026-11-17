@@ -1,0 +1,90 @@
+---
+/** Maquette : Article-Distance.dc.html · adresse : /conseils/gerer-logement-a-distance */
+import Famille from '../../layouts/Famille.astro';
+import { SITE } from '../../config/site';
+import Hero from '../../components/Hero.astro';
+import Photo from '../../components/Photo.astro';
+import { META } from '../../config/meta';
+import { article, filAriane } from '../../config/seo';
+const meta = META['/conseils/gerer-logement-a-distance'];
+---
+<Famille title={meta.title} description={meta.description} onglet="conseils" type="article" jsonld={[article({ titre: 'Gérer le logement d\'un proche quand on habite loin', description: meta.description, chemin: '/conseils/gerer-logement-a-distance' }), filAriane([{ nom: 'Accueil', chemin: '/' }, { nom: 'Conseils', chemin: '/conseils' }, { nom: 'Gérer le logement d\'un proche quand on habite loin', chemin: '/conseils/gerer-logement-a-distance' }])]}>
+<!-- Photo en fond : src/assets/photos/article-distance-haut.jpg · téléphone et carnet sur une table, fenêtre sur la ville -->
+<Hero photo="article-distance-haut" desc="téléphone et carnet sur une table, fenêtre sur la ville">
+<div class="w" style="position: relative; padding-top: 96px; padding-bottom: 104px">
+<div style="max-width: 780px; display: flex; flex-direction: column; gap: 24px">
+<a class="tl" href="/conseils" style="align-self: flex-start">← Tous les conseils</a>
+<span class="lbl" style="margin-top: 14px">Conseils · Succession</span>
+<h1 class="h1" style="color: #15233A; font-size: 58px">Gérer le logement d'un proche quand on habite loin</h1>
+<p class="lead" style="color: #4A4F58">Votre parent vit à Marseille ou dans la région, et vous à Paris, à Lyon ou à l'étranger. Quand vient le moment de libérer ou de transformer son logement, la distance complique tout. Voici comment s'organiser sans multiplier les allers-retours.</p>
+<span style="font-size: 13px; letter-spacing: .08em; color: #735A33">Lecture 3 min · Maison Fil Bleu, Marseille et région PACA</span>
+</div>
+</div>
+</Hero>
+
+<section class="sec">
+<div class="w alayout">
+<aside class="aside" style="position: sticky; top: 24px; display: flex; flex-direction: column; gap: 36px">
+<div class="toc"><span class="lbl" style="display: block; margin-bottom: 10px">Sommaire</span><a href="#s1">Désigner un seul point de contact</a><a href="#s2">Voir le logement sans y être</a><a href="#s3">Regrouper sa présence sur l'essentiel</a><a href="#s4">Les démarches à distance</a><a href="#s5">Être les yeux et les mains sur place</a></div>
+<div style="background: #EFE9DE; padding: 28px; display: flex; flex-direction: column; gap: 16px"><p class="h3" style="font-size: 24px">Besoin d'aide pour votre situation ?</p><span class="p" style="font-size: 15px">Diagnostic offert et sans engagement, à Marseille et dans la région PACA.</span><a class="tl" href="/notre-methode" style="align-self: flex-start">Découvrir notre méthode</a><a class="tl" href="/contact" style="align-self: flex-start">Nous contacter</a></div>
+</aside>
+<article class="art" style="max-width: 760px">
+<h2 id="s1">Désigner un seul point de contact</h2>
+<p>Dans une famille dispersée, la première difficulté n'est pas la distance, c'est la coordination. Désignez, entre proches, une personne qui centralise les décisions et les échanges avec les intervenants. Les autres restent informés, mais on évite les consignes contradictoires.</p>
+<h2 id="s2">Voir le logement sans y être</h2>
+<ul><li><strong>Un reportage photo de chaque pièce</strong>, partagé avec tous, permet à chacun de dire ce qu'il souhaite garder.</li><li><strong>Un appel vidéo</strong> pendant la visite sur place aide à repérer les meubles et les objets importants.</li><li><strong>Un plan du nouveau logement</strong>, s'il y a un déménagement, permet de choisir ce qui le suivra avant même de venir.</li></ul>
+<!-- Photo : src/assets/photos/article-distance-01.jpg · appel vidéo depuis un salon, plan du logement sur la table -->
+<Photo nom="article-distance-01" alt="Appel vidéo depuis un salon, plan du logement sur la table" tag="Photo · appel vidéo depuis un salon, plan du logement sur la table" style="height: 400px; margin: 36px 0 40px" />
+<h2 id="s3">Regrouper sa présence sur l'essentiel</h2>
+<p>Inutile de faire dix allers-retours. Concentrez votre venue sur le moment qui compte vraiment : le tri, avec votre proche ou entre héritiers. Tout le reste peut se faire sans vous, si vous êtes bien accompagné : le jour du déménagement, le débarras, le nettoyage, les démarches et l'état des lieux. Nous sommes présents à votre place.</p>
+<h2 id="s4">Les démarches à distance</h2>
+<ul><li><strong>La procuration</strong> : une procuration écrite permet à un tiers de faire l'état des lieux de sortie ou de remettre les clés à votre place.</li><li><strong>Le courrier</strong> : un contrat de réexpédition auprès de La Poste vous permet de tout recevoir chez vous.</li><li><strong>Les résiliations</strong> : énergie, internet, assurance se résilient aujourd'hui en ligne ou par courrier, sans déplacement.</li><li><strong>Les clés</strong> : confiez-en un jeu à une personne de confiance sur place.</li></ul>
+<div class="box"><span class="bt">Ce qui rassure vraiment</span><ul><li>Des comptes rendus réguliers, avec photos, à chaque étape.</li><li>Un prix fixé avant de commencer, pour ne pas découvrir de mauvaise surprise de loin.</li><li>Un interlocuteur joignable, qui connaît le dossier.</li></ul></div>
+<h2 id="s5">Être les yeux et les mains sur place</h2>
+<p>C'est exactement ce que nous faisons pour les familles éloignées : nous sommes présents sur place, à Marseille et dans la région PACA, nous coordonnons chaque intervenant, et vous suivez l'avancement à distance. Les décisions restent les vôtres ; la charge, elle, ne repose plus sur vous.</p>
+<p style="margin-top: 40px; font-size: 14px; color: #735A33">Ces informations sont générales et ne remplacent pas le conseil de votre notaire ou d'un professionnel du droit.</p>
+</article>
+</div>
+</section>
+
+<section class="sec" style="padding-top: 0">
+<div class="w" style="display: flex; flex-direction: column; gap: 40px">
+<span class="lbl">À lire aussi</span>
+<div class="g2a"><a href="/conseils/logement-parent-decede" style="display: flex; flex-direction: column; gap: 16px; text-decoration: none; color: #18202C; border-top: 1px solid #CFC5B4; padding-top: 28px"><!-- Photo : src/assets/photos/article-distance-02.jpg · Illustration de l'article : Que faire du logement d'un proche qui nous a quittés ? -->
+<Photo nom="article-distance-02" alt="Illustration de l'article : Que faire du logement d'un proche qui nous a quittés ?" style="height: 200px" /><span class="lbl">Succession · 4 min</span><h3 class="h3">Que faire du logement d'un proche qui nous a quittés ?</h3></a><a href="/conseils/preparer-entree-ehpad" style="display: flex; flex-direction: column; gap: 16px; text-decoration: none; color: #18202C; border-top: 1px solid #CFC5B4; padding-top: 28px"><!-- Photo : src/assets/photos/article-distance-03.jpg · Illustration de l'article : Préparer une entrée en EHPAD sans stress -->
+<Photo nom="article-distance-03" alt="Illustration de l'article : Préparer une entrée en EHPAD sans stress" style="height: 200px" /><span class="lbl">Entrée en résidence · 3 min</span><h3 class="h3">Préparer une entrée en EHPAD sans stress</h3></a></div>
+</div>
+</section>
+
+<section style="background: #EFE9DE; color: #18202C">
+<div class="w sec" style="display: flex; flex-direction: column; align-items: center; gap: 26px; text-align: center">
+<h2 class="h2" style="max-width: 760px">Votre situation est particulière ? Parlons-en.</h2>
+<a class="btn" href="/contact">Être rappelé</a>
+</div>
+</section>
+</Famille>
+
+<style is:global>
+/* Styles propres à cette page (repris de la maquette) */
+.h3{font-family:'Cormorant Garamond',Georgia,serif;font-weight:600;font-size:28px;line-height:1.2;margin:0}
+.flt{font-family:'Nunito Sans',sans-serif;font-size:12px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;text-decoration:none;color:#15233A;padding:12px 20px;border:1px solid #CFC5B4}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:48px}
+.feat{display:grid;grid-template-columns:3fr 2fr;gap:64px;align-items:center}
+.art h2{font-family:'Cormorant Garamond',Georgia,serif;font-weight:500;font-size:36px;line-height:1.15;color:#15233A;margin:56px 0 18px;scroll-margin-top:24px}
+.art h2:first-child{margin-top:0}
+.art p{font-size:17px;line-height:1.85;color:#3E434C;margin:0 0 18px;font-weight:300}
+.art ul{margin:0 0 22px;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
+.art li{font-size:17px;line-height:1.75;color:#3E434C;font-weight:300;padding-left:26px;position:relative}
+.art li::before{content:'';position:absolute;left:0;top:13px;width:12px;height:1px;background:#8A6D43}
+.art strong{font-weight:500;color:#18202C}
+.box{background:#EFE9DE;border-left:2px solid #8A6D43;padding:30px 34px;margin:30px 0}
+.box .bt{font-family:'Nunito Sans',sans-serif;font-size:12px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:#735A33;display:block;margin-bottom:14px}
+.box ul{margin:0}
+.toc a{display:block;padding:10px 0;border-bottom:1px solid #DDD4C5;color:#18202C;text-decoration:none;font-size:15px;line-height:1.5}
+.alayout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:88px;align-items:start}
+.g2a{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:48px}
+@media (max-width:960px){.alayout,.g2a{grid-template-columns:minmax(0,1fr) !important;gap:40px !important}.aside{position:static !important}.art h2{font-size:30px}}
+@media (max-width:960px){
+  .g3,.feat{grid-template-columns:minmax(0,1fr) !important;gap:40px !important}
+}
+</style>

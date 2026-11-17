@@ -1,0 +1,79 @@
+---
+/** Maquette : Tarifs.dc.html · adresse : /tarifs */
+import Famille from '../layouts/Famille.astro';
+import { SITE } from '../config/site';
+import Hero from '../components/Hero.astro';
+import { META } from '../config/meta';
+const meta = META['/tarifs'];
+---
+<Famille title={meta.title} description={meta.description} onglet="tarifs">
+<!-- Photo en fond : src/assets/photos/tarifs-haut.jpg · trousseau de clés sur une commode ancienne -->
+<Hero photo="tarifs-haut" desc="trousseau de clés sur une commode ancienne">
+<div class="w" style="position: relative; padding-top: 128px; padding-bottom: 116px">
+<div style="max-width: 760px; display: flex; flex-direction: column; gap: 26px">
+<span class="lbl">Tarifs</span>
+<h1 class="h1" style="color: #15233A">Des prix clairs, une estimation en ligne.</h1>
+<p class="lead" style="color: #4A4F58">Chaque formule a un prix de départ selon la taille du logement. Estimez le vôtre en quelques clics : le prix exact est fixé après le diagnostic offert, selon le volume réel et l'accès.</p>
+<a class="btn" href="/estimation" style="align-self: flex-start">Estimer mon accompagnement</a>
+</div>
+</div>
+</Hero>
+
+<section class="sec">
+<div class="w" style="display: flex; flex-direction: column; gap: 28px">
+<div class="scroll">
+<table style="width: 100%; min-width: 760px; border-collapse: collapse; font-variant-numeric: lining-nums">
+<thead><tr><td></td><th scope="colgroup" colspan="4" class="th th-groupe">À partir de · TTC</th></tr><tr><th scope="col" class="th" style="text-align: left"><span class="sr-only">Formule</span></th><th scope="col" class="th">1-2 pièces</th><th scope="col" class="th">3 pièces</th><th scope="col" class="th">4 pièces</th><th scope="col" class="th">5 pièces et +</th></tr></thead>
+<tbody>
+<tr><th scope="row" style="text-align: left; padding: 28px 0; border-top: 1px solid #15233A; font-weight: 300"><span style="display: block; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 600">Libération</span><span style="font-size: 14px; color: #5B606A">Libérer et rendre un logement propre</span></th><td class="td" style="border-top: 1px solid #15233A">1 560 €</td><td class="td" style="border-top: 1px solid #15233A">2 550 €</td><td class="td" style="border-top: 1px solid #15233A">3 160 €</td><td class="td" style="border-top: 1px solid #15233A">4 340 €</td></tr>
+<tr><th scope="row" style="text-align: left; padding: 28px 0; border-top: 1px solid #DDD4C5; font-weight: 300"><span style="display: block; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 600">Transition</span><span style="font-size: 14px; color: #5B606A">Passer d'un logement à l'autre</span></th><td class="td">3 200 €</td><td class="td">4 200 €</td><td class="td">4 900 €</td><td class="td">6 700 €</td></tr>
+<tr><th scope="row" style="text-align: left; padding: 28px 0; border-top: 1px solid #DDD4C5; border-bottom: 1px solid #DDD4C5; font-weight: 300"><span style="display: block; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 600">Succession</span><span style="font-size: 14px; color: #5B606A">Le logement d'un proche</span></th><td class="td" style="border-bottom: 1px solid #DDD4C5">2 600 €</td><td class="td" style="border-bottom: 1px solid #DDD4C5">3 900 €</td><td class="td" style="border-bottom: 1px solid #DDD4C5">4 600 €</td><td class="td" style="border-bottom: 1px solid #DDD4C5">6 300 €</td></tr>
+</tbody>
+</table>
+</div>
+<p class="p" style="font-size: 14px; max-width: 900px">Prix pour un logement meublé standard. Transition : selon la taille du logement de départ ; le déménageur est réglé directement par vous. Succession : contrat signé par tous les héritiers, ou par l'un d'eux muni de leur accord écrit.</p>
+</div>
+</section>
+
+<section style="background: #EFE9DE">
+<div class="w sec g2" style="align-items: start">
+<div style="display: flex; flex-direction: column; gap: 22px">
+<span class="lbl">Options</span>
+<h2 class="h2">Seulement si c'est utile.</h2>
+<div style="display: flex; flex-direction: column; border-top: 1px solid #CFC5B4; margin-top: 10px">
+<div class="row"><span>Recherche de résidence</span><span style="font-weight: 400">700 €</span></div>
+<div class="row"><span>Caves, garages, greniers</span><span style="font-weight: 400">75 € / m³</span></div>
+<div class="row"><span>Gardiennage du logement pendant la vente ou la location</span><span style="font-weight: 400">150 € / mois</span></div>
+<div class="row"><span>Recherche d'un box de stockage à proximité, au meilleur prix (location réglée par vous ; transport jusqu'au box sur devis, sauf en Transition)</span><span style="font-weight: 400">comprise en Transition et Succession · 90 € en Libération</span></div>
+<div class="row"><span>Installation des objets gardés chez un proche</span><span style="font-weight: 400">dès 350 €</span></div>
+<div class="row"><span>Vide-maison, deux matinées au plus</span><span style="font-weight: 400">sur devis</span></div>
+<div class="row"><span>Adaptation du logement : artisans et devis comparés</span><span style="font-weight: 400">sur devis</span></div>
+<div class="row"><span>Urgence, sous sept jours</span><span style="font-weight: 400">+ 25 %</span></div>
+<div class="row"><span>Intervention hors Bouches-du-Rhône</span><a href="/contact" style="font-weight: 400; color: #3D5A80">nous contacter</a></div>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 44px; padding-top: 8px">
+<div style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #15233A; padding-top: 26px"><h3 class="h3">Paiement</h3><span class="p">Des facilités de paiement sont possibles : nous en parlons ensemble lors du diagnostic.</span></div>
+<div style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #15233A; padding-top: 26px"><h3 class="h3">Ce qui n'est pas compris</h3><span class="p">La prestation du déménageur, réglée directement à lui ; les travaux d'artisans ; l'estimation officielle des objets ; les frais de notaire ; les déchets dangereux, traités sur devis spécialisé.</span></div>
+</div>
+</div>
+</section>
+
+<section class="sec">
+<div class="w" style="display: flex; flex-direction: column; align-items: center; gap: 26px; text-align: center">
+<span class="lbl">Diagnostic offert</span>
+<h2 class="h2" style="max-width: 760px">Votre prix exact, après une visite sans engagement.</h2>
+<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 14px"><a class="btn" href="/contact">Demander un diagnostic</a><a class="btn2" href="/estimation">Estimer mon accompagnement</a></div>
+</div>
+</section>
+</Famille>
+
+<style is:global>
+/* Styles propres à cette page (repris de la maquette) */
+.row{display:flex;justify-content:space-between;gap:20px;padding:17px 0;border-bottom:1px solid #DDD4C5}
+.th{font-family:'Nunito Sans',sans-serif;font-size:11.5px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:#5B606A;padding:0 0 18px;text-align:right}
+.th-groupe{text-align:center;padding:0 0 10px;color:#735A33;border-bottom:1px solid #DDD4C5}
+thead tr+tr .th{padding-top:14px}
+.td{font-family:'Cormorant Garamond',Georgia,serif;font-size:32px;font-weight:500;text-align:right;padding:28px 0;border-top:1px solid #DDD4C5}
+.scroll{overflow-x:auto}
+</style>

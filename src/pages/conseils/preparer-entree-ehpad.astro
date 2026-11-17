@@ -1,0 +1,92 @@
+---
+/** Maquette : Article-Entree-EHPAD.dc.html · adresse : /conseils/preparer-entree-ehpad */
+import Famille from '../../layouts/Famille.astro';
+import { SITE } from '../../config/site';
+import Hero from '../../components/Hero.astro';
+import Photo from '../../components/Photo.astro';
+import { META } from '../../config/meta';
+import { article, filAriane } from '../../config/seo';
+const meta = META['/conseils/preparer-entree-ehpad'];
+---
+<Famille title={meta.title} description={meta.description} onglet="conseils" type="article" jsonld={[article({ titre: 'Préparer une entrée en EHPAD sans stress', description: meta.description, chemin: '/conseils/preparer-entree-ehpad' }), filAriane([{ nom: 'Accueil', chemin: '/' }, { nom: 'Conseils', chemin: '/conseils' }, { nom: 'Préparer une entrée en EHPAD sans stress', chemin: '/conseils/preparer-entree-ehpad' }])]}>
+<!-- Photo en fond : src/assets/photos/article-entree-ehpad-haut.jpg · fauteuil près d'une fenêtre, plaid et cadres photo -->
+<Hero photo="article-entree-ehpad-haut" desc="fauteuil près d'une fenêtre, plaid et cadres photo">
+<div class="w" style="position: relative; padding-top: 96px; padding-bottom: 104px">
+<div style="max-width: 780px; display: flex; flex-direction: column; gap: 24px">
+<a class="tl" href="/conseils" style="align-self: flex-start">← Tous les conseils</a>
+<span class="lbl" style="margin-top: 14px">Conseils · Entrée en résidence</span>
+<h1 class="h1" style="color: #15233A; font-size: 58px">Préparer une entrée en EHPAD sans stress</h1>
+<p class="lead" style="color: #4A4F58">Quitter son logement pour une résidence ou un EHPAD est un grand changement, pour la personne qui part comme pour ses proches. Bien préparé, ce passage peut se faire en douceur. Voici comment s'y prendre, et dans quel ordre.</p>
+<span style="font-size: 13px; letter-spacing: .08em; color: #735A33">Lecture 3 min · Maison Fil Bleu, Marseille et région PACA</span>
+</div>
+</div>
+</Hero>
+
+<section class="sec">
+<div class="w alayout">
+<aside class="aside" style="position: sticky; top: 24px; display: flex; flex-direction: column; gap: 36px">
+<div class="toc"><span class="lbl" style="display: block; margin-bottom: 10px">Sommaire</span><a href="#s1">Anticiper, autant que possible</a><a href="#s2">Les démarches, dans l'ordre</a><a href="#s3">Ce qu'on emporte : choisir ensemble</a><a href="#s4">Le jour de l'entrée</a><a href="#s5">Et l'ancien logement ?</a></div>
+<div style="background: #EFE9DE; padding: 28px; display: flex; flex-direction: column; gap: 16px"><p class="h3" style="font-size: 24px">Besoin d'aide pour votre situation ?</p><span class="p" style="font-size: 15px">Diagnostic offert et sans engagement, à Marseille et dans la région PACA.</span><a class="tl" href="/transition" style="align-self: flex-start">Découvrir la formule Transition</a><a class="tl" href="/contact" style="align-self: flex-start">Nous contacter</a></div>
+</aside>
+<article class="art" style="max-width: 760px">
+<h2 id="s1">Anticiper, autant que possible</h2>
+<p>Une entrée en établissement se décide parfois dans l'urgence, après une chute ou une hospitalisation. Quand c'est possible, prendre quelques semaines change tout : le temps de visiter, de choisir, et surtout de se préparer à l'idée. Si vous êtes la personne concernée, n'hésitez pas à dire ce qui compte pour vous : votre avis est le premier à prendre en compte.</p>
+<h2 id="s2">Les démarches, dans l'ordre</h2>
+<ul><li><strong>Le dossier d'admission</strong> : un dossier unique, commun à tous les EHPAD, avec un volet administratif et un volet médical rempli par le médecin. Il peut être déposé dans plusieurs établissements à la fois.</li><li><strong>Les aides financières</strong> : selon la situation, l'allocation personnalisée d'autonomie (APA), l'aide sociale à l'hébergement, ou une aide au logement. Le département et l'établissement vous orientent.</li><li><strong>La fiscalité</strong> : une partie des frais d'hébergement et de dépendance peut ouvrir droit à une réduction d'impôt.</li><li><strong>Les changements d'adresse</strong> : caisse de retraite, banque, mutuelle, impôts, médecin traitant, La Poste.</li><li><strong>Le logement quitté</strong> : préavis s'il s'agit d'une location, assurance, énergie, internet à résilier au bon moment.</li></ul>
+<div class="box"><span class="bt">Bon à savoir</span><ul><li>Les chambres d'EHPAD font souvent autour de 20 m². Demandez à l'établissement ce que vous pouvez apporter : certains acceptent un fauteuil, une commode, une petite table, d'autres fournissent tout le mobilier.</li><li>Le linge doit généralement être marqué au nom du résident : prévoyez-le quelques jours avant.</li></ul></div>
+<!-- Photo : src/assets/photos/article-entree-ehpad-01.jpg · chambre de résidence lumineuse, meubles personnels -->
+<Photo nom="article-entree-ehpad-01" alt="Chambre de résidence lumineuse, meubles personnels" tag="Photo · chambre de résidence lumineuse, meubles personnels" style="height: 400px; margin: 36px 0 40px" />
+<h2 id="s3">Ce qu'on emporte : choisir ensemble</h2>
+<p>Le nouveau logement est souvent plus petit : il faut choisir. Ce choix ne doit pas être imposé. Le plus simple est de partir du plan de la chambre, et de se demander ensemble ce qui fera qu'on s'y sente chez soi.</p>
+<ul><li>Un fauteuil familier, une lampe, un meuble que l'on aime.</li><li>Des photos, des cadres, quelques objets qui racontent une vie.</li><li>Ses vêtements préférés, adaptés à la saison et faciles à enfiler.</li><li>Ce qui rassure au quotidien : radio, livres, plantes, plaid.</li></ul>
+<p>Le reste n'a pas besoin d'être décidé tout de suite. Les proches peuvent reprendre certains meubles, d'autres partir à des associations, et ce qu'on hésite à laisser partir peut attendre dans un box de stockage.</p>
+<h2 id="s4">Le jour de l'entrée</h2>
+<p>Idéalement, la chambre est prête avant l'arrivée : meubles installés, cadres accrochés, lit fait, vêtements rangés. Arriver dans un lieu déjà personnalisé aide beaucoup à s'y sentir bien. Si vous êtes accompagné, l'installation se fait sans vous : vous n'avez pas à porter de meubles ni à accrocher de cadres. Pour les proches, l'essentiel est ailleurs : venir partager les premières visites, quand c'est possible, car l'adaptation prend souvent quelques semaines.</p>
+<h2 id="s5">Et l'ancien logement ?</h2>
+<p>Il faudra le libérer : le vider, le nettoyer, rendre les clés au propriétaire ou décider de son avenir s'il vous appartient. Rien ne presse forcément, mais les frais courent. Si vous hésitez entre garder, louer ou vendre, prenez le temps de faire le point sur votre situation avant de décider.</p>
+<p style="margin-top: 40px; font-size: 14px; color: #735A33">Ces informations sont générales et ne remplacent pas le conseil de votre notaire ou d'un professionnel du droit.</p>
+</article>
+</div>
+</section>
+
+<section class="sec" style="padding-top: 0">
+<div class="w" style="display: flex; flex-direction: column; gap: 40px">
+<span class="lbl">À lire aussi</span>
+<div class="g2a"><a href="/conseils/logement-parent-decede" style="display: flex; flex-direction: column; gap: 16px; text-decoration: none; color: #18202C; border-top: 1px solid #CFC5B4; padding-top: 28px"><!-- Photo : src/assets/photos/article-entree-ehpad-02.jpg · Illustration de l'article : Que faire du logement d'un proche qui nous a quittés ? -->
+<Photo nom="article-entree-ehpad-02" alt="Illustration de l'article : Que faire du logement d'un proche qui nous a quittés ?" style="height: 200px" /><span class="lbl">Succession · 4 min</span><h3 class="h3">Que faire du logement d'un proche qui nous a quittés ?</h3></a><a href="/conseils/vider-maison-avant-vente" style="display: flex; flex-direction: column; gap: 16px; text-decoration: none; color: #18202C; border-top: 1px solid #CFC5B4; padding-top: 28px"><!-- Photo : src/assets/photos/article-entree-ehpad-03.jpg · Illustration de l'article : Vider une maison avant de la vendre : par où commencer ? -->
+<Photo nom="article-entree-ehpad-03" alt="Illustration de l'article : Vider une maison avant de la vendre : par où commencer ?" style="height: 200px" /><span class="lbl">Libérer un logement · 3 min</span><h3 class="h3">Vider une maison avant de la vendre : par où commencer ?</h3></a></div>
+</div>
+</section>
+
+<section style="background: #EFE9DE; color: #18202C">
+<div class="w sec" style="display: flex; flex-direction: column; align-items: center; gap: 26px; text-align: center">
+<h2 class="h2" style="max-width: 760px">Votre situation est particulière ? Parlons-en.</h2>
+<a class="btn" href="/contact">Être rappelé</a>
+</div>
+</section>
+</Famille>
+
+<style is:global>
+/* Styles propres à cette page (repris de la maquette) */
+.h3{font-family:'Cormorant Garamond',Georgia,serif;font-weight:600;font-size:28px;line-height:1.2;margin:0}
+.flt{font-family:'Nunito Sans',sans-serif;font-size:12px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;text-decoration:none;color:#15233A;padding:12px 20px;border:1px solid #CFC5B4}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:48px}
+.feat{display:grid;grid-template-columns:3fr 2fr;gap:64px;align-items:center}
+.art h2{font-family:'Cormorant Garamond',Georgia,serif;font-weight:500;font-size:36px;line-height:1.15;color:#15233A;margin:56px 0 18px;scroll-margin-top:24px}
+.art h2:first-child{margin-top:0}
+.art p{font-size:17px;line-height:1.85;color:#3E434C;margin:0 0 18px;font-weight:300}
+.art ul{margin:0 0 22px;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
+.art li{font-size:17px;line-height:1.75;color:#3E434C;font-weight:300;padding-left:26px;position:relative}
+.art li::before{content:'';position:absolute;left:0;top:13px;width:12px;height:1px;background:#8A6D43}
+.art strong{font-weight:500;color:#18202C}
+.box{background:#EFE9DE;border-left:2px solid #8A6D43;padding:30px 34px;margin:30px 0}
+.box .bt{font-family:'Nunito Sans',sans-serif;font-size:12px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:#735A33;display:block;margin-bottom:14px}
+.box ul{margin:0}
+.toc a{display:block;padding:10px 0;border-bottom:1px solid #DDD4C5;color:#18202C;text-decoration:none;font-size:15px;line-height:1.5}
+.alayout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:88px;align-items:start}
+.g2a{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:48px}
+@media (max-width:960px){.alayout,.g2a{grid-template-columns:minmax(0,1fr) !important;gap:40px !important}.aside{position:static !important}.art h2{font-size:30px}}
+@media (max-width:960px){
+  .g3,.feat{grid-template-columns:minmax(0,1fr) !important;gap:40px !important}
+}
+</style>

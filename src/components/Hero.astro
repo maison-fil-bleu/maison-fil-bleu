@@ -1,0 +1,22 @@
+---
+/**
+ * Haut de page : photo en fond + voile ivoire à gauche, texte à gauche.
+ * Photo attendue : src/assets/photos/<photo>.(jpg|jpeg|png|webp)
+ */
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props { photo: string; desc: string }
+const { photo, desc } = Astro.props;
+const fichiers = import.meta.glob<{ default: ImageMetadata }>('/src/assets/photos/*.{jpg,jpeg,png,webp}', { eager: true });
+const trouve = Object.entries(fichiers).find(([p]) => p.replace(/^.*\//, '').replace(/\.\w+$/, '') === photo);
+const src = trouve?.[1].default;
+---
+<section class="hero">
+  {src ? (
+    <Image class="hero-img" src={src} alt="" widths={[800, 1440, 2160].filter((w) => w <= src.width)} sizes="100vw" loading="eager" fetchpriority="high" format="webp" />
+  ) : (
+    <span class="htag" aria-hidden="true" data-photo={photo}>Photo en fond · {desc} (voile clair à gauche)</span>
+  )}
+  <slot />
+</section>

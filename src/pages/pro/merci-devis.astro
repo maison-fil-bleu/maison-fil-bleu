@@ -1,0 +1,12 @@
+---
+import Pro from '../../layouts/Pro.astro';
+import Merci from '../../components/Merci.astro';
+import { SITE } from '../../config/site';
+---
+<Pro title="Merci, votre demande de devis est envoyée | Fil Bleu Pro" description="Votre demande de devis a bien été envoyée à Fil Bleu Pro." noindex>
+  <Merci lbl="Demande de devis envoyée" titre="Merci, votre devis arrive sous 24 heures.">
+    <p class="lead">Votre demande est bien arrivée. Nous revenons vers vous sous 24 heures avec un devis, sur photos ou après visite.</p>
+    <p class="p">Pour accélérer le devis, vous pouvez envoyer quelques photos du bien à {SITE.emailPro}.</p>
+    <div class="merci-liens"><a class="btn" href="/pro">Retour à Fil Bleu Pro</a><a class="btn2" href="/pro/tarifs">Recevoir la grille tarifaire</a></div>
+  </Merci>
+</Pro>

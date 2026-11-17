@@ -1,0 +1,13 @@
+---
+import Famille from '../layouts/Famille.astro';
+import Merci from '../components/Merci.astro';
+import { SITE, lienTel } from '../config/site';
+const tel = lienTel(SITE.telephone);
+---
+<Famille title="Merci, votre demande est envoyée | Maison Fil Bleu" description="Votre demande de rappel a bien été envoyée à Maison Fil Bleu." noindex>
+  <Merci lbl="Demande envoyée" titre="Merci, nous vous rappelons très vite.">
+    <p class="lead">Votre demande est bien arrivée. Nous vous rappelons le jour même ou le lendemain, au moment que vous avez indiqué, pour en parler avec vous et convenir du diagnostic offert.</p>
+    <p class="p">Une question d'ici là ? Appelez-nous au {tel ? <a href={tel}>{SITE.telephone}</a> : SITE.telephone}.</p>
+    <div class="merci-liens"><a class="btn" href="/">Retour à l'accueil</a><a class="btn2" href="/notre-methode">Découvrir notre méthode</a></div>
+  </Merci>
+</Famille>

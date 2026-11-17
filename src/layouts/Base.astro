@@ -1,0 +1,54 @@
+---
+/** Squelette HTML commun : <head> (référencement, partage, polices), lien d'évitement. */
+import '../styles/global.css';
+import { absolu } from '../config/seo';
+
+interface Props {
+  title: string;
+  description: string;
+  noindex?: boolean;
+  /** Image de partage (adresse absolue ou chemin depuis la racine). */
+  image?: string;
+  /** « website » par défaut, « article » pour les conseils. */
+  type?: 'website' | 'article';
+  nomSite?: string;
+  /** Données structurées propres à la page (objets schema.org). */
+  jsonld?: object[];
+}
+const { title, description, noindex = false, image = '/og/maison-fil-bleu.png', type = 'website', nomSite = 'Maison Fil Bleu', jsonld = [] } = Astro.props;
+const chemin = Astro.url.pathname.replace(/\.html$/, '').replace(/\/index$/, '/').replace(/(.)\/$/, '$1') || '/';
+const canonique = absolu(chemin);
+const imageAbs = image.startsWith('http') ? image : absolu(image);
+---
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonique} />}
+    <meta name="theme-color" content="#F8F5EF" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/fonts/cormorant-garamond-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/nunito-sans-latin-300-normal.woff2" as="font" type="font/woff2" crossorigin />
+
+    <meta property="og:type" content={type} />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:site_name" content={nomSite} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonique} />
+    <meta property="og:image" content={imageAbs} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    {jsonld.map((d) => <script type="application/ld+json" set:html={JSON.stringify(d)} />)}
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip" href="#contenu">Aller au contenu</a>
+    <slot />
+  </body>
+</html>

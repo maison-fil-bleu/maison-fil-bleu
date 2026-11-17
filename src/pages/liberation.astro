@@ -1,0 +1,129 @@
+---
+/** Maquette : Formule-Liberation.dc.html · adresse : /liberation */
+import Famille from '../layouts/Famille.astro';
+import { SITE } from '../config/site';
+import Hero from '../components/Hero.astro';
+import Photo from '../components/Photo.astro';
+import { META } from '../config/meta';
+import { service, filAriane } from '../config/seo';
+const meta = META['/liberation'];
+---
+<Famille title={meta.title} description={meta.description} onglet="prestations" jsonld={[service('L'), filAriane([{ nom: 'Accueil', chemin: '/' }, { nom: 'Libération', chemin: '/liberation' }])]}>
+<!-- Photo en fond : src/assets/photos/liberation-haut.jpg · pièce vide et lumineuse, parquet propre -->
+<Hero photo="liberation-haut" desc="pièce vide et lumineuse, parquet propre">
+<div class="w" style="position: relative; padding-top: 140px; padding-bottom: 128px">
+<div style="max-width: 700px; display: flex; flex-direction: column; gap: 28px">
+<span class="lbl">Accompagnement · Libération</span>
+<span style="font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-size: 26px; color: #3D5A80; margin-top: -12px">La base de tous nos accompagnements.</span>
+<h1 class="h1" style="color: #15233A">Libérer un logement, sereinement et dans les temps.</h1>
+<p class="lead" style="color: #4A4F58">Un départ en résidence, une fin de bail, une vente : un logement plein bloque tout. Nous trions avec vous, donnons ce qui peut servir, évacuons le reste et vous rendons un logement vide et propre, prêt à être rendu, loué ou vendu.</p>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 28px"><a class="btn" href="/contact">Demander un diagnostic offert</a><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 30px; color: #3D5A80">dès 1 560 € TTC</span></div>
+</div>
+</div>
+</Hero>
+
+<section class="sec">
+<div class="w" style="display: flex; flex-direction: column; gap: 64px">
+<div class="g2" style="align-items: end">
+<div style="display: flex; flex-direction: column; gap: 18px"><span class="lbl">Pour qui</span><h2 class="h2">Les situations que nous accompagnons</h2></div>
+<p class="lead">Derrière chaque logement à libérer, il y a une échéance, et souvent une famille fatiguée. Nous prenons le relais pour que vous n'ayez plus à y penser.</p>
+</div>
+<div class="g4">
+<div class="card"><h3 class="h3">Une fin de bail</h3><span class="p">Votre parent était locataire ? Le logement doit être rendu vide et propre au propriétaire ou au bailleur, souvent dans un délai court.</span></div>
+<div class="card"><h3 class="h3">Après un départ en résidence</h3><span class="p">L'entrée en résidence est faite, mais l'ancien logement est encore plein. Nous terminons le travail.</span></div>
+<div class="card"><h3 class="h3">Avant une vente ou une location</h3><span class="p">Un logement vide et propre se visite mieux, se photographie mieux et trouve preneur plus sereinement.</span></div>
+<div class="card"><h3 class="h3">Une maison de famille</h3><span class="p">Des années de souvenirs à trier, sans conflit et sans précipitation, avec chacun des proches.</span></div>
+</div>
+</div>
+</section>
+
+<!-- Photo : src/assets/photos/liberation-01.jpg · cartons de dons étiquetés pour une association -->
+<Photo nom="liberation-01" alt="Cartons de dons étiquetés pour une association" tag="Photo pleine largeur · cartons de dons étiquetés pour une association" style="height: 500px" />
+
+<section class="sec">
+<div class="w" style="display: flex; flex-direction: column; gap: 64px">
+<div style="display: flex; flex-direction: column; gap: 18px; max-width: 760px"><span class="lbl">Le déroulé</span><h2 class="h2">Comment se déroule une Libération</h2></div>
+<div class="g4">
+<div class="card"><span class="num">01</span><h3 class="h3">Diagnostic offert</h3><span class="p">Nous visitons le logement avec vous, écoutons vos priorités et vos délais, puis vous remettons un devis forfaitaire et clair.</span></div>
+<div class="card"><span class="num">02</span><h3 class="h3">Le tri, avec vous</h3><span class="p">Ce que vous gardez, ce qui revient à vos proches, ce qui part aux associations. Le forfait prévoit une demi-journée à une journée de tri avec vous selon la taille du logement ; au-delà, nous adaptons avec un devis. Une liste signée avant toute évacuation.</span></div>
+<div class="card"><span class="num">03</span><h3 class="h3">Débarras et nettoyage</h3><span class="p">Une équipe encadrée évacue le reste en filières agréées, puis nettoie le logement de fond en comble. Des travaux sont nécessaires avant une vente ou une location ? Nous faisons intervenir des artisans de confiance et suivons le chantier.</span></div>
+<div class="card"><span class="num">04</span><h3 class="h3">La remise des clés</h3><span class="p">Un reportage photo du logement vide, puis les clés remises à qui de droit : propriétaire, bailleur, agence ou vous-même.</span></div>
+</div>
+</div>
+</section>
+
+<section style="background: #EFE9DE">
+<div class="w sec g2" style="align-items: start">
+<div style="display: flex; flex-direction: column; gap: 22px">
+<span class="lbl">Ce qui est compris</span>
+<h2 class="h2">Un logement vide, propre, prêt à vivre une nouvelle histoire.</h2>
+<p class="p">Un seul interlocuteur s'occupe de tout, de la première visite à la remise des clés. Vous êtes tenu informé à chaque étape, photos à l'appui, même si vous vivez loin. Besoin de plus de temps ? Nous adaptons l'offre, avec un devis complémentaire validé au préalable.</p>
+</div>
+<div style="display: flex; flex-direction: column; border-top: 1px solid #CFC5B4">
+<div class="row"><span>Diagnostic sur place et devis forfaitaire</span></div>
+<div class="row"><span>Un chef d'équipe dédié, votre seul interlocuteur</span></div>
+<div class="row"><span>Tri accompagné, mise de côté de ce que vous gardez</span></div>
+<div class="row"><span>Dons remis aux associations partenaires</span></div>
+<div class="row"><span>Débarras : main-d'œuvre, camion, filières agréées</span></div>
+<div class="row"><span>Nettoyage complet : sols, cuisine, sanitaires, vitres</span></div>
+<div class="row"><span>Reportage photo et remise des clés</span></div>
+<div class="row"><span>Si besoin, remise en état : artisans de confiance, devis comparés, suivi des travaux (facturés à part)</span></div>
+<div class="row"><span>Si vous êtes propriétaire : accompagnement à la vente ou à la location</span></div>
+<div class="row"><span>En option : gardiennage du logement pendant la vente ou la location (visites régulières, aération, courrier)</span></div>
+</div>
+</div>
+</section>
+
+<section class="sec">
+<div class="w g2" style="align-items: start">
+<div style="display: flex; flex-direction: column; gap: 22px">
+<span class="lbl">Tarifs</span>
+<h2 class="h2">Un forfait selon la taille du logement</h2>
+<p class="p">Le forfait comprend tout l'accompagnement décrit sur cette page. Prix de départ pour un logement meublé standard : c'est une estimation. Le prix exact, parfois plus bas, parfois plus haut, est fixé après le diagnostic offert, selon le volume et l'accès. Facilités de paiement possibles.</p>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 26px; margin-top: 6px"><a class="btn" href="/estimation?formule=liberation">Estimer mon accompagnement</a><a class="tl" href="/tarifs">Tous les tarifs et options</a></div>
+</div>
+<div style="display: flex; flex-direction: column; border-top: 1px solid #15233A">
+<span class="lbl" style="padding: 16px 0 2px">À partir de · TTC</span>
+<div class="row" style="padding: 22px 0"><span style="font-size: 18px">1-2 pièces</span><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 500">1 560 €</span></div>
+<div class="row" style="padding: 22px 0"><span style="font-size: 18px">3 pièces</span><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 500">2 550 €</span></div>
+<div class="row" style="padding: 22px 0"><span style="font-size: 18px">4 pièces</span><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 500">3 160 €</span></div>
+<div class="row" style="padding: 22px 0"><span style="font-size: 18px">5 pièces et plus</span><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 500">4 340 €</span></div>
+</div>
+</div>
+</section>
+
+<section style="padding: 0 0 120px">
+<div class="w">
+<div class="g2" style="align-items: center; border-top: 1px solid #15233A; border-bottom: 1px solid #CFC5B4; padding: 64px 0">
+<div style="display: flex; flex-direction: column; gap: 22px"><span class="lbl">Et ensuite</span><h2 class="h2" style="color: #3D5A80; font-style: italic">Rendre, vendre ou louer le logement</h2></div>
+<div style="display: flex; flex-direction: column; gap: 26px"><div style="display: flex; flex-direction: column; gap: 6px"><h3 class="h3" style="font-size: 24px">Vous êtes locataire</h3><span class="p">Le logement est prêt pour l'état des lieux de sortie. Nous pouvons y assister et remettre les clés au propriétaire ou au bailleur, avec votre procuration.</span></div><div style="display: flex; flex-direction: column; gap: 6px"><h3 class="h3" style="font-size: 24px">Vous êtes propriétaire</h3><span class="p">Vous hésitez entre garder, louer ou vendre ? Nous faisons le point avec vous sur votre situation et vos projets pour vous conseiller. Ensuite, vous pouvez décider de vendre ou de louer avec l'agence de votre choix ou avec notre agence partenaire : vous choisissez.</span></div></div>
+</div>
+</div>
+</section>
+
+<section class="sec">
+<div class="w" style="max-width: 960px; display: flex; flex-direction: column; gap: 24px">
+<span class="lbl">Questions fréquentes</span>
+<h2 class="h2" style="margin-bottom: 12px">Vos questions sur la Libération</h2>
+<details class="q" open><summary>Que deviennent les meubles et les objets ?</summary><p class="p" style="margin-top: 12px">Vous décidez de tout : ce que vous gardez, ce qui revient à vos proches, ce qui est donné aux associations, ce qui part. Une liste est signée avant chaque évacuation.</p></details>
+<details class="q"><summary>Vous vivez loin, mais le logement se trouve près de Marseille : est-ce possible ?</summary><p class="p" style="margin-top: 12px">Oui. Nous organisons le diagnostic avec vous à distance, ou avec un proche sur place, puis nous nous occupons de tout. Vous recevez des nouvelles et des photos à chaque étape.</p></details>
+<details class="q"><summary>Dois-je être présent pendant l'intervention ?</summary><p class="p" style="margin-top: 12px">Seulement pour le tri, si vous le souhaitez. Ensuite, nous intervenons seuls et vous recevons des photos à chaque étape.</p></details>
+<details class="q"><summary>En combien de temps le logement est-il libéré ?</summary><p class="p" style="margin-top: 12px">L'intervention est généralement planifiée sous [2 à 3 semaines] après le diagnostic, ou sous 7 jours en urgence.</p></details>
+<details class="q"><summary>Mon parent était locataire, pouvez-vous gérer la fin du bail ?</summary><p class="p" style="margin-top: 12px">Oui. Nous rendons le logement vide et propre avant la date de sortie, et pouvons assister à l'état des lieux et remettre les clés à votre place, avec votre procuration.</p></details>
+<details class="q"><summary>Et s'il y a une cave, un garage ou un grenier ?</summary><p class="p" style="margin-top: 12px">Nous nous en occupons aussi, en option, au volume. Le prix est indiqué dans le devis, avant toute intervention.</p></details>
+</div>
+</section>
+
+<section style="border-top: 1px solid #DDD4C5">
+<div class="w sec" style="display: flex; flex-direction: column; align-items: center; gap: 26px; text-align: center">
+<h2 class="h2" style="max-width: 760px">Un logement à libérer ?</h2>
+<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 14px"><a class="btn" href="/contact">Demander un diagnostic</a><a class="btn2" href="/transition">Voir la formule Transition</a></div>
+</div>
+</section>
+</Famille>
+
+<style is:global>
+/* Styles propres à cette page (repris de la maquette) */
+.h3{font-family:'Cormorant Garamond',Georgia,serif;font-weight:600;font-size:26px;line-height:1.2;margin:0}
+.row{display:flex;justify-content:space-between;gap:20px;padding:18px 0;border-bottom:1px solid #DDD4C5}
+</style>

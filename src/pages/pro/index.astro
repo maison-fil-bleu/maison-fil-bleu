@@ -1,0 +1,92 @@
+---
+/** Maquette : Pro.dc.html · adresse : /pro */
+import Pro from '../../layouts/Pro.astro';
+import { SITE } from '../../config/site';
+import Hero from '../../components/Hero.astro';
+import { META } from '../../config/meta';
+const meta = META['/pro'];
+---
+<Pro title={meta.title} description={meta.description} onglet="services">
+<!-- Photo en fond : src/assets/photos/pro-haut.jpg · appartement vide et lumineux, sol propre, prêt pour la visite -->
+<Hero photo="pro-haut" desc="appartement vide et lumineux, sol propre, prêt pour la visite">
+<div class="w" style="position: relative; padding-top: 150px; padding-bottom: 136px">
+<div style="max-width: 760px; display: flex; flex-direction: column; gap: 28px">
+<span class="lbl">Agences · syndics · bailleurs · notaires</span>
+<h1 class="h1" style="color: #15233A">Vos biens vides et propres, à la date prévue.</h1>
+<p class="lead" style="color: #4A4F58">Débarras et nettoyage de logements vacants. Un devis sous 24 heures, une équipe encadrée, des photos avant et après, une facture à trente jours.</p>
+<div style="display: flex; flex-wrap: wrap; gap: 14px"><a class="btn" href="/pro#devis">Demander un devis</a><a class="btn2" href="/pro/tarifs">Voir les tarifs</a></div>
+</div>
+</div>
+</Hero>
+
+<section style="border-bottom: 1px solid #DDD4C5">
+<div class="w g4" style="padding-top: 64px; padding-bottom: 64px">
+<div style="display: flex; flex-direction: column; gap: 6px"><span class="big">24 h</span><span class="lbl" style="color: #5B606A">pour le devis</span></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><span class="big">72 h</span><span class="lbl" style="color: #5B606A">en urgence</span></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><span class="big">Avant / après</span><span class="lbl" style="color: #5B606A">photos du chantier</span></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><span class="big">30 jours</span><span class="lbl" style="color: #5B606A">délai de paiement</span></div>
+</div>
+</section>
+
+<section id="services" class="sec">
+<div class="w" style="display: flex; flex-direction: column; gap: 64px">
+<div style="display: flex; flex-direction: column; gap: 18px; max-width: 760px"><span class="lbl">Services</span><h2 class="h2">Un logement à vider ou à nettoyer ? Nous nous en occupons.</h2></div>
+<div class="g4" style="grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 56px">
+<div class="card"><h3 class="h3">Débarras complet</h3><span class="p">Meubles, encombrants, caves et garages. Évacuation en filières agréées, justificatifs sur demande.</span></div>
+<div class="card"><h3 class="h3">Nettoyage de logement vide</h3><span class="p">Fin de bail, avant vente ou location, après travaux. Logement rendu prêt à visiter.</span></div>
+<div class="card"><h3 class="h3">Remise en état</h3><span class="p">Recherche d'artisans et comparaison des devis pour remettre le bien sur le marché plus vite.</span></div>
+</div>
+</div>
+</section>
+
+<section style="border-top: 1px solid #DDD4C5">
+<div class="w sec" style="display: flex; flex-direction: column; gap: 48px">
+<div class="g2" style="align-items: end"><div style="display: flex; flex-direction: column; gap: 18px"><span class="lbl">Tarifs professionnels</span><h2 class="h2">Simple, rapide, au prix du marché.</h2></div><p class="lead">Des tarifs fixés d'avance, réservés aux professionnels. La grille complète vous est envoyée sur simple demande.</p></div>
+<div class="g4" style="border-top: 1px solid #15233A; padding-top: 32px">
+<div style="display: flex; flex-direction: column; gap: 8px"><span class="p" style="font-size: 14px">Nettoyage d'un logement vide</span><span class="big">dès 225 €</span><span class="p" style="font-size: 13px">HT, selon la surface</span></div>
+<div style="display: flex; flex-direction: column; gap: 8px"><span class="p" style="font-size: 14px">Débarras + nettoyage</span><span class="big">dès 150 €</span><span class="p" style="font-size: 13px">HT, forfait d'intervention</span></div>
+<div style="display: flex; flex-direction: column; gap: 8px"><span class="p" style="font-size: 14px">Devis</span><span class="big">sous 24 h</span><span class="p" style="font-size: 13px">sur photos ou après visite</span></div>
+<div style="display: flex; flex-direction: column; gap: 8px"><span class="p" style="font-size: 14px">Urgence</span><span class="big">sous 72 h</span><span class="p" style="font-size: 13px">pour un état des lieux qui presse</span></div>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 26px"><a class="btn" href="/pro/tarifs">Recevoir la grille complète</a><a href="/pro#devis" style="font-family: 'Nunito Sans', sans-serif; font-size: 12.5px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; text-decoration: none; color: #15233A; border-bottom: 1px solid #8A6D43; padding-bottom: 5px">Demander un devis</a></div>
+</div>
+</section>
+
+<section id="partenariats" style="background: #EFE9DE; color: #18202C">
+<div class="w sec" style="display: flex; flex-direction: column; gap: 64px">
+<div class="g2" style="align-items: end"><div style="display: flex; flex-direction: column; gap: 18px"><span class="lbl">Partenariats</span><h2 class="h2">Un logement encore meublé, une famille à accompagner ?</h2></div><p class="lead" style="color: #5B606A">Tri avec la famille, dons, déménagement, installation, succession : c'est le métier de Maison Fil Bleu, notre marque d'accompagnement. Un seul contact pour les deux.</p></div>
+<div class="g4">
+<div style="border-top: 1px solid #CFC5B4; padding-top: 26px; display: flex; flex-direction: column; gap: 10px"><h3 class="h3" style="font-size: 25px">Agences immobilières</h3><span class="p" style="color: #5B606A; font-size: 15px">Un vendeur bloqué par un logement plein devient un mandat.</span></div>
+<div style="border-top: 1px solid #CFC5B4; padding-top: 26px; display: flex; flex-direction: column; gap: 10px"><h3 class="h3" style="font-size: 25px">Notaires</h3><span class="p" style="color: #5B606A; font-size: 15px">Le logement libéré, les objets partagés, les papiers classés, en lien avec l'étude.</span></div>
+<div style="border-top: 1px solid #CFC5B4; padding-top: 26px; display: flex; flex-direction: column; gap: 10px"><h3 class="h3" style="font-size: 25px">Résidences et EHPAD</h3><span class="p" style="color: #5B606A; font-size: 15px">Une entrée préparée sereinement, un relais de confiance pour les familles.</span></div>
+<div style="border-top: 1px solid #CFC5B4; padding-top: 26px; display: flex; flex-direction: column; gap: 10px"><h3 class="h3" style="font-size: 25px">Syndics et bailleurs</h3><span class="p" style="color: #5B606A; font-size: 15px">Parties communes, caves, logements après un départ.</span></div>
+</div>
+</div>
+</section>
+
+<section id="devis" class="sec">
+<div class="w g2" style="grid-template-columns: 5fr 7fr; align-items: start">
+<div style="display: flex; flex-direction: column; gap: 22px"><span class="lbl">Demandez votre devis</span><h2 class="h2">Réponse sous 24 heures.</h2><p class="p">Décrivez le bien en quelques mots. Des photos par e-mail accélèrent le devis.</p><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 40px; font-weight: 500">{SITE.telephonePro}</span><span>{SITE.emailPro}</span></div>
+<form name="devis-pro" method="POST" action="/pro/merci-devis" data-netlify="true" netlify-honeypot="bot-field" style="background: #FFFFFF; border: 1px solid #E3DCCF; padding: 52px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px 34px" class="g2">
+<input type="hidden" name="form-name" value="devis-pro">
+<p class="hp" aria-hidden="true"><label>Ne pas remplir ce champ <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+<label class="f">Nom<input name="nom" autocomplete="name" required></label>
+<label class="f">Société<input name="societe" autocomplete="organization" placeholder="Agence, syndic, étude…"></label>
+<label class="f">Téléphone<input name="telephone" type="tel" autocomplete="tel" required></label>
+<label class="f">E-mail<input name="email" type="email" autocomplete="email" required></label>
+<label class="f">Besoin<select name="besoin"><option>Nettoyage seul</option><option>Débarras + nettoyage</option><option>Cave, garage, parties communes</option></select></label>
+<label class="f">Commune et surface<input name="bien" placeholder="Ex. : Marseille 5e, T3 65 m²"></label>
+<label class="f" style="grid-column: 1 / -1">Date souhaitée et précisions<textarea name="message" rows="3" placeholder="État des lieux le…, étage, ascenseur, accès…"></textarea></label>
+<p class="p" style="grid-column: 1 / -1; font-size: 13px">Vos coordonnées servent uniquement à répondre à votre demande. Elles ne sont ni vendues ni transmises. <a href="/confidentialite">Politique de confidentialité</a></p>
+<button type="submit" style="grid-column: 1 / -1; font-family: 'Nunito Sans', sans-serif; font-size: 12.5px; font-weight: 500; letter-spacing: 2.2px; text-transform: uppercase; padding: 20px; border: 1px solid #15233A; background: #15233A; color: #F8F5EF; cursor: pointer">Demander un devis</button>
+</form>
+</div>
+</section>
+</Pro>
+
+<style is:global>
+/* Styles propres à cette page (repris de la maquette) */
+.g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:40px}
+.f{display:flex;flex-direction:column;gap:9px;font-family:'Nunito Sans',sans-serif;font-size:11.5px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:#5B606A}
+.f input,.f select,.f textarea{font-family:'Nunito Sans',sans-serif;font-size:16px;font-weight:300;letter-spacing:0;text-transform:none;color:#18202C;background:transparent;border:none;border-bottom:1px solid #BDB2A0;padding:10px 0;width:100%;box-sizing:border-box;border-radius:0}
+</style>

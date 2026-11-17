@@ -1,0 +1,16 @@
+---
+/** Page de remerciement après l'envoi d'un formulaire (non indexée). */
+interface Props { lbl: string; titre: string }
+const { lbl, titre } = Astro.props;
+---
+<section class="sec merci">
+  <div class="w" style="max-width:860px;display:flex;flex-direction:column;gap:26px">
+    <span class="lbl">{lbl}</span>
+    <h1 class="h1">{titre}</h1>
+    <slot />
+  </div>
+</section>
+<style>
+  .merci{min-height:52vh}
+  .merci :global(.merci-liens){display:flex;flex-wrap:wrap;gap:14px;margin-top:8px}
+</style>

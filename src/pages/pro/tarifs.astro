@@ -1,0 +1,53 @@
+---
+/** Maquette : Pro-Tarifs.dc.html · adresse : /pro/tarifs */
+import Pro from '../../layouts/Pro.astro';
+import { SITE } from '../../config/site';
+import { META } from '../../config/meta';
+const meta = META['/pro/tarifs'];
+---
+<Pro title={meta.title} description={meta.description} onglet="tarifs">
+<section style="background: #FFFFFF; border-bottom: 1px solid #E3DCCF">
+<div class="w" style="padding-top: 96px; padding-bottom: 80px; display: flex; flex-direction: column; gap: 22px">
+<span class="lbl">Tarifs professionnels</span>
+<h1 class="h1" style="color: #15233A">Une grille tarifaire réservée aux professionnels.</h1>
+<p class="lead" style="max-width: 760px">Agences, syndics, bailleurs, notaires et mandataires : nos tarifs sont fixés d'avance et vous sont communiqués sur simple demande. Un devis précis vous est envoyé sous 24 heures.</p>
+</div>
+</section>
+
+<section class="sec" style="padding-top: 88px">
+<div class="w" style="display: flex; flex-direction: column; gap: 40px">
+<span class="lbl">À partir de</span>
+<div class="g4" style="border-top: 1px solid #15233A; padding-top: 32px">
+<div style="display: flex; flex-direction: column; gap: 8px"><span class="p" style="font-size: 14px">Nettoyage d'un logement vide</span><span class="big">dès 225 €</span><span class="p" style="font-size: 13px">HT, selon la surface</span></div>
+<div style="display: flex; flex-direction: column; gap: 8px"><span class="p" style="font-size: 14px">Débarras + nettoyage</span><span class="big">dès 150 €</span><span class="p" style="font-size: 13px">HT, forfait d'intervention</span></div>
+<div style="display: flex; flex-direction: column; gap: 8px"><span class="p" style="font-size: 14px">Devis</span><span class="big">sous 24 h</span><span class="p" style="font-size: 13px">sur photos ou après visite</span></div>
+<div style="display: flex; flex-direction: column; gap: 8px"><span class="p" style="font-size: 14px">Urgence</span><span class="big">sous 72 h</span><span class="p" style="font-size: 13px">pour un état des lieux qui presse</span></div>
+</div>
+</div>
+</section>
+
+<section style="background: #EFE9DE">
+<div class="w sec g2" style="gap: 64px; align-items: start">
+<div style="display: flex; flex-direction: column; gap: 18px"><span class="lbl">Ce qui est compris</span><h2 class="h2">Un logement rendu prêt à visiter.</h2><p class="p">Nettoyage des sols, de la cuisine, des sanitaires, des vitres et des menuiseries accessibles. Débarras en filières agréées, justificatifs sur demande. Photos avant et après, facture à 30 jours.</p><p class="p" style="font-size: 14px">Non compris : le tri avec une famille (c'est le métier de <a href="/">Maison Fil Bleu</a>), les travaux d'artisans, les déchets dangereux, traités sur devis spécialisé. Particuliers : sur devis.</p></div>
+<form name="grille-pro" method="POST" action="/pro/merci-grille" data-netlify="true" netlify-honeypot="bot-field" style="background: #FFFFFF; border: 1px solid #E3DCCF; padding: 44px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 30px" class="g2">
+<input type="hidden" name="form-name" value="grille-pro">
+<p class="hp" aria-hidden="true"><label>Ne pas remplir ce champ <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+<span style="grid-column: 1 / -1; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 500">Recevoir la grille complète</span>
+<label class="f" style="display: flex; flex-direction: column; gap: 9px; font-family: 'Nunito Sans', sans-serif; font-size: 11.5px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: #5B606A">Nom<input name="nom" autocomplete="name" required style="font-family: 'Nunito Sans', sans-serif; font-size: 16px; font-weight: 300; letter-spacing: 0; text-transform: none; border: none; border-bottom: 1px solid #BDB2A0; padding: 10px 0; background: transparent"></label>
+<label class="f" style="display: flex; flex-direction: column; gap: 9px; font-family: 'Nunito Sans', sans-serif; font-size: 11.5px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: #5B606A">Société<input name="societe" autocomplete="organization" required placeholder="Agence, syndic, étude…" style="font-family: 'Nunito Sans', sans-serif; font-size: 16px; font-weight: 300; letter-spacing: 0; text-transform: none; border: none; border-bottom: 1px solid #BDB2A0; padding: 10px 0; background: transparent"></label>
+<label class="f" style="display: flex; flex-direction: column; gap: 9px; font-family: 'Nunito Sans', sans-serif; font-size: 11.5px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: #5B606A">E-mail professionnel<input name="email" type="email" autocomplete="email" required style="font-family: 'Nunito Sans', sans-serif; font-size: 16px; font-weight: 300; letter-spacing: 0; text-transform: none; border: none; border-bottom: 1px solid #BDB2A0; padding: 10px 0; background: transparent"></label>
+<label class="f" style="display: flex; flex-direction: column; gap: 9px; font-family: 'Nunito Sans', sans-serif; font-size: 11.5px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: #5B606A">Téléphone<input name="telephone" type="tel" autocomplete="tel" style="font-family: 'Nunito Sans', sans-serif; font-size: 16px; font-weight: 300; letter-spacing: 0; text-transform: none; border: none; border-bottom: 1px solid #BDB2A0; padding: 10px 0; background: transparent"></label>
+<p class="p" style="grid-column: 1 / -1; font-size: 13px">Vos coordonnées servent uniquement à répondre à votre demande. Elles ne sont ni vendues ni transmises. <a href="/confidentialite">Politique de confidentialité</a></p>
+<button type="submit" style="grid-column: 1 / -1; font-family: 'Nunito Sans', sans-serif; font-size: 12.5px; font-weight: 500; letter-spacing: 2.2px; text-transform: uppercase; padding: 20px; border: 1px solid #15233A; background: #15233A; color: #F8F5EF; cursor: pointer">Recevoir la grille</button>
+<p style="grid-column: 1 / -1; margin: 0; font-size: 13px; color: #5B606A">Bientôt : consultez la grille et suivez vos chantiers dans votre espace professionnel.</p>
+</form>
+</div>
+</section>
+</Pro>
+
+<style is:global>
+/* Styles propres à cette page (repris de la maquette) */
+.g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:40px}
+.f{display:flex;flex-direction:column;gap:9px;font-family:'Nunito Sans',sans-serif;font-size:11.5px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:#5B606A}
+.f input,.f select,.f textarea{font-family:'Nunito Sans',sans-serif;font-size:16px;font-weight:300;letter-spacing:0;text-transform:none;color:#18202C;background:transparent;border:none;border-bottom:1px solid #BDB2A0;padding:10px 0;width:100%;box-sizing:border-box;border-radius:0}
+</style>

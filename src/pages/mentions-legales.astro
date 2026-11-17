@@ -1,0 +1,11 @@
+---
+import PageLegale from '../components/PageLegale.astro';
+import { SITE } from '../config/site';
+---
+<PageLegale titre="Mentions légales" title="Mentions légales | Maison Fil Bleu, Les Pennes-Mirabeau" description="Mentions légales du site Maison Fil Bleu et Fil Bleu Pro, marques de la SAS Groupe Fil Bleu, Les Pennes-Mirabeau (13170).">
+  <h2>Éditeur du site</h2>
+  <p>{SITE.societe}, {SITE.adresse}, {SITE.codePostal} {SITE.ville}. SIRET {SITE.siret} · RCS [...] · TVA {SITE.tva}.</p>
+  <h2>Hébergement</h2>
+  <p>[Hébergeur : nom, adresse.]</p>
+  <p>[Texte complet des mentions légales à fournir.]</p>
+</PageLegale>
