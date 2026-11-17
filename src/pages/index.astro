@@ -1,4 +1,5 @@
 ---
+import { FORMULES_PRIX as FP, OPTIONS as OP, montant } from '../config/tarifs';
 /** Maquette : Main.dc.html · adresse : / */
 import Famille from '../layouts/Famille.astro';
 import { SITE } from '../config/site';
@@ -38,7 +39,7 @@ const meta = META['/'];
 <h3 class="h3" style="font-size: 30px">Vider, nettoyer et rendre le logement</h3>
 <span class="p">Un logement plein bloque tout : la fin d'un bail, une vente, la remise des clés. Nous trions avec vous ce que vous gardez, ce qui revient à vos proches et ce qui peut aider une association, puis nous rendons le logement vide et propre, prêt à être rendu, loué ou vendu.</span>
 <span style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #DDD4C5; padding-top: 16px; font-size: 15px; color: #18202C"><span>Tri accompagné, accompagnement à la vente et dons</span><span>Débarras en filières agréées et nettoyage complet</span><span>Reportage photo et remise des clés</span></span>
-<span class="tl" style="align-self: flex-start">Découvrir · dès 1 560 €</span>
+<span class="tl" style="align-self: flex-start">Découvrir · dès {montant(FP.L.prix[0])}</span>
 </a>
 <a href="/transition" style="display: flex; flex-direction: column; gap: 22px; text-decoration: none; color: #18202C">
 <!-- Photo : src/assets/photos/accueil-02.jpg · chambre de résidence installée -->
@@ -48,7 +49,7 @@ const meta = META['/'];
 <h3 class="h3" style="font-size: 30px">Libérer l'ancien logement et installer le nouveau</h3>
 <span class="p">Quitter la maison de toute une vie, c'est choisir ce qu'on emporte dans un espace souvent plus petit. Nous faisons ce tri avec vous, à votre rythme, nous organisons le déménagement et nous installons le nouveau logement pour qu'elle s'y sente chez elle dès le premier soir.</span>
 <span style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #DDD4C5; padding-top: 16px; font-size: 15px; color: #18202C"><span>Tout ce que comprend la Libération</span><span>+ plan du nouveau logement et déménagement coordonné</span><span>+ installation complète, démarches, suivi à J+15</span></span>
-<span class="tl" style="align-self: flex-start">Découvrir · dès 3 200 €</span>
+<span class="tl" style="align-self: flex-start">Découvrir · dès {montant(FP.T.prix[0])}</span>
 </a>
 <a href="/succession" style="display: flex; flex-direction: column; gap: 22px; text-decoration: none; color: #18202C">
 <!-- Photo : src/assets/photos/accueil-03.jpg · objets de famille, album photo -->
@@ -58,7 +59,7 @@ const meta = META['/'];
 <h3 class="h3" style="font-size: 30px">Libérer son logement, avec délicatesse</h3>
 <span class="p">Après un décès, le logement devient une épreuve de plus, souvent à plusieurs et à distance. Nous vous accompagnons immédiatement, et tout au long du processus : partage organisé avec vous, papiers classés, lien avec le notaire, jusqu'à la vente si vous le souhaitez.</span>
 <span style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #DDD4C5; padding-top: 16px; font-size: 15px; color: #18202C"><span>Tout ce que comprend la Libération</span><span>+ reportage photo pour les héritiers, partage des objets</span><span>+ papiers, lien notaire, accompagnement à la vente</span></span>
-<span class="tl" style="align-self: flex-start">Découvrir · dès 2 600 €</span>
+<span class="tl" style="align-self: flex-start">Découvrir · dès {montant(FP.S.prix[0])}</span>
 </a>
 </div>
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 26px; border-top: 1px solid #DDD4C5; padding-top: 28px"><span class="p">Prix de départ : le prix exact est fixé après le diagnostic offert.</span><a class="btn" href="/estimation">Estimer mon accompagnement</a></div>

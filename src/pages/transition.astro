@@ -1,4 +1,5 @@
 ---
+import { FORMULES_PRIX as FP, OPTIONS as OP, montant } from '../config/tarifs';
 /** Maquette : Formule-Transition.dc.html · adresse : /transition */
 import Famille from '../layouts/Famille.astro';
 import { SITE } from '../config/site';
@@ -17,7 +18,7 @@ const meta = META['/transition'];
 <span style="font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-size: 26px; color: #3D5A80; margin-top: -12px">La Libération, quand un déménagement suit.</span>
 <h1 class="h1" style="color: #15233A">Passer d'un logement à l'autre, sans aucune charge, ni physique ni mentale.</h1>
 <p class="lead" style="color: #4A4F58">Vous entrez en résidence, vous changez de logement, vous vous rapprochez de vos enfants, ou c'est un proche qui déménage. Nous organisons le tri, le déménagement, l'installation et les démarches, puis nous rendons l'ancien logement vidé et nettoyé.</p>
-<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 28px"><a class="btn" href="/contact">Demander un diagnostic offert</a><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 30px; color: #3D5A80">dès 3 200 € TTC</span></div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 28px"><a class="btn" href="/contact">Demander un diagnostic offert</a><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 30px; color: #3D5A80">dès {montant(FP.T.prix[0])} TTC</span></div>
 </div>
 </div>
 </Hero>
@@ -85,10 +86,10 @@ const meta = META['/transition'];
 </div>
 <div style="display: flex; flex-direction: column; border-top: 1px solid #15233A">
 <span class="lbl" style="padding: 16px 0 2px">À partir de · TTC</span>
-<div class="row" style="padding: 22px 0"><span style="font-size: 18px">1-2 pièces</span><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 500">3 200 €</span></div>
-<div class="row" style="padding: 22px 0"><span style="font-size: 18px">3 pièces</span><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 500">4 200 €</span></div>
-<div class="row" style="padding: 22px 0"><span style="font-size: 18px">4 pièces</span><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 500">4 900 €</span></div>
-<div class="row" style="padding: 22px 0"><span style="font-size: 18px">5 pièces et plus</span><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 500">6 700 €</span></div>
+<div class="row" style="padding: 22px 0"><span style="font-size: 18px">1-2 pièces</span><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 500">{montant(FP.T.prix[0])}</span></div>
+<div class="row" style="padding: 22px 0"><span style="font-size: 18px">3 pièces</span><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 500">{montant(FP.T.prix[1])}</span></div>
+<div class="row" style="padding: 22px 0"><span style="font-size: 18px">4 pièces</span><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 500">{montant(FP.T.prix[2])}</span></div>
+<div class="row" style="padding: 22px 0"><span style="font-size: 18px">5 pièces et plus</span><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 500">{montant(FP.T.prix[3])}</span></div>
 </div>
 </div>
 </section>

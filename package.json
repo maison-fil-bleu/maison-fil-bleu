@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "node scripts/prix-publics.mjs && astro build",
     "preview": "astro preview",
     "test:acces": "supabase db query --linked -f supabase/tests/regles-acces.sql",
     "db:push": "supabase db push --linked"

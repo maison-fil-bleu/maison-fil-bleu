@@ -1,4 +1,5 @@
 ---
+import { FORMULES_PRIX as FP, OPTIONS as OP, montant } from '../config/tarifs';
 /** Maquette : Formule-Liberation.dc.html · adresse : /liberation */
 import Famille from '../layouts/Famille.astro';
 import { SITE } from '../config/site';
@@ -17,7 +18,7 @@ const meta = META['/liberation'];
 <span style="font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-size: 26px; color: #3D5A80; margin-top: -12px">La base de tous nos accompagnements.</span>
 <h1 class="h1" style="color: #15233A">Libérer un logement, sereinement et dans les temps.</h1>
 <p class="lead" style="color: #4A4F58">Un départ en résidence, une fin de bail, une vente : un logement plein bloque tout. Nous trions avec vous, donnons ce qui peut servir, évacuons le reste et vous rendons un logement vide et propre, prêt à être rendu, loué ou vendu.</p>
-<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 28px"><a class="btn" href="/contact">Demander un diagnostic offert</a><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 30px; color: #3D5A80">dès 1 560 € TTC</span></div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 28px"><a class="btn" href="/contact">Demander un diagnostic offert</a><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 30px; color: #3D5A80">dès {montant(FP.L.prix[0])} TTC</span></div>
 </div>
 </div>
 </Hero>
@@ -84,10 +85,10 @@ const meta = META['/liberation'];
 </div>
 <div style="display: flex; flex-direction: column; border-top: 1px solid #15233A">
 <span class="lbl" style="padding: 16px 0 2px">À partir de · TTC</span>
-<div class="row" style="padding: 22px 0"><span style="font-size: 18px">1-2 pièces</span><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 500">1 560 €</span></div>
-<div class="row" style="padding: 22px 0"><span style="font-size: 18px">3 pièces</span><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 500">2 550 €</span></div>
-<div class="row" style="padding: 22px 0"><span style="font-size: 18px">4 pièces</span><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 500">3 160 €</span></div>
-<div class="row" style="padding: 22px 0"><span style="font-size: 18px">5 pièces et plus</span><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 500">4 340 €</span></div>
+<div class="row" style="padding: 22px 0"><span style="font-size: 18px">1-2 pièces</span><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 500">{montant(FP.L.prix[0])}</span></div>
+<div class="row" style="padding: 22px 0"><span style="font-size: 18px">3 pièces</span><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 500">{montant(FP.L.prix[1])}</span></div>
+<div class="row" style="padding: 22px 0"><span style="font-size: 18px">4 pièces</span><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 500">{montant(FP.L.prix[2])}</span></div>
+<div class="row" style="padding: 22px 0"><span style="font-size: 18px">5 pièces et plus</span><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 500">{montant(FP.L.prix[3])}</span></div>
 </div>
 </div>
 </section>

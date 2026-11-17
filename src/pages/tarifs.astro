@@ -1,4 +1,5 @@
 ---
+import { FORMULES_PRIX as FP, OPTIONS as OP, montant } from '../config/tarifs';
 /** Maquette : Tarifs.dc.html · adresse : /tarifs */
 import Famille from '../layouts/Famille.astro';
 import { SITE } from '../config/site';
@@ -25,9 +26,9 @@ const meta = META['/tarifs'];
 <table style="width: 100%; min-width: 760px; border-collapse: collapse; font-variant-numeric: lining-nums">
 <thead><tr><td></td><th scope="colgroup" colspan="4" class="th th-groupe">À partir de · TTC</th></tr><tr><th scope="col" class="th" style="text-align: left"><span class="sr-only">Formule</span></th><th scope="col" class="th">1-2 pièces</th><th scope="col" class="th">3 pièces</th><th scope="col" class="th">4 pièces</th><th scope="col" class="th">5 pièces et +</th></tr></thead>
 <tbody>
-<tr><th scope="row" style="text-align: left; padding: 28px 0; border-top: 1px solid #15233A; font-weight: 300"><span style="display: block; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 600">Libération</span><span style="font-size: 14px; color: #5B606A">Libérer et rendre un logement propre</span></th><td class="td" style="border-top: 1px solid #15233A">1 560 €</td><td class="td" style="border-top: 1px solid #15233A">2 550 €</td><td class="td" style="border-top: 1px solid #15233A">3 160 €</td><td class="td" style="border-top: 1px solid #15233A">4 340 €</td></tr>
-<tr><th scope="row" style="text-align: left; padding: 28px 0; border-top: 1px solid #DDD4C5; font-weight: 300"><span style="display: block; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 600">Transition</span><span style="font-size: 14px; color: #5B606A">Passer d'un logement à l'autre</span></th><td class="td">3 200 €</td><td class="td">4 200 €</td><td class="td">4 900 €</td><td class="td">6 700 €</td></tr>
-<tr><th scope="row" style="text-align: left; padding: 28px 0; border-top: 1px solid #DDD4C5; border-bottom: 1px solid #DDD4C5; font-weight: 300"><span style="display: block; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 600">Succession</span><span style="font-size: 14px; color: #5B606A">Le logement d'un proche</span></th><td class="td" style="border-bottom: 1px solid #DDD4C5">2 600 €</td><td class="td" style="border-bottom: 1px solid #DDD4C5">3 900 €</td><td class="td" style="border-bottom: 1px solid #DDD4C5">4 600 €</td><td class="td" style="border-bottom: 1px solid #DDD4C5">6 300 €</td></tr>
+<tr><th scope="row" style="text-align: left; padding: 28px 0; border-top: 1px solid #15233A; font-weight: 300"><span style="display: block; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 600">Libération</span><span style="font-size: 14px; color: #5B606A">Libérer et rendre un logement propre</span></th><td class="td" style="border-top: 1px solid #15233A">{montant(FP.L.prix[0])}</td><td class="td" style="border-top: 1px solid #15233A">{montant(FP.L.prix[1])}</td><td class="td" style="border-top: 1px solid #15233A">{montant(FP.L.prix[2])}</td><td class="td" style="border-top: 1px solid #15233A">{montant(FP.L.prix[3])}</td></tr>
+<tr><th scope="row" style="text-align: left; padding: 28px 0; border-top: 1px solid #DDD4C5; font-weight: 300"><span style="display: block; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 600">Transition</span><span style="font-size: 14px; color: #5B606A">Passer d'un logement à l'autre</span></th><td class="td">{montant(FP.T.prix[0])}</td><td class="td">{montant(FP.T.prix[1])}</td><td class="td">{montant(FP.T.prix[2])}</td><td class="td">{montant(FP.T.prix[3])}</td></tr>
+<tr><th scope="row" style="text-align: left; padding: 28px 0; border-top: 1px solid #DDD4C5; border-bottom: 1px solid #DDD4C5; font-weight: 300"><span style="display: block; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 600">Succession</span><span style="font-size: 14px; color: #5B606A">Le logement d'un proche</span></th><td class="td" style="border-bottom: 1px solid #DDD4C5">{montant(FP.S.prix[0])}</td><td class="td" style="border-bottom: 1px solid #DDD4C5">{montant(FP.S.prix[1])}</td><td class="td" style="border-bottom: 1px solid #DDD4C5">{montant(FP.S.prix[2])}</td><td class="td" style="border-bottom: 1px solid #DDD4C5">{montant(FP.S.prix[3])}</td></tr>
 </tbody>
 </table>
 </div>
@@ -41,11 +42,11 @@ const meta = META['/tarifs'];
 <span class="lbl">Options</span>
 <h2 class="h2">Seulement si c'est utile.</h2>
 <div style="display: flex; flex-direction: column; border-top: 1px solid #CFC5B4; margin-top: 10px">
-<div class="row"><span>Recherche de résidence</span><span style="font-weight: 400">700 €</span></div>
-<div class="row"><span>Caves, garages, greniers</span><span style="font-weight: 400">75 € / m³</span></div>
-<div class="row"><span>Gardiennage du logement pendant la vente ou la location</span><span style="font-weight: 400">150 € / mois</span></div>
+<div class="row"><span>Recherche de résidence</span><span style="font-weight: 400">{montant(OP.rechercheResidence.prix)}</span></div>
+<div class="row"><span>Caves, garages, greniers</span><span style="font-weight: 400">{montant(OP.cavesParM3)} / m³</span></div>
+<div class="row"><span>Gardiennage du logement pendant la vente ou la location</span><span style="font-weight: 400">{montant(OP.gardiennageParMois)} / mois</span></div>
 <div class="row"><span>Recherche d'un box de stockage à proximité, au meilleur prix (location réglée par vous ; transport jusqu'au box sur devis, sauf en Transition)</span><span style="font-weight: 400">comprise en Transition et Succession · 90 € en Libération</span></div>
-<div class="row"><span>Installation des objets gardés chez un proche</span><span style="font-weight: 400">dès 350 €</span></div>
+<div class="row"><span>Installation des objets gardés chez un proche</span><span style="font-weight: 400">dès {montant(OP.installationProche.prix)}</span></div>
 <div class="row"><span>Vide-maison, deux matinées au plus</span><span style="font-weight: 400">sur devis</span></div>
 <div class="row"><span>Adaptation du logement : artisans et devis comparés</span><span style="font-weight: 400">sur devis</span></div>
 <div class="row"><span>Urgence, sous sept jours</span><span style="font-weight: 400">+ 25 %</span></div>

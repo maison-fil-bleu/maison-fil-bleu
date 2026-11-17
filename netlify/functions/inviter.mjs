@@ -13,8 +13,7 @@
  */
 import { createClient } from '@supabase/supabase-js';
 import { SUPABASE_URL, SUPABASE_CLE_PUBLIQUE } from '../../src/config/supabase.ts';
-
-const json = (status, corps) => new Response(JSON.stringify(corps), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
+import { json, estAdmin } from '../lib/admin.mjs';
 
 export default async (req) => {
   if (req.method !== 'POST') return json(405, { erreur: 'Méthode non autorisée.' });
@@ -31,12 +30,7 @@ export default async (req) => {
   if (!dossierId || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json(400, { erreur: 'Dossier ou e-mail invalide.' });
 
   // 1. L'appelant est-il administrateur (avec double authentification) ?
-  const commeAppelant = createClient(SUPABASE_URL, SUPABASE_CLE_PUBLIQUE, {
-    global: { headers: { Authorization: `Bearer ${jeton}` } },
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-  const { data: admins, error: eAdmin } = await commeAppelant.from('admins').select('email').limit(1);
-  if (eAdmin || !admins?.length) return json(403, { erreur: 'Accès réservé aux administrateurs.' });
+  if (!(await estAdmin(req))) return json(403, { erreur: 'Accès réservé aux administrateurs.' });
 
   const serveur = createClient(SUPABASE_URL, cleSecrete, { auth: { persistSession: false, autoRefreshToken: false } });
 

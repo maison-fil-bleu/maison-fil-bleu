@@ -1039,7 +1039,9 @@ function renderSettings(){
   <div class="card"><h3>Société (mentions du devis PDF)</h3><label>Commune du siège (point de départ des distances)<select data-st="siegeVille">${Object.keys(COORDS).filter(k=>COORDS[k]).map(v=>`<option ${v===so.siegeVille?'selected':''}>${esc(v)}</option>`).join('')}</select></label>${tf('adresse','Adresse du siège')}<div class="grid2">${tf('siret','SIRET')}${tf('rcs','RCS')}${tf('tva','N° de TVA')}${tf('tel','Téléphone')}</div>${tf('email','E-mail')}${tf('mediateur','Médiateur de la consommation')}${tf('signataire','Signataire pour la société')}</div>
   <div class="card"><h3>Commissions</h3><div class="grid2">${f('partCom','Votre part des honoraires de vente (0 à 1)')}${f('honorairesMoyens','Honoraires moyens HT','100')}</div></div>
   <div class="card"><h3>Prix TTC (1-2 p. / 3 p. / 4 p. / 5 p.+)</h3>${grid('grids.L','Libération')}${grid('grids.T','Transition')}${grid('grids.S','Succession')}${grid('installation','Installation (chambre / studio / 2 p. / 3 p.)')}
-  <div class="grid2">${f('m3Sup','Volume en plus, €/m³ TTC','1')}${f('residence','Recherche de résidence','1')}${f('gardiennage','Gardiennage, €/mois','1')}${f('urgence','Urgence, %','1')}</div></div>
+  <div class="grid2">${f('m3Sup','Volume en plus, €/m³ TTC','1')}${f('residence','Recherche de résidence','1')}${f('gardiennage','Gardiennage, €/mois','1')}${f('urgence','Urgence, %','1')}</div>
+  <div class="suggest">Ces prix (Libération, Transition, Succession, installation, volume en plus, recherche de résidence, gardiennage, urgence) sont aussi ceux du site : simulateur, page Tarifs, pages des formules. Après une modification, mettez le site à jour.</div>
+  <button class="btn" id="b-prix-site" type="button">Mettre à jour les prix du site</button></div>
   <div class="card"><h3>Fil Bleu Pro (HT)</h3>${grid('proNettoyage','Nettoyage seul (jusqu\'à 30 m² / 55 m² / 75 m² / 100 m²)')}<div class="grid2">${PRO_OPTS.map(([k,l,u])=>`<label>${esc(l)}, € HT/${u}<input type="number" inputmode="decimal" step="0.5" data-s="proOpts.${k}.0" value="${(S.proOpts?.[k]||DEFAULTS.proOpts[k])[0]}"></label>`).join('')}</div><div class="grid2">${f('proForfait','Forfait d\'intervention','1')}${f('proM3','Débarras au-delà du forfait, €/m³','1')}${f('proM3Inclus','m³ compris dans le forfait','1')}</div></div>
   <div class="card"><h3>Coûts</h3><div class="grid2">${f('interim','Intérim, €/h')}${f('porteur','Vos heures, €/h chargé')}${f('decheterie','Déchèterie, €/m³')}${f('camionJour','Camion, €/jour','1')}${f('kmCout','Trajet, €/km')}${f('consommables','Consommables par chantier','1')}</div></div>
   <div class="card"><h3>Rythmes de travail</h3><div class="grid2">${f('rythmeM3','Débarras, h/m³')}${f('rythmeM2','Nettoyage, h/m²')}${f('baie','Baie vitrée, h')}${f('partPorteur','Votre part des heures (0 à 1)')}</div>
@@ -1053,6 +1055,19 @@ function renderSettings(){
   app.querySelectorAll('[data-s]').forEach(el => el.addEventListener('change', () => { setPath(S, el.dataset.s, parseFloat(el.value)||0); persistSettings(); showToast('Réglage enregistré.'); }));
   app.querySelectorAll('[data-st]').forEach(el => el.addEventListener('change', () => { S.soc = {...DEFAULTS.soc, ...(S.soc||{}), [el.dataset.st]: el.value.trim()}; persistSettings(); showToast('Réglage enregistré.'); }));
   $('#b-reset').onclick =() => { S = structuredClone(DEFAULTS); persistSettings(); render(); };
+  $('#b-prix-site').onclick = async (e) => {
+    const b = e.currentTarget; if(!navigator.onLine){ showToast('Pas de réseau : réessayez plus tard.'); return; }
+    b.disabled = true; b.textContent = 'Mise à jour en cours…';
+    let ok = false, msg = '';
+    try{
+      await persistSettings();
+      const { data: { session } } = await sb.auth.getSession();
+      const r = await fetch('/api/republier', { method:'POST', headers:{ authorization:`Bearer ${session?.access_token||''}` } });
+      const j = await r.json().catch(()=>({})); ok = r.ok; msg = j.erreur||'';
+    }catch(err){ msg = navigator.onLine ? 'La mise à jour du site a échoué.' : 'Pas de réseau.'; }
+    finally{ b.disabled = false; b.textContent = 'Mettre à jour les prix du site'; }
+    showToast(ok ? 'C\'est parti : le site affichera les nouveaux prix d\'ici 1 à 2 minutes.' : (msg || 'La mise à jour du site a échoué.'));
+  };
 }
 
 let toastT; function showToast(t){ let el = $('#toast'); if(!el){ el = document.createElement('div'); el.id='toast'; el.setAttribute('role','status'); el.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:999px;font-size:14px;z-index:9'; document.body.appendChild(el); } el.textContent=t; el.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>el.hidden=true,2200); }

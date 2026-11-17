@@ -1,3 +1,4 @@
+import { FORMULES_PRIX, montant } from './tarifs';
 /**
  * Titres de page et meta descriptions (uniques, avec le lieu).
  * Les termes de recherche réels vont ici et dans les adresses, pas dans le texte visible (§ 8).
@@ -10,15 +11,15 @@ export const META: Record<string, { title: string; description: string }> = {
   },
   '/liberation': {
     title: 'Vider et nettoyer un logement à Marseille | Maison Fil Bleu',
-    description: 'Vider une maison ou un appartement à Marseille et en PACA : tri, dons, débarras, nettoyage, remise des clés. À partir de 1 560 € TTC, diagnostic offert.',
+    description: `Vider une maison ou un appartement à Marseille et en PACA : tri, dons, débarras, nettoyage, remise des clés. À partir de ${montant(FORMULES_PRIX.L.prix[0])} TTC, diagnostic offert.`,
   },
   '/transition': {
     title: 'Déménagement en résidence ou EHPAD à Marseille | Maison Fil Bleu',
-    description: 'Entrée en résidence ou en EHPAD, logement plus petit à Marseille et en PACA : tri, déménagement, installation, démarches. À partir de 3 200 € TTC.',
+    description: `Entrée en résidence ou en EHPAD, logement plus petit à Marseille et en PACA : tri, déménagement, installation, démarches. À partir de ${montant(FORMULES_PRIX.T.prix[0])} TTC.`,
   },
   '/succession': {
     title: "Succession : logement d'un proche à Marseille | Maison Fil Bleu",
-    description: 'Débarras succession à Marseille et en PACA : partage entre héritiers, papiers, lien avec le notaire, nettoyage, aide à la vente. À partir de 2 600 € TTC.',
+    description: `Débarras succession à Marseille et en PACA : partage entre héritiers, papiers, lien avec le notaire, nettoyage, aide à la vente. À partir de ${montant(FORMULES_PRIX.S.prix[0])} TTC.`,
   },
   '/notre-methode': {
     title: 'Notre méthode en 5 étapes | Maison Fil Bleu Marseille',
