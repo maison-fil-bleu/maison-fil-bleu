@@ -68,7 +68,7 @@ const meta = META['/pro'];
 <div class="w g2" style="grid-template-columns: 5fr 7fr; align-items: start">
 <div style="display: flex; flex-direction: column; gap: 22px"><span class="lbl">Demandez votre devis</span><h2 class="h2">Réponse sous 24 heures.</h2><p class="p">Décrivez le bien en quelques mots. Des photos par e-mail accélèrent le devis.</p><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 40px; font-weight: 500">{SITE.telephonePro}</span><span>{SITE.emailPro}</span></div>
 <form name="devis-pro" method="POST" action="/pro/merci-devis" data-netlify="true" netlify-honeypot="bot-field" style="background: #FFFFFF; border: 1px solid #E3DCCF; padding: 52px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px 34px" class="g2">
-<input type="hidden" name="form-name" value="devis-pro">
+<input type="hidden" name="form-name" value="devis-pro"><input type="hidden" name="reference" data-reference><input type="hidden" name="lien_dossier" data-lien-dossier>
 <p class="hp" aria-hidden="true"><label>Ne pas remplir ce champ <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
 <label class="f">Nom<input name="nom" autocomplete="name" required></label>
 <label class="f">Société<input name="societe" autocomplete="organization" placeholder="Agence, syndic, étude…"></label>
@@ -90,3 +90,11 @@ const meta = META['/pro'];
 .f{display:flex;flex-direction:column;gap:9px;font-family:'Nunito Sans',sans-serif;font-size:11.5px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:#5B606A}
 .f input,.f select,.f textarea{font-family:'Nunito Sans',sans-serif;font-size:16px;font-weight:300;letter-spacing:0;text-transform:none;color:#18202C;background:transparent;border:none;border-bottom:1px solid #BDB2A0;padding:10px 0;width:100%;box-sizing:border-box;border-radius:0}
 </style>
+
+<script>
+  // Référence de la demande : devient l'identifiant du dossier créé dans le back-office,
+  // et le lien de l'e-mail de notification ouvre directement ce dossier.
+  const ref = 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  document.querySelectorAll('[data-reference]').forEach((i) => { (i as HTMLInputElement).value = ref; });
+  document.querySelectorAll('[data-lien-dossier]').forEach((i) => { (i as HTMLInputElement).value = `${location.origin}/admin#dossier=${ref}`; });
+</script>

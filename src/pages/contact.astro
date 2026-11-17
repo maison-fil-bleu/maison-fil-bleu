@@ -35,7 +35,7 @@ const meta = META['/contact'];
 </div>
 <form class="g2f" id="formulaire" name="rappel" method="POST" action="/merci" data-netlify="true" netlify-honeypot="bot-field" style="background: #FFFFFF; border: 1px solid #E3DCCF; padding: 56px">
 <span style="grid-column: 1 / -1; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 36px; font-weight: 500">Être rappelé</span>
-<input type="hidden" name="form-name" value="rappel">
+<input type="hidden" name="form-name" value="rappel"><input type="hidden" name="reference" data-reference><input type="hidden" name="lien_dossier" data-lien-dossier>
 <p class="hp" aria-hidden="true"><label>Ne pas remplir ce champ <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
 <div class="est-rappel" data-estimation hidden>
 <span class="lbl lbl-laiton">Votre sélection en ligne</span>
@@ -123,3 +123,11 @@ const meta = META['/contact'];
   .split,.g2f{grid-template-columns:minmax(0,1fr) !important;gap:40px !important}
 }
 </style>
+
+<script>
+  // Référence de la demande : devient l'identifiant du dossier créé dans le back-office,
+  // et le lien de l'e-mail de notification ouvre directement ce dossier.
+  const ref = 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  document.querySelectorAll('[data-reference]').forEach((i) => { (i as HTMLInputElement).value = ref; });
+  document.querySelectorAll('[data-lien-dossier]').forEach((i) => { (i as HTMLInputElement).value = `${location.origin}/admin#dossier=${ref}`; });
+</script>

@@ -1067,10 +1067,13 @@ $('#nav-new').onclick = startNew;
 $('#nav-set').onclick = () => { view={name:'settings'}; render(); };
 $('#nav-bilan').onclick = () => { view={name:'bilan'}; render(); window.scrollTo(0,0); };
 document.querySelector('nav.bottom').hidden = false;
-loadLocal(); render();
+// Lien direct vers un dossier (ex. depuis l'e-mail d'une demande du site : /admin#dossier=<référence>).
+const cible = new URLSearchParams(location.hash.slice(1)).get('dossier');
+const ouvrirCible = () => { if(cible && dossiers[cible] && view.name==='list'){ view = {name:'dossier', id:cible}; tab='appel'; history.replaceState(null, '', '/admin'); return true; } return false; };
+loadLocal(); ouvrirCible(); render();
 (async () => {
   await compterPhotosEnAttente(); majBandeau();
-  try{ await viderFile(); await chargerDistant(); render(); }
+  try{ await viderFile(); await chargerDistant(); ouvrirCible(); render(); if(cible && !dossiers[cible]) showToast("Ce dossier n'existe pas (ou plus)."); }
   catch(e){ showToast("Pas de réseau : dossiers de l'appareil affichés."); }
   majBandeau();
 })();
