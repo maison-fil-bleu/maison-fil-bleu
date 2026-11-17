@@ -64,7 +64,10 @@ function ecranConnexion(info = '') {
     if (!email) { message("Saisissez d'abord votre e-mail ci-dessus.", 'warn'); app.querySelector('#c-email').focus(); return; }
     message('Envoi du lien…');
     const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: location.origin + '/admin' } });
-    message(error ? traduire(error) : `Lien envoyé à ${email}. Ouvrez l'e-mail sur cet appareil (pensez aux indésirables).`, error ? 'bad' : '');
+    // Même réponse que l'adresse ait un compte ou non : on ne laisse pas deviner les comptes existants.
+    const inconnue = error && /Signups not allowed|not found|not allowed/i.test(String(error.message));
+    if (error && !inconnue) message(traduire(error), 'bad');
+    else message(`Si cette adresse a un accès, un lien vient d'y être envoyé. Ouvrez l'e-mail sur cet appareil, dans ce navigateur (pensez aux indésirables).`);
   };
 }
 
