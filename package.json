@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "test:acces": "supabase db query --linked -f supabase/tests/regles-acces.sql",
+    "db:push": "supabase db push --linked"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.5",
