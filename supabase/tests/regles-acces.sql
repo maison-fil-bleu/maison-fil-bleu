@@ -1,18 +1,20 @@
 -- Tests des règles d'accès (à lancer avec : npm run test:acces).
--- Tout se passe dans une transaction annulée à la fin : aucune donnée ne reste dans la base.
+-- Tout se passe dans une transaction annulée à la fin : aucune donnée ne reste dans la base,
+-- et les vraies données (réglages, dossiers) ne sont pas modifiées.
 -- Chaque vérification lève une erreur « ÉCHEC … » si une règle laisse passer ce qu'elle ne devrait pas.
 
 begin;
 
 -- ---------- Données d'essai (créées en tant que propriétaire de la base) ----------
-insert into public.admins (email) values ('admin@essai.test');
+insert into public.admins (email) values ('admin@essai.test') on conflict do nothing;
 insert into public.dossiers (id, statut, formule, data) values
   ('dA', 'Signé', 'S', '{"suivi":{"honoraires":12500},"notes":"note interne A"}'),
   ('dB', 'Appel', 'T', '{"notes":"note interne B"}');
 insert into public.reglages (id, data) values (1,
   '{"grids":{"L":[1560,2550,3160,4340],"T":[3200,4200,4900,6700],"S":[2600,3900,4600,6300]},
     "m3Sup":75,"residence":700,"installation":[350,400,720,880],"gardiennage":150,"urgence":25,
-    "interim":21.64,"porteur":28,"partCom":0.7,"proNettoyage":[225,325,375,540]}');
+    "interim":21.64,"porteur":28,"partCom":0.7,"proNettoyage":[225,325,375,540]}')
+  on conflict (id) do update set data = excluded.data;   -- annulé par le rollback final
 insert into public.dossier_acces (dossier_id, email, role) values
   ('dA', 'famille.a@essai.test', 'titulaire'),
   ('dA', 'proche.a@essai.test', 'proche'),
@@ -133,11 +135,11 @@ reset role;
 set local role authenticated;
 set local request.jwt.claims = '{"role":"authenticated","sub":"00000000-0000-0000-0000-000000000001","email":"admin@essai.test","aal":"aal2"}';
 do $$ begin
-  if (select count(*) from public.dossiers) <> 2 then raise exception 'ÉCHEC 7a : admin ne lit pas dossiers'; end if;
+  if (select count(*) from public.dossiers where id in ('dA','dB')) <> 2 then raise exception 'ÉCHEC 7a : admin ne lit pas dossiers'; end if;
   if (select count(*) from public.reglages) <> 1 then raise exception 'ÉCHEC 7b : admin ne lit pas reglages'; end if;
   update public.espace_client set ville = 'Cassis' where dossier_id = 'dB';
   if not found then raise exception 'ÉCHEC 7c : admin ne modifie pas espace_client'; end if;
-  if (select count(*) from storage.objects where bucket_id in ('photos','documents')) <> 5 then
+  if (select count(*) from storage.objects where bucket_id in ('photos','documents') and split_part(name,'/',1) in ('dA','dB')) <> 5 then
     raise exception 'ÉCHEC 7d : admin ne voit pas tous les fichiers'; end if;
 end $$;
 reset role;

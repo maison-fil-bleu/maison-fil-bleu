@@ -118,7 +118,7 @@ async function viderFile(){
   for(const [id, d] of Object.entries(f)){ try{ await envoyer(d); delete f[id]; ok++; }catch(e){ break; } }
   localSet(K_FILE, f);
   const sup = suppressions(), reste = [];
-  for(const id of sup){ const { error } = await sb.from('dossiers').delete().eq('id', id); if(error) reste.push(id); }
+  for(const id of sup){ const { error } = await sb.from('dossiers').delete().eq('id', id); if(error) reste.push(id); else await supprimerFichiers(id); }
   localSet(K_SUPPR, reste);
   await envoyerPhotosEnAttente();
   if(ok) showToast('Modifications hors ligne envoyées.');
@@ -150,6 +150,16 @@ async function removeDossier(id){
   const f = fileAttente(); delete f[id]; localSet(K_FILE, f);
   const { error } = navigator.onLine ? await sb.from('dossiers').delete().eq('id', id) : { error: true };
   if(error){ localSet(K_SUPPR, [...new Set([...suppressions(), id])]); majBandeau(); }
+  else await supprimerFichiers(id);
+}
+async function supprimerFichiers(id){
+  for(const b of ['photos', 'documents']){
+    try{
+      const { data } = await sb.storage.from(b).list(id, { limit: 1000 });
+      const chemins = (data||[]).map(f => `${id}/${f.name}`);
+      if(chemins.length) await sb.storage.from(b).remove(chemins);
+    }catch(e){}
+  }
 }
 
 /* ---------- Photos : Supabase Storage (bucket privé « photos »), avec file hors ligne ---------- */
@@ -358,7 +368,7 @@ function renderDossier(){
   d.suivi = {...structuredClone(SUIVI0), ...(d.suivi||{})};
   if(!d.kmSource){ d.kmSource = 'estime'; setTimeout(()=>updateDistances(d,true),0); }
   if(showNouveau(d) && !d.nouveau) d.nouveau = { type: d.situation==='residence' ? 'residence' : 'appartement', nom:'', adr:null, ville:'', taille: d.situation==='residence' ? 0 : 2, etage:0, ascenseur:true, date:'', contact:'', km:null, kmAN:null };
-  const tabs = `<div class="tabs" role="tablist">${[['appel','1 · Appel'],['diag','2 · Sur place'],['devis','3 · Devis'],['suivi','4 · Suivi']].map(([k,l])=>`<button role="tab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join('')}</div>`;
+  const tabs = `<div class="tabs" role="tablist">${[['appel','1 · Appel'],['diag','2 · Sur place'],['devis','3 · Devis'],['suivi','4 · Suivi'],['espace','5 · Espace client']].map(([k,l])=>`<button role="tab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join('')}</div>`;
   const resume = `<div class="kpis"><div class="kpi"><b>${eur(c.ttc)}</b><span>${f_label(d)} · estimation</span></div><div class="kpi"><b class="${c.marge<0?'bad':c.pct<0.15?'warn':'good'}">${eur(c.marge)}</b><span>Marge société (${Math.round(c.pct*100)} %) après vos heures</span></div><div class="kpi"><b>${num(c.hEquipe,0)} h</b><span>Équipe · ${c.jours} jour${c.jours>1?'s':''}</span></div><div class="kpi"><b>${num(c.hPorteur,0)} h</b><span>Vos heures (${eur(c.cPorteur)})</span></div></div>`;
   let body = '';
   if(tab==='appel') body = `
@@ -503,9 +513,11 @@ function renderDossier(){
     ${ck('fini','Chantier terminé : compter ce dossier dans le bilan')}
     <label>Ce que j'ai appris sur ce chantier<textarea data-f="suivi.notes" placeholder="Ce qui a pris plus de temps que prévu, ce qu'il faudra demander au prochain diagnostic…">${esc(s.notes)}</textarea></label>
   </div>`; }
+  if(tab==='espace') body = `<div id="espace" style="display:flex;flex-direction:column;gap:18px"><div class="card"><p class="muted" style="margin:0">Chargement de l'espace client…</p></div></div>`;
   app.innerHTML = header(FORM[d.formule]) + `<div><h2>${esc(d.contact.nom||'Nouveau dossier')}</h2><p class="small muted" style="margin:4px 0 0">${esc(SITU[d.situation])} · ${esc(d.ville)}</p></div>` + tabs + resume + body
     + `<button class="btn danger" id="b-del" style="margin-top:8px">Supprimer ce dossier</button>`;
   bind(d);
+  if(tab==='espace') chargerEspace(d);
 }
 function f_label(d){ return FORM[d.formule]; }
 function quoteText(d,c){
@@ -743,11 +755,187 @@ async function downloadDevis(d){
   catch(e){ showToast('Téléchargement indisponible dans cette vue.'); }
   if(d.statut==='Diagnostic' || d.statut==='Appel'){ d.statut='Devis envoyé'; persist(d); render(); }
   // Copie du PDF dans l'espace de stockage privé « documents » (servira à l'espace client).
-  if(navigator.onLine){
-    const chemin = `${d.id}/devis-${devisNo(d)}${d.signature?'-signe':''}.pdf`;
-    const { error } = await sb.storage.from('documents').upload(chemin, blob, { contentType: 'application/pdf', upsert: true });
-    if(!error){ d.devisPdf = { chemin, date: new Date().toISOString(), signe: !!d.signature }; persist(d); }
-  }
+  if(navigator.onLine) await deposerDevis(d, blob);
+}
+async function deposerDevis(d, blob){
+  if(!blob) blob = await devisPdf(d);
+  const chemin = `${d.id}/devis-${devisNo(d)}${d.signature?'-signe':''}.pdf`;
+  const { error } = await sb.storage.from('documents').upload(chemin, blob, { contentType: 'application/pdf', upsert: true });
+  if(error) throw error;
+  d.devisPdf = { chemin, date: new Date().toISOString(), signe: !!d.signature }; persist(d);
+  return chemin;
+}
+
+/* ---------- Onglet « 5 · Espace client » : ce que voit la famille ---------- */
+// Données séparées du dossier (tables espace_client, dossier_acces, photos_partagees, documents) :
+// la famille ne lit jamais l'objet dossier, qui contient coûts, marges et notes internes.
+const ETAPES = [
+  ['diagnostic', 'Diagnostic'], ['devis', 'Devis signé'], ['preparation', 'Préparation'],
+  ['interventions', 'Interventions'], ['cles', 'Remise des clés']
+];
+const ETATS = [['a_venir','À venir'], ['en_cours','En cours'], ['termine','Terminé']];
+const TYPES_DOC = { devis:'Devis', facture:'Facture', etat_des_lieux:'État des lieux', autre:'Autre document' };
+const espaces = {};   // dossier_id -> { ligne, acces, photos, docs }
+let espaceTimer = null;
+function etapesParDefaut(d){
+  const avance = ['Devis envoyé','Signé','Terminé'].includes(d.statut), signe = !!d.signature || ['Signé','Terminé'].includes(d.statut);
+  return ETAPES.map(([cle]) => ({ cle, etat: (cle==='diagnostic' && avance) || (cle==='devis' && signe) || (d.statut==='Terminé') ? 'termine' : 'a_venir', date:'', message:'' }));
+}
+async function chargerEspace(d){
+  const box = $('#espace'); if(!box) return;
+  if(!navigator.onLine){ box.innerHTML = `<div class="card"><p style="margin:0">L'espace client se gère avec du réseau. Vos autres onglets restent utilisables hors ligne.</p></div>`; return; }
+  const enAttente = fileAttente()[d.id] || saveTimers[d.id];
+  if(enAttente){ try{ await envoyer(d); }catch(e){} }
+  const [l, a, p, k] = await Promise.all([
+    sb.from('espace_client').select('*').eq('dossier_id', d.id).maybeSingle(),
+    sb.from('dossier_acces').select('*').eq('dossier_id', d.id).order('created_at'),
+    sb.from('photos_partagees').select('*').eq('dossier_id', d.id).order('ordre'),
+    sb.from('documents').select('*').eq('dossier_id', d.id).order('date')
+  ]);
+  const err = l.error || a.error || p.error || k.error;
+  if(err){ box.innerHTML = `<div class="card"><p style="margin:0">Impossible de charger l'espace client : ${esc(err.message)}</p></div>`; return; }
+  const so = {...DEFAULTS.soc, ...(S.soc||{})};
+  espaces[d.id] = {
+    ligne: l.data || { dossier_id: d.id, formule: d.formule, ville: d.ville, interlocuteur: { nom: so.signataire && !/\[/.test(so.signataire) ? so.signataire.replace(/,.*$/, '') : '', tel: so.tel && !/\[/.test(so.tel) ? so.tel : '' }, etapes: etapesParDefaut(d), _nouveau: true },
+    acces: a.data || [], photos: p.data || [], docs: k.data || []
+  };
+  if(tab==='espace' && view.id===d.id) renderEspace(d);
+}
+function enregistrerEspace(d, tout){
+  const e = espaces[d.id]; if(!e) return;
+  clearTimeout(espaceTimer);
+  espaceTimer = setTimeout(async () => {
+    const { _nouveau, updated_at, ...ligne } = e.ligne;
+    ligne.formule = d.formule; ligne.ville = d.ville;
+    const { error } = await sb.from('espace_client').upsert(ligne);
+    if(error) showToast("L'espace client n'a pas pu être enregistré : " + error.message);
+    else { delete e.ligne._nouveau; if(tout) showToast('Espace client enregistré.'); }
+  }, tout ? 0 : 600);
+}
+function renderEspace(d){
+  const box = $('#espace'), e = espaces[d.id]; if(!box || !e) return;
+  const L = e.ligne, etapes = ETAPES.map(([cle, nom]) => ({ nom, ...(L.etapes.find(x => x.cle===cle) || { cle, etat:'a_venir', date:'', message:'' }) }));
+  const partagees = new Set(e.photos.map(x => x.chemin));
+  const photos = (d.photos||[]).filter(x => x.chemin);
+  box.innerHTML = `
+  ${L._nouveau ? `<div class="suggest">L'espace de cette famille n'est pas encore ouvert. Préparez-le ci-dessous, puis ajoutez les personnes qui y auront accès.</div>` : ''}
+  <div class="card"><h3>Accès</h3>
+    <p class="small muted" style="margin:0">La personne concernée et ses proches. Ils se connectent avec leur seule adresse e-mail, en recevant un lien.</p>
+    ${e.acces.length ? `<table>${e.acces.map(x => `<tr><td>${esc(x.email)}<br><span class="small muted">${x.role==='titulaire'?'Titulaire':'Proche'}${x.invite_le?` · invité le ${new Date(x.invite_le).toLocaleDateString('fr-FR')}`:' · pas encore invité'}</span></td><td class="n"><button type="button" class="btn ghost" data-retirer="${esc(x.email)}" style="padding:8px 12px">Retirer</button></td></tr>`).join('')}</table>` : `<p class="small" style="margin:0">Aucun accès pour l'instant.</p>`}
+    <div class="grid2"><label>E-mail<input id="ac-email" type="email" inputmode="email" placeholder="prenom.nom@exemple.fr" value="${e.acces.length ? '' : esc(d.contact.email||'')}"></label>
+    <label>Rôle${seg('ac-role', [['titulaire','Titulaire'],['proche','Proche']], e.acces.some(x=>x.role==='titulaire') ? 'proche' : 'titulaire')}</label></div>
+    <button type="button" class="btn ghost" id="ac-ajout">Ajouter cet accès</button>
+    <button type="button" class="btn" id="ac-inviter" disabled>Envoyer l'invitation</button>
+    <p class="small muted" style="margin:0">L'envoi des invitations par e-mail sera activé à l'étape suivante, avec la page de l'espace client.</p>
+  </div>
+  <div class="card"><h3>Interlocuteur affiché</h3>
+    <div class="grid2"><label>Nom<input data-esp="interlocuteur.nom" value="${esc(L.interlocuteur?.nom||'')}" placeholder="Prénom Nom"></label>
+    <label>Téléphone<input data-esp="interlocuteur.tel" type="tel" value="${esc(L.interlocuteur?.tel||'')}"></label></div>
+  </div>
+  <div class="card"><h3>Étapes</h3>
+    <p class="small muted" style="margin:0">Ce que la famille voit, dans l'ordre de la méthode. Le message est visible par elle : écrivez-lui directement.</p>
+    ${etapes.map((x, i) => `<div style="display:flex;flex-direction:column;gap:8px;padding:10px 0;${i?'border-top:1px solid var(--line)':''}">
+      <b style="font-weight:500">${i+1}. ${esc(x.nom)}</b>
+      ${seg('etape.'+x.cle, ETATS, x.etat)}
+      <label>Date ${x.etat==='termine'?'réelle':'prévue'}<input type="date" data-etape-date="${x.cle}" value="${esc(x.date||'')}"></label>
+      <label>Message pour la famille<textarea data-etape-msg="${x.cle}" placeholder="Ex. : Le tri est terminé, les dons partent mardi à l'association.">${esc(x.message||'')}</textarea></label>
+    </div>`).join('')}
+  </div>
+  <div class="card"><h3>Photos partagées</h3>
+    <p class="small muted" style="margin:0">Cochez les photos que la famille peut voir. Par défaut, aucune n'est partagée.</p>
+    ${photos.length ? `<div class="thumbs">${photos.map(x => `<label style="position:relative;cursor:pointer;gap:4px"><img data-chemin="${esc(x.chemin)}" alt="Photo du logement" style="outline:${partagees.has(x.chemin)?'3px solid var(--blue)':'none'};outline-offset:-3px"><span class="small" style="display:flex;gap:6px;align-items:center;color:var(--ink)"><input type="checkbox" data-partage="${esc(x.chemin)}" ${partagees.has(x.chemin)?'checked':''} style="width:auto"> Partagée</span></label>`).join('')}</div>` : `<p class="small" style="margin:0">Aucune photo dans ce dossier (ajoutez-en dans « 2 · Sur place »).</p>`}
+  </div>
+  <div class="card"><h3>Documents</h3>
+    ${e.docs.length ? `<table>${e.docs.map(x => `<tr><td>${esc(x.nom)}<br><span class="small muted">${esc(TYPES_DOC[x.type]||'Document')} · ${new Date(x.date).toLocaleDateString('fr-FR')}</span></td><td class="n" style="white-space:nowrap"><button type="button" class="btn ghost" data-voir="${esc(x.chemin)}" style="padding:8px 10px">Voir</button> <button type="button" class="btn danger" data-retdoc="${esc(x.id)}" style="padding:8px 10px">Retirer</button></td></tr>`).join('')}</table>` : `<p class="small" style="margin:0">Aucun document publié.</p>`}
+    <button type="button" class="btn ghost" id="doc-devis">Publier le devis${d.signature?' signé':''} (PDF)</button>
+    <label>Type du document à ajouter${seg('doc-type', Object.entries(TYPES_DOC).filter(([k])=>k!=='devis'), espaces._type||'facture')}</label>
+    <label class="btn ghost" style="text-align:center;cursor:pointer">Ajouter un document (PDF ou photo)<input id="doc-fichier" type="file" accept="application/pdf,image/jpeg,image/png" hidden></label>
+  </div>`;
+  bindEspace(d);
+  remplirVignettes();
+}
+function bindEspace(d){
+  const e = espaces[d.id], box = $('#espace'), L = e.ligne;
+  const val = (sel) => box.querySelector(sel);
+  // Interlocuteur
+  box.querySelectorAll('[data-esp]').forEach(el => el.addEventListener('input', () => { setPath(L, el.dataset.esp, el.value.trim()); enregistrerEspace(d); }));
+  // Étapes : état, date, message
+  const etape = (cle) => { let x = L.etapes.find(y => y.cle===cle); if(!x){ x = { cle, etat:'a_venir', date:'', message:'' }; L.etapes.push(x); } return x; };
+  box.querySelectorAll('[data-seg]').forEach(g => g.querySelectorAll('button').forEach(b => b.onclick = () => {
+    const nom = g.dataset.seg;
+    g.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x===b)));
+    if(nom.startsWith('etape.')){ etape(nom.slice(6)).etat = b.dataset.v; enregistrerEspace(d); renderEspace(d); }
+    if(nom==='doc-type') espaces._type = b.dataset.v;
+  }));
+  box.querySelectorAll('[data-etape-date]').forEach(el => el.addEventListener('change', () => { etape(el.dataset.etapeDate).date = el.value; enregistrerEspace(d); }));
+  box.querySelectorAll('[data-etape-msg]').forEach(el => el.addEventListener('input', () => { etape(el.dataset.etapeMsg).message = el.value; enregistrerEspace(d); }));
+  // Accès
+  val('#ac-ajout').onclick = async () => {
+    const email = val('#ac-email').value.trim().toLowerCase();
+    const role = val('[data-seg="ac-role"] [aria-pressed="true"]')?.dataset.v || 'proche';
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ showToast('Adresse e-mail invalide.'); return; }
+    if(e.acces.some(x => x.email===email)){ showToast('Cette adresse a déjà accès.'); return; }
+    if(L._nouveau) await new Promise(r => { enregistrerEspace(d, true); setTimeout(r, 400); });
+    const { data, error } = await sb.from('dossier_acces').insert({ dossier_id: d.id, email, role }).select().single();
+    if(error){ showToast("L'accès n'a pas pu être ajouté : " + error.message); return; }
+    e.acces.push(data); renderEspace(d); showToast('Accès ajouté.');
+  };
+  box.querySelectorAll('[data-retirer]').forEach(b => b.onclick = async () => {
+    if(!b.dataset.ok){ b.dataset.ok = '1'; b.textContent = 'Confirmer'; return; }
+    const { error } = await sb.from('dossier_acces').delete().eq('dossier_id', d.id).eq('email', b.dataset.retirer);
+    if(error){ showToast(error.message); return; }
+    e.acces = e.acces.filter(x => x.email !== b.dataset.retirer); renderEspace(d); showToast('Accès retiré.');
+  });
+  // Photos partagées
+  box.querySelectorAll('[data-partage]').forEach(cb => cb.onchange = async () => {
+    const chemin = cb.dataset.partage;
+    if(L._nouveau) await new Promise(r => { enregistrerEspace(d, true); setTimeout(r, 400); });
+    if(cb.checked){
+      const { data, error } = await sb.from('photos_partagees').insert({ dossier_id: d.id, chemin, ordre: e.photos.length }).select().single();
+      if(error){ cb.checked = false; showToast("Photo non partagée : " + error.message); return; }
+      e.photos.push(data);
+    } else {
+      const { error } = await sb.from('photos_partagees').delete().eq('dossier_id', d.id).eq('chemin', chemin);
+      if(error){ cb.checked = true; showToast(error.message); return; }
+      e.photos = e.photos.filter(x => x.chemin !== chemin);
+    }
+    renderEspace(d);
+  });
+  // Documents
+  const publier = async (chemin, type, nom) => {
+    if(L._nouveau) await new Promise(r => { enregistrerEspace(d, true); setTimeout(r, 400); });
+    const { data, error } = await sb.from('documents').upsert({ dossier_id: d.id, chemin, type, nom, date: new Date().toISOString() }, { onConflict: 'dossier_id,chemin' }).select().single();
+    if(error){ showToast('Document non publié : ' + error.message); return; }
+    e.docs = [...e.docs.filter(x => x.chemin !== chemin), data]; renderEspace(d); showToast('Document publié dans l\'espace client.');
+  };
+  val('#doc-devis').onclick = async () => {
+    try{ showToast('Préparation du devis…'); const chemin = await deposerDevis(d); await publier(chemin, 'devis', `Devis ${devisNo(d)}${d.signature?' signé':''}`); }
+    catch(err){ showToast('Le devis n\'a pas pu être publié.'); }
+  };
+  val('#doc-fichier').onchange = async (ev) => {
+    const f = ev.target.files[0]; if(!f) return;
+    if(f.size > 25*1024*1024){ showToast('Fichier trop lourd (25 Mo au plus).'); return; }
+    const propre = f.name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9._-]+/g,'-').slice(-80);
+    const chemin = `${d.id}/${Date.now().toString(36)}-${propre}`;
+    const { error } = await sb.storage.from('documents').upload(chemin, f, { contentType: f.type });
+    if(error){ showToast('Envoi impossible : ' + error.message); return; }
+    await publier(chemin, espaces._type || 'facture', f.name.replace(/\.[^.]+$/, ''));
+  };
+  box.querySelectorAll('[data-voir]').forEach(b => b.onclick = async () => {
+    const w = window.open('', '_blank');
+    const { data, error } = await sb.storage.from('documents').createSignedUrl(b.dataset.voir, 300);
+    if(error || !data?.signedUrl){ w?.close(); showToast('Document introuvable.'); return; }
+    if(w) w.location = data.signedUrl; else location.href = data.signedUrl;
+  });
+  box.querySelectorAll('[data-retdoc]').forEach(b => b.onclick = async () => {
+    if(!b.dataset.ok){ b.dataset.ok = '1'; b.textContent = 'Confirmer'; return; }
+    const doc = e.docs.find(x => String(x.id) === b.dataset.retdoc);
+    const { error } = await sb.from('documents').delete().eq('id', b.dataset.retdoc);
+    if(error){ showToast(error.message); return; }
+    // Le PDF du devis reste dans le dossier ; les autres fichiers ajoutés ici sont supprimés.
+    if(doc && doc.type !== 'devis') await sb.storage.from('documents').remove([doc.chemin]);
+    e.docs = e.docs.filter(x => x !== doc); renderEspace(d); showToast('Document retiré de l\'espace client.');
+  });
 }
 
 function bind(d){
