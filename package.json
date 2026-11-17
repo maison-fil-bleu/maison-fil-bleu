@@ -12,10 +12,13 @@
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.5",
+    "@supabase/supabase-js": "^2.119.0",
     "astro": "^5.18.2"
   },
   "devDependencies": {
     "@fontsource/cormorant-garamond": "^5.3.0",
+    "@fontsource/dm-sans": "^5.3.0",
+    "@fontsource/instrument-serif": "^5.3.0",
     "@fontsource/nunito-sans": "^5.3.0"
   }
 }

@@ -1,0 +1,111 @@
+---
+/**
+ * Back-office Maison Fil Bleu : appli de terrain « Fil Bleu Dossiers » (connexion obligatoire,
+ * double authentification). Page autonome, non indexée, installable sur le téléphone (PWA).
+ */
+---
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fil Bleu Dossiers</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#F6F4F0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Fil Bleu">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="/admin.webmanifest">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icons/fil-bleu-180.png">
+<link rel="preload" href="/fonts/admin/dm-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<style is:inline>
+@font-face{font-family:'DM Sans';font-style:normal;font-weight:300;font-display:swap;src:url('/fonts/admin/dm-sans-latin-300-normal.woff2') format('woff2')}
+@font-face{font-family:'DM Sans';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/admin/dm-sans-latin-400-normal.woff2') format('woff2')}
+@font-face{font-family:'DM Sans';font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/admin/dm-sans-latin-500-normal.woff2') format('woff2')}
+@font-face{font-family:'DM Sans';font-style:normal;font-weight:600;font-display:swap;src:url('/fonts/admin/dm-sans-latin-600-normal.woff2') format('woff2')}
+@font-face{font-family:'Instrument Serif';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/admin/instrument-serif-latin-400-normal.woff2') format('woff2')}
+@font-face{font-family:'Instrument Serif';font-style:italic;font-weight:400;font-display:swap;src:url('/fonts/admin/instrument-serif-latin-400-italic.woff2') format('woff2')}
+/* Layout : appli mobile, une colonne, barre d'onglets en bas */
+:root{--paper:#F6F4F0;--surface:#FFFFFF;--ink:#1E2430;--muted:#5A5F68;--line:#E2DDD4;--blue:#3D5A80;--tint:#E6EBF0;--good:#2F7A55;--warn:#A86A1D;--bad:#A23B3B;
+--display:'Instrument Serif',Georgia,serif;--body:'DM Sans',system-ui,-apple-system,sans-serif}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--paper:#15181E;--surface:#1D2129;--ink:#ECE9E3;--muted:#A3A8B1;--line:#2E333D;--blue:#8FB0D9;--tint:#1F2733;--good:#6FC79A;--warn:#E0A75A;--bad:#E58585;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#15181E;--surface:#1D2129;--ink:#ECE9E3;--muted:#A3A8B1;--line:#2E333D;--blue:#8FB0D9;--tint:#1F2733;--good:#6FC79A;--warn:#E0A75A;--bad:#E58585;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px calc(84px + env(safe-area-inset-bottom,0px))}
+main{max-width:620px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;text-wrap:balance}
+h1{font-size:34px;line-height:1.05}h2{font-size:26px;line-height:1.1}h3{font-size:20px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:8px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand small{display:block;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--blue)}
+.muted{color:var(--muted)}.small{font-size:13px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted);min-width:0}
+input,select,textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:11px 12px;width:100%;min-width:0}
+textarea{min-height:70px;resize:vertical}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:9px 14px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:var(--paper)}
+.step{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.step .ctl{display:flex;align-items:center;gap:6px}
+.step button{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-size:20px;cursor:pointer}
+.step output{min-width:44px;text-align:center;font-variant-numeric:tabular-nums;font-weight:500}
+.btn{font:inherit;font-weight:500;border:none;border-radius:12px;padding:13px 16px;background:var(--blue);color:var(--paper);cursor:pointer}
+.btn.ghost{background:transparent;color:var(--blue);border:1px solid var(--blue)}
+.btn.danger{background:transparent;color:var(--bad);border:1px solid var(--bad)}
+.list{display:flex;flex-direction:column;gap:10px}
+.item{display:flex;justify-content:space-between;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;cursor:pointer;text-align:left;font:inherit;color:inherit;width:100%}
+.item .t{font-weight:500}.item .s{font-size:13px;color:var(--muted)}
+.pill{display:inline-block;font-size:12px;padding:3px 10px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.tabs{display:flex;gap:6px;background:var(--tint);border-radius:12px;padding:4px}
+.tabs button{flex:1;font:inherit;font-size:14px;border:none;background:transparent;color:var(--ink);padding:10px 6px;border-radius:9px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--surface);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{background:var(--tint);border-radius:12px;padding:12px}
+.kpi b{display:block;font-family:var(--display);font-weight:400;font-size:28px;line-height:1.1;font-variant-numeric:tabular-nums}
+.kpi span{font-size:12px;color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+td{padding:7px 0;border-bottom:1px solid var(--line);vertical-align:top}
+td.n{text-align:right;white-space:nowrap;padding-left:10px}
+.banner{font-size:13px;padding:10px 12px;border-radius:10px;background:var(--tint);color:var(--muted)}
+.suggest{border-left:3px solid var(--blue);padding:8px 12px;background:var(--tint);border-radius:0 10px 10px 0;font-size:14px}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px}
+.thumbs img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;max-width:100%}
+nav.bottom{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:8px max(16px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));z-index:5}
+nav.bottom button{font:inherit;font-size:13px;background:none;border:none;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 12px;cursor:pointer}
+nav.bottom button[aria-current="page"]{color:var(--blue);font-weight:600}
+nav.bottom svg{width:22px;height:22px}
+.good{color:var(--good)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+pre.quote{white-space:pre-wrap;font-family:var(--body);font-size:14px;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px;margin:0;overflow-x:auto}
+.modal{position:fixed;inset:0;background:rgba(15,18,24,.55);z-index:20;display:flex;align-items:flex-end;justify-content:center;padding:0 max(12px,env(safe-area-inset-right,0px)) 0 max(12px,env(safe-area-inset-left,0px))}
+.modal .sheet{background:var(--surface);border-radius:18px 18px 0 0;width:100%;max-width:620px;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px;max-height:92vh;overflow:auto}
+.pad{width:100%;height:180px;background:#fff;border:1px dashed var(--muted);border-radius:12px;touch-action:none;display:block}
+.sig{background:#fff;border-radius:10px;border:1px solid var(--line);max-width:100%;height:auto}
+.cmp td.n{width:84px}
+label.row{flex-wrap:nowrap;align-items:flex-start}label.row input[type=checkbox]{margin-top:3px;flex:none}
+@media (max-width:420px){.grid2{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+[hidden]{display:none!important}
+#etat-reseau{position:sticky;top:0;z-index:6}
+.suggest.bad{border-left-color:var(--bad)}.suggest.warn{border-left-color:var(--warn)}
+</style>
+</head>
+<body>
+<div id="etat-reseau" class="banner" role="status" hidden></div>
+<main id="app"><p class="muted" style="padding:40px 0">Chargement…</p></main>
+<nav class="bottom" aria-label="Navigation" hidden>
+<button id="nav-list" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Dossiers</button>
+<button id="nav-new"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>Nouvel appel</button>
+<button id="nav-bilan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Bilan</button>
+<button id="nav-set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14 3h-4l-.6 2.7a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2L10 21h4l.6-2.7a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z"/></svg>Réglages</button>
+</nav>
+<script>
+  import '../admin/connexion.js';
+</script>
+</body>
+</html>

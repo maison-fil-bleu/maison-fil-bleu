@@ -6,3 +6,17 @@
 
 [build.environment]
   NODE_VERSION = "22"
+
+# Back-office : jamais indexé, jamais affiché dans un cadre, service worker toujours à jour.
+[[headers]]
+  for = "/admin"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "same-origin"
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/admin-sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
