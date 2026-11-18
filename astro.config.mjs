@@ -4,7 +4,7 @@ import sitemap from '@astrojs/sitemap';
 import faqSchema from './integrations/faq-schema.mjs';
 
 // Pages exclues du sitemap (remerciements, 404) : elles sont aussi en « noindex ».
-const EXCLUES = ['/admin', '/espace-client', '/merci', '/pro/merci-devis', '/pro/merci-grille', '/404'];
+const EXCLUES = ['/admin', '/espace-client', '/merci', '/merci-partenaire', '/pro/merci-devis', '/pro/merci-grille', '/404'];
 
 // [Nom de domaine définitif à confirmer] : sert aux adresses canoniques, au partage et au sitemap.
 export default defineConfig({

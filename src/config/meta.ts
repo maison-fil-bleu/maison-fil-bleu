@@ -61,6 +61,22 @@ export const META: Record<string, { title: string; description: string }> = {
     title: 'Gérer un logement à distance | Maison Fil Bleu Marseille',
     description: 'Vous habitez loin ? Photos, comptes rendus et un seul interlocuteur pour vider et libérer un logement à Marseille et en PACA sans vous déplacer.',
   },
+  '/notaires': {
+    title: 'Notaires : libérer le logement de vos clients | Maison Fil Bleu',
+    description: "Études notariales à Marseille et en PACA : nous prenons en charge le logement de vos clients, vente, départ en résidence ou succession, en lien avec votre étude.",
+  },
+  '/agences': {
+    title: 'Agences immobilières : un bien libéré à temps | Maison Fil Bleu',
+    description: "Agences immobilières à Marseille et en PACA : tri, déménagement, débarras et nettoyage du bien de votre vendeur, à la date de l'acte. Le mandat reste le vôtre.",
+  },
+  '/residences': {
+    title: 'Résidences seniors et EHPAD : une entrée préparée | Fil Bleu',
+    description: "Résidences seniors et EHPAD à Marseille et en PACA : tri, déménagement, installation de la chambre et ancien logement, au rythme du résident.",
+  },
+  '/partenaires': {
+    title: 'Espace partenaires : notaires, agences, résidences | Maison Fil Bleu',
+    description: 'Notaires, agences immobilières, résidences seniors et EHPAD : confiez-nous le logement de vos clients ou résidents à Marseille et en région PACA.',
+  },
   '/contact': {
     title: 'Contact et diagnostic offert à Marseille | Maison Fil Bleu',
     description: 'Demandez à être rappelé : un premier échange au téléphone puis un diagnostic sur place, offert et sans engagement, à Marseille et en région PACA.',

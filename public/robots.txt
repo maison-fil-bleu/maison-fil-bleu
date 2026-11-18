@@ -3,6 +3,7 @@ Allow: /
 Disallow: /admin
 Disallow: /espace-client
 Disallow: /merci
+Disallow: /merci-partenaire
 Disallow: /pro/merci-devis
 Disallow: /pro/merci-grille
 

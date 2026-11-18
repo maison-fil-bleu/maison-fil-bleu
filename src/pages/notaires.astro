@@ -1,0 +1,45 @@
+---
+/** Page partenaires : études notariales. Adresse imprimée (QR code de la plaquette) : /notaires, ne pas changer. */
+import PagePartenaire from '../components/PagePartenaire.astro';
+import { META } from '../config/meta';
+const meta = META['/notaires'];
+---
+<PagePartenaire cle="notaires" title={meta.title} description={meta.description}
+  surtitre="Pour les études notariales"
+  titre="Accompagner les familles," titreItalique="le logement et l'esprit libres."
+  sousTitre="Vente de la maison de famille, départ en résidence, succession : nous prenons en charge le logement et ses occupants, en lien avec votre étude."
+  structure="Votre étude" echeance="Date de l'acte, de l'état des lieux…" pdf="Maison-Fil-Bleu-plaquette-notaires.pdf">
+
+  <section class="sec pt-sec">
+    <div class="w">
+      <span class="lbl">Le cadre de travail</span>
+      <h2 class="h2">Ce que votre étude y gagne.</h2>
+      <div class="pt-cadre">
+        <div><h3>Un logement libéré à temps</h3><p class="p">Planning calé sur la date de l'acte.</p></div>
+        <div><h3>Un seul interlocuteur</h3><p class="p">Pour vos clients et leurs proches, même éloignés.</p></div>
+        <div><h3>Un suivi en ligne</h3><p class="p">Accessible à l'étude si le client le souhaite.</p></div>
+        <div><h3>Une mise en vente suivie</h3><p class="p">Avec l'agence ou l'étude choisie par vos clients.</p></div>
+      </div>
+
+      <h2 class="h2" style="margin-top:72px">En cas de succession.</h2>
+      <div class="pt-cadre">
+        <div><h3>Votre accord d'abord</h3><p class="p">Rien ne démarre sans votre accord. Un e-mail suffit.</p></div>
+        <div><h3>Tous les héritiers signent</h3><p class="p">Ou l'un d'eux, muni d'un mandat écrit des autres.</p></div>
+        <div><h3>Les choix consignés par écrit</h3><p class="p">Ce que chacun souhaite garder est noté ; en cas de désaccord, rien n'est donné ni évacué.</p></div>
+        <div><h3>Un règlement simplifié</h3><p class="p">Avec l'accord de tous les héritiers.</p></div>
+      </div>
+      <div class="pt-encart">
+        <h3>Modalités de paiement</h3>
+        <p class="p"><strong>Acompte</strong> au lancement, réglé par les héritiers ou, avec l'accord de tous, par l'étude sur la succession. <strong>Solde</strong> à la vente du bien ou à la clôture de la succession, selon ce qui est convenu. <strong>Facilités de paiement possibles.</strong></p>
+      </div>
+      <p class="p pt-note">Les héritiers sont informés que donner ou vendre des biens peut valoir acceptation de la succession : en cas de doute, ils vous consultent avant.</p>
+
+      <div class="pt-encart blanc" id="suivre">
+        <span class="lbl">Suivre un dossier</span>
+        <h3>Le suivi en ligne de vos clients.</h3>
+        <p class="p">Étapes, photos et documents du dossier, dans l'espace client Maison Fil Bleu. Accessible à l'étude lorsque le client en a donné l'accord.</p>
+        <a class="tl" href="/espace-client" style="align-self:flex-start">Accéder à l'espace de suivi →</a>
+      </div>
+    </div>
+  </section>
+</PagePartenaire>

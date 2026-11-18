@@ -4,6 +4,8 @@
  *
  *   - « rappel » (page Contact)  → dossier au statut « Appel », formule conseillée selon la situation ;
  *   - « devis-pro » (Fil Bleu Pro) → dossier « Fil Bleu Pro » (client agence ou pro).
+ *   - « partenaire » (/notaires, /agences, /residences) → dossier au statut « Appel » pour la famille
+ *     à rappeler, avec les coordonnées du partenaire dans les notes.
  *   - « grille-pro » (demande de grille tarifaire) : pas de dossier, l'e-mail de Netlify suffit.
  *
  * Le dossier reprend la forme de newDossier() de l'appli (src/admin/dossiers.js), pour s'ouvrir
@@ -20,6 +22,8 @@ const nettoyer = (v, max = 2000) => String(v ?? '').replace(/[\u0000-\u0008\u000
 
 function situationDepuis(texte) {
   const t = String(texte || '').toLowerCase();
+  if (t === 'succession') return { situation: 'deces', formule: 'S' };
+  if (t.includes('départ en résidence')) return { situation: 'residence', formule: 'T' };
   if (t.includes('quitté')) return { situation: 'deces', formule: 'S' };
   if (t.includes('déménagement')) return { situation: 'residence', formule: 'T' };
   if (t.includes('libérer')) return { situation: 'vente', formule: 'L' };
@@ -67,6 +71,28 @@ export function dossierDepuisDemande(form, data, id, maintenant) {
       data.message && `Date souhaitée et précisions : ${nettoyer(data.message)}`].filter(Boolean).join('\n');
     return d;
   }
+  if (form === 'partenaire') {
+    const PART = { notaires: 'étude notariale', agences: 'agence immobilière', residences: 'résidence / EHPAD' };
+    const type = PART[nettoyer(data.source, 20)] || 'partenaire';
+    const { situation, formule } = situationDepuis(data.situation);
+    Object.assign(d, { situation, formule });
+    d.diag.evac = EVAC[formule];
+    d.contact.nom = nettoyer(data.famille_nom, 120);
+    d.contact.tel = nettoyer(data.famille_telephone, 40);
+    d.contact.email = '';
+    d.contact.lien = `Confié par ${nettoyer(data.structure, 120) || type}`;
+    const commune = nettoyer(data.commune, 80);
+    if (commune) d.ville = villeAppli(commune);
+    d.partenaire = { type: nettoyer(data.source, 20), structure: nettoyer(data.structure, 120), nom: nettoyer(data.nom, 120), tel: nettoyer(data.telephone, 40), email: nettoyer(data.email, 160).toLowerCase() };
+    d.notes = [`Dossier confié par un partenaire (${type}) sur le site le ${date}.`,
+      `Partenaire : ${d.partenaire.structure} · ${d.partenaire.nom} · ${d.partenaire.tel} · ${d.partenaire.email}`,
+      data.situation && `Situation : ${nettoyer(data.situation, 80)}`,
+      commune && `Commune : ${commune}`,
+      data.echeance && `Échéance : ${nettoyer(data.echeance, 200)}`,
+      data.message && `Message : ${nettoyer(data.message)}`,
+      `Accord de la personne pour être contactée : ${data.accord === 'Oui' ? 'confirmé par le partenaire' : 'non confirmé'}`].filter(Boolean).join('\n');
+    return d;
+  }
   const { situation, formule } = situationDepuis(data.situation);
   Object.assign(d, { situation, formule });
   d.diag.evac = EVAC[formule];
@@ -93,7 +119,7 @@ export const handler = async (event) => {
   try { corps = JSON.parse(event.body || '{}'); } catch { return { statusCode: 400, body: 'invalide' }; }
   const p = corps.payload || {};
   const form = p.form_name || p.data?.['form-name'];
-  if (!['rappel', 'devis-pro'].includes(form)) return { statusCode: 200, body: 'ignoré' };
+  if (!['rappel', 'devis-pro', 'partenaire'].includes(form)) return { statusCode: 200, body: 'ignoré' };
   // Garde-fou : un événement Netlify comporte toujours l'identifiant de la demande.
   if (!p.id) return { statusCode: 400, body: 'refusé' };
   const cle = process.env.SUPABASE_SERVICE_ROLE_KEY;

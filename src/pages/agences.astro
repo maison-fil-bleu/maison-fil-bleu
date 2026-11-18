@@ -1,0 +1,30 @@
+---
+/** Page partenaires : agences immobilières. Adresse imprimée (QR code de la plaquette) : /agences, ne pas changer. */
+import PagePartenaire from '../components/PagePartenaire.astro';
+import { META } from '../config/meta';
+const meta = META['/agences'];
+---
+<PagePartenaire cle="agences" title={meta.title} description={meta.description}
+  surtitre="Pour les agences immobilières"
+  titre="Le logement ne bloque plus" titreItalique="la vente."
+  sousTitre="Tri, déménagement, débarras, nettoyage : nous libérons le bien de votre vendeur, à la date de l'acte. Vous gardez le mandat, nous gérons le reste."
+  structure="Votre agence" echeance="Date du compromis, de l'acte…" pdf="Maison-Fil-Bleu-plaquette-agences.pdf">
+
+  <section class="sec pt-sec">
+    <div class="w">
+      <span class="lbl">Le cadre de travail</span>
+      <h2 class="h2">Ce que vous y gagnez.</h2>
+      <div class="pt-cadre">
+        <div><h3>Un bien prêt à photographier</h3><p class="p">Vide, propre et rangé : il se photographie et se visite mieux.</p></div>
+        <div><h3>Un vendeur accompagné</h3><p class="p">Un seul interlocuteur pour le tri, le déménagement piloté, le débarras et le nettoyage.</p></div>
+        <div><h3>Des délais tenus</h3><p class="p">Le logement est libéré avant la signature, sans course de dernière minute.</p></div>
+        <div><h3>Le mandat reste le vôtre</h3><p class="p">Nous ne démarchons pas vos vendeurs : le dossier reste le vôtre, rien à gérer ni à facturer pour l'agence.</p></div>
+      </div>
+      <div class="pt-encart">
+        <h3>Un bien déjà vide ?</h3>
+        <p class="p">Pour les biens vacants à débarrasser et nettoyer avant les photos ou l'état des lieux, Fil Bleu Pro intervient avec un devis sous 24 h.</p>
+        <a class="tl" href="/pro" style="align-self:flex-start">Découvrir Fil Bleu Pro →</a>
+      </div>
+    </div>
+  </section>
+</PagePartenaire>

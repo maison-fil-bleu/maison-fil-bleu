@@ -1,0 +1,49 @@
+---
+/** Espace partenaires : accès aux trois pages dédiées (lien du pied de page). Pas de compte ni de mot de passe. */
+import Famille from '../layouts/Famille.astro';
+import { META } from '../config/meta';
+const meta = META['/partenaires'];
+const pages = [
+  { href: '/notaires', lbl: 'Études notariales', titre: 'Notaires', texte: "Vente de la maison de famille, départ en résidence, succession : le logement de vos clients, en lien avec votre étude." },
+  { href: '/agences', lbl: 'Agences immobilières', titre: 'Agences', texte: "Le bien de votre vendeur libéré à la date de l'acte, vide, propre et prêt à photographier." },
+  { href: '/residences', lbl: 'Résidences seniors et EHPAD', titre: 'Résidences', texte: "Une entrée préparée, une chambre installée dès le premier soir, et l'ancien logement pris en charge." },
+];
+---
+<Famille title={meta.title} description={meta.description}>
+  <section class="pt-hero">
+    <div class="w pt-hero-w">
+      <span class="lbl lbl-laiton">Espace partenaires</span>
+      <h1 class="h1">Vous accompagnez des familles ? <em>Confiez-nous le logement.</em></h1>
+      <p class="lead">Notaires, agences immobilières, résidences seniors et EHPAD : une page pour chacun, avec notre façon de travailler ensemble et un formulaire pour nous confier un dossier.</p>
+    </div>
+  </section>
+  <section class="sec">
+    <div class="w">
+      <div class="pt-formules">
+        {pages.map((p) => (
+          <a class="pt-formule" href={p.href}>
+            <span class="lbl">{p.lbl}</span>
+            <span class="pt-fnom">{p.titre}</span>
+            <span class="p">{p.texte}</span>
+            <span class="tl" style="margin-top:auto">Voir la page →</span>
+          </a>
+        ))}
+      </div>
+      <p class="p pt-note">Pour les biens vacants à débarrasser et nettoyer (syndics, bailleurs, gestionnaires) : <a href="/pro">Fil Bleu Pro</a>.</p>
+    </div>
+  </section>
+</Famille>
+<style is:global>
+  .pt-hero{background:var(--sable);border-bottom:1px solid var(--filet-2)}
+  .pt-hero-w{padding-top:104px;padding-bottom:96px;max-width:900px;display:flex;flex-direction:column;gap:24px}
+  .pt-hero .h1{color:var(--nuit)}
+  .pt-hero .h1 em{font-style:italic;color:var(--laiton-texte);font-weight:500}
+  .pt-hero .lead{color:var(--encre)}
+  .lbl-laiton{color:var(--laiton-texte)}
+  .pt-formules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+  .pt-formule{display:flex;flex-direction:column;gap:14px;background:#fff;border:1px solid var(--filet-2);border-top:3px solid var(--laiton);padding:30px 28px;text-decoration:none;color:var(--encre)}
+  .pt-formule:hover{box-shadow:0 14px 34px rgba(21,35,58,.08)}
+  .pt-fnom{font-family:var(--serif);font-size:34px;font-weight:500;color:var(--nuit);line-height:1.1}
+  .pt-note{margin-top:28px;font-size:15px}
+  @media (max-width:960px){ .pt-hero-w{padding-top:56px;padding-bottom:56px} .pt-formules{grid-template-columns:minmax(0,1fr)} }
+</style>

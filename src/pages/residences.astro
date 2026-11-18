@@ -1,0 +1,36 @@
+---
+/** Page partenaires : résidences seniors et EHPAD. Adresse imprimée (QR code de la plaquette) : /residences, ne pas changer. */
+import PagePartenaire from '../components/PagePartenaire.astro';
+import { META } from '../config/meta';
+const meta = META['/residences'];
+---
+<PagePartenaire cle="residences" title={meta.title} description={meta.description}
+  surtitre="Pour les résidences seniors et les EHPAD"
+  titre="Une entrée préparée," titreItalique="un résident qui retrouve ses repères."
+  sousTitre="Nous accompagnons le futur résident et sa famille : le tri, le déménagement, l'installation de la chambre, et l'ancien logement."
+  structure="Votre résidence ou établissement" echeance="Date d'entrée prévue…" pdf="Maison-Fil-Bleu-plaquette-residences.pdf">
+
+  <section class="sec pt-sec">
+    <div class="w">
+      <span class="lbl">Le cadre de travail</span>
+      <h2 class="h2">Entrer en résidence, sans tout porter seul.</h2>
+      <div class="pt-cadre">
+        <div><h3>Avant l'entrée</h3><p class="p">Tri accompagné, au rythme du résident. Plan de la chambre : ce qui suit, ce qui reste. Déménagement coordonné.</p></div>
+        <div><h3>Le jour de l'arrivée</h3><p class="p">Meubles placés, lit fait, photos accrochées, objets familiers à leur place dès le premier soir.</p></div>
+        <div><h3>L'ancien logement</h3><p class="p">Vidé, nettoyé, démarches faites, puis accompagné jusqu'à la vente ou la location si la famille le souhaite, avec l'agence de son choix ou notre agence partenaire.</p></div>
+        <div><h3>Des entrées à la date prévue</h3><p class="p">Planning calé sur la date d'entrée ; sous 7 jours en cas d'urgence.</p></div>
+      </div>
+      <h2 class="h2" style="margin-top:72px">Ce que votre établissement y gagne.</h2>
+      <div class="pt-cadre">
+        <div><h3>Au rythme du résident</h3><p class="p">Il reste le décideur, à chaque étape.</p></div>
+        <div><h3>Des familles soulagées</h3><p class="p">Un seul interlocuteur, même à distance, et un suivi en ligne.</p></div>
+        <div><h3>Une adaptation plus douce</h3><p class="p">Une chambre personnalisée dès le premier soir.</p></div>
+        <div><h3>Aucun frais pour l'établissement</h3><p class="p">Le devis est établi et signé avec la famille.</p></div>
+      </div>
+      <div class="pt-encart">
+        <h3>Dans le respect de votre cadre.</h3>
+        <p class="p">Nous intervenons selon vos horaires et votre règlement intérieur, dans la tranquillité des résidents.</p>
+      </div>
+    </div>
+  </section>
+</PagePartenaire>

@@ -1,0 +1,202 @@
+---
+/**
+ * Pages partenaires (/notaires, /agences, /residences) : adresses imprimées dans les QR codes
+ * des plaquettes, à ne jamais changer (BRIEF-pages-partenaires.md).
+ * Structure commune : accroche · trois formules · frise en 4 étapes · cadre propre au partenaire (slot)
+ * · formulaire « Confier un dossier » · plaquette PDF · contact direct.
+ */
+import Famille from '../layouts/Famille.astro';
+import { SITE, lienTel } from '../config/site';
+import { FORMULES_PRIX as FP, montant } from '../config/tarifs';
+
+interface Props {
+  cle: 'notaires' | 'agences' | 'residences';
+  title: string;
+  description: string;
+  surtitre: string;
+  titre: string;
+  titreItalique: string;
+  sousTitre: string;
+  structure: string;          // libellé du champ « Votre structure »
+  echeance: string;           // exemple pour le champ « Échéance »
+  pdf: string;                // nom du fichier dans /docs/
+}
+const { cle, title, description, surtitre, titre, titreItalique, sousTitre, structure, echeance, pdf } = Astro.props;
+const tel = lienTel(SITE.telephone);
+const formules = [
+  { slug: 'liberation', nom: 'Libération', ligne: 'Le logement est à vider', texte: 'Tri accompagné, dons, débarras et nettoyage : le logement est rendu vide, propre, clés en main.', prix: FP.L.prix[0] },
+  { slug: 'transition', nom: 'Transition', ligne: 'Un déménagement suit', texte: "Tout ce que comprend la Libération, plus le déménagement coordonné et l'installation du nouveau logement.", prix: FP.T.prix[0] },
+  { slug: 'succession', nom: 'Succession', ligne: 'Un proche vous a quittés', texte: 'Un seul interlocuteur pour tous les héritiers : tri, papiers, débarras et nettoyage, en lien avec le notaire.', prix: FP.S.prix[0] },
+];
+const etapes = [
+  ['Diagnostic offert', 'Sur place, avec la personne et ses proches.'],
+  ['Un devis clair', 'Forfaitaire, signé directement avec le client.'],
+  ['Nous coordonnons', 'Un seul interlocuteur, chaque étape suivie en ligne.'],
+  ['Logement prêt', 'Vidé, nettoyé, clés et compte rendu photo.'],
+];
+---
+<Famille title={title} description={description}>
+  <section class="pt-hero">
+    <div class="w pt-hero-w">
+      <span class="lbl lbl-laiton">{surtitre}</span>
+      <h1 class="h1">{titre} <em>{titreItalique}</em></h1>
+      <p class="lead">{sousTitre}</p>
+      <div class="pt-cta">
+        <a class="btn" href="#confier">Confier un dossier</a>
+        <a class="btn2" href={`/docs/${pdf}`} download>La plaquette en PDF</a>
+      </div>
+      <span class="pt-zone">Marseille et région PACA</span>
+    </div>
+  </section>
+
+  <section class="sec pt-sec">
+    <div class="w">
+      <span class="lbl">Nos trois formules</span>
+      <h2 class="h2">Une formule pour chaque situation.</h2>
+      <div class="pt-formules">
+        {formules.map((f, i) => (
+          <a class="pt-formule" href={`/${f.slug}`}>
+            <span class="pt-num">0{i + 1}</span>
+            <span class="pt-fnom">{f.nom}</span>
+            <span class="pt-fligne">{f.ligne}</span>
+            <span class="p">{f.texte}</span>
+            <span class="pt-prix"><span>À partir de</span> {montant(f.prix)}</span>
+          </a>
+        ))}
+      </div>
+      <p class="p pt-note">Prix TTC de départ pour un logement de 1 à 2 pièces ; le prix exact est fixé après le diagnostic offert, dans un devis forfaitaire. Facilités de paiement possibles. Travaux effectués par des artisans à la demande du client et déménagement : réglés directement par le client, non compris dans le forfait.</p>
+    </div>
+  </section>
+
+  <section class="sec pt-sec pt-sable">
+    <div class="w">
+      <span class="lbl">Comment ça se passe</span>
+      <h2 class="h2">Quatre étapes, un seul interlocuteur.</h2>
+      <ol class="pt-frise">
+        {etapes.map(([t, d], i) => (
+          <li><span class="pt-rond" aria-hidden="true">{i + 1}</span><strong>{t}</strong><span>{d}</span></li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <slot />
+
+  <section class="sec pt-sec" id="confier">
+    <div class="w pt-form-w">
+      <div class="pt-form-intro">
+        <span class="lbl">Confier un dossier</span>
+        <h2 class="h2">Un appel suffit, ou ce formulaire.</h2>
+        <p class="p">Avec l'accord de la personne concernée, transmettez-nous ses coordonnées : nous rappelons la famille sous 24 h, organisons le diagnostic offert à son rythme et vous tenons informé.</p>
+        <div class="pt-contact">
+          <span class="lbl">Contact direct</span>
+          {tel ? <a class="pt-tel" href={tel}>{SITE.telephone}</a> : <span class="pt-tel">{SITE.telephone}</span>}
+          <span class="p">{SITE.emailContact}</span>
+        </div>
+        <a class="pt-pdf" href={`/docs/${pdf}`} download>
+          <span class="lbl">La plaquette</span>
+          <span>Télécharger la plaquette en PDF</span>
+        </a>
+      </div>
+      <form class="pt-form" name="partenaire" method="POST" action="/merci-partenaire" data-netlify="true" netlify-honeypot="bot-field">
+        <input type="hidden" name="form-name" value="partenaire">
+        <input type="hidden" name="source" value={cle}>
+        <input type="hidden" name="reference" data-reference><input type="hidden" name="lien_dossier" data-lien-dossier>
+        <p class="hp" aria-hidden="true"><label>Ne pas remplir ce champ <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
+        <label class="f pt-full">{structure}<input name="structure" autocomplete="organization" required></label>
+        <label class="f">Votre nom<input name="nom" autocomplete="name" required></label>
+        <label class="f">Votre téléphone<input name="telephone" type="tel" autocomplete="tel" required></label>
+        <label class="f pt-full">Votre e-mail<input name="email" type="email" autocomplete="email" required></label>
+        <fieldset class="pt-full pt-fs"><legend class="f">Situation</legend>
+          <div class="pt-chips">
+            <label class="chip"><input type="radio" name="situation" value="Vente ou fin de location" checked>Vente ou fin de location</label>
+            <label class="chip"><input type="radio" name="situation" value="Départ en résidence">Départ en résidence</label>
+            <label class="chip"><input type="radio" name="situation" value="Succession">Succession</label>
+            <label class="chip"><input type="radio" name="situation" value="Autre">Autre</label>
+          </div>
+        </fieldset>
+        <span class="pt-full pt-sep">La personne ou la famille à rappeler</span>
+        <label class="f">Nom<input name="famille_nom" required></label>
+        <label class="f">Téléphone<input name="famille_telephone" type="tel" required></label>
+        <label class="f">Commune du logement<input name="commune" autocomplete="address-level2" placeholder="Ex. : Marseille 8e"></label>
+        <label class="f">Échéance éventuelle<input name="echeance" placeholder={echeance}></label>
+        <label class="f pt-full">Message<textarea name="message" rows="3" placeholder="Contexte, contraintes, proches à prévenir…"></textarea></label>
+        <label class="pt-full pt-accord"><input type="checkbox" name="accord" value="Oui" required>Je confirme que la personne concernée a donné son accord pour être contactée par Maison Fil Bleu.</label>
+        <button type="submit" class="pt-full pt-envoyer">Confier le dossier</button>
+        <p class="p pt-full pt-rgpd">Ces coordonnées servent uniquement à traiter ce dossier. Elles ne sont ni vendues ni transmises. <a href="/confidentialite">Politique de confidentialité</a></p>
+      </form>
+    </div>
+  </section>
+</Famille>
+
+<script>
+  // Référence de la demande : identifiant du dossier créé dans le back-office (lien direct dans l'e-mail).
+  const ref = 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  document.querySelectorAll('[data-reference]').forEach((i) => { (i as HTMLInputElement).value = ref; });
+  document.querySelectorAll('[data-lien-dossier]').forEach((i) => { (i as HTMLInputElement).value = `${location.origin}/admin#dossier=${ref}`; });
+</script>
+
+<style is:global>
+  .pt-hero{background:var(--sable);border-bottom:1px solid var(--filet-2)}
+  .pt-hero-w{padding-top:104px;padding-bottom:96px;max-width:900px;display:flex;flex-direction:column;gap:24px}
+  .pt-hero .h1{color:var(--nuit)}
+  .pt-hero .h1 em{font-style:italic;color:var(--laiton-texte);font-weight:500}
+  .pt-hero .lead{color:var(--encre);max-width:720px}
+  .lbl-laiton{color:var(--laiton-texte)}
+  .pt-cta{display:flex;flex-wrap:wrap;gap:14px;margin-top:6px}
+  .pt-zone{font-size:14px;color:var(--gris)}
+  .pt-sec .h2{margin:12px 0 0}
+  .pt-sable{background:var(--sable)}
+  .pt-formules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:40px}
+  .pt-formule{display:flex;flex-direction:column;gap:12px;background:#fff;border:1px solid var(--filet-2);border-top:3px solid var(--laiton);padding:30px 28px;text-decoration:none;color:var(--encre);transition:box-shadow .2s}
+  .pt-formule:hover{box-shadow:0 14px 34px rgba(21,35,58,.08)}
+  .pt-num{font-family:var(--serif);font-size:24px;color:var(--laiton-texte)}
+  .pt-fnom{font-family:var(--serif);font-size:32px;font-weight:500;color:var(--nuit);line-height:1.1}
+  .pt-fligne{font-family:var(--serif);font-style:italic;font-size:19px;color:var(--bleu)}
+  .pt-prix{margin-top:auto;padding-top:16px;border-top:1px solid var(--filet-2);font-family:var(--serif);font-size:28px;color:var(--nuit)}
+  .pt-prix span{font-family:var(--sans);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gris);margin-right:8px}
+  .pt-note{margin-top:24px;font-size:14px;max-width:900px}
+  .pt-frise{list-style:none;margin:40px 0 0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0}
+  .pt-frise li{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:0 18px;border-left:1px solid var(--filet)}
+  .pt-frise li:first-child{border-left:0}
+  .pt-rond{width:46px;height:46px;border-radius:50%;background:var(--laiton);color:#fff;font-family:var(--serif);font-size:22px;display:flex;align-items:center;justify-content:center}
+  .pt-frise strong{font-weight:600;color:var(--nuit);font-size:16px}
+  .pt-frise span:last-child{font-size:14.5px;color:var(--gris);line-height:1.6}
+  .pt-cadre{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 40px;margin-top:36px}
+  .pt-cadre > div{border-top:1px solid var(--filet);padding-top:18px;display:flex;flex-direction:column;gap:8px}
+  .pt-cadre h3{font-family:var(--serif);font-weight:500;font-size:24px;color:var(--nuit);margin:0}
+  .pt-encart{margin-top:36px;background:var(--sable);padding:26px 30px;display:flex;flex-direction:column;gap:10px}
+  .pt-encart.blanc{background:#fff;border:1px solid var(--filet-2)}
+  .pt-encart h3{font-family:var(--serif);font-weight:500;font-size:26px;color:var(--nuit);margin:0}
+  .pt-form-w{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:56px;align-items:start}
+  .pt-form-intro{display:flex;flex-direction:column;gap:20px}
+  .pt-contact{display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--nuit);padding-top:20px}
+  .pt-tel{font-family:var(--serif);font-size:36px;font-weight:500;color:var(--nuit);text-decoration:none}
+  .pt-pdf{display:flex;flex-direction:column;gap:6px;background:var(--sable);padding:20px 24px;text-decoration:none;color:var(--nuit)}
+  .pt-pdf span:last-child{font-family:var(--serif);font-size:22px;text-decoration:underline;text-underline-offset:4px}
+  .pt-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 32px;background:#fff;border:1px solid #E3DCCF;padding:48px}
+  .pt-full{grid-column:1 / -1}
+  .pt-fs{border:none;padding:0;margin:0}
+  .pt-fs legend{margin-bottom:14px}
+  .pt-chips{display:flex;flex-wrap:wrap;gap:10px}
+  .pt-sep{font-family:var(--serif);font-size:22px;color:var(--nuit);border-top:1px solid var(--filet-2);padding-top:18px}
+  .pt-accord{display:flex;align-items:flex-start;gap:12px;font-size:15px;line-height:1.55;color:#3E434C}
+  .pt-accord input{width:18px;height:18px;margin-top:3px;flex:none;accent-color:var(--nuit)}
+  .pt-envoyer{font-family:var(--sans);font-size:12.5px;font-weight:500;letter-spacing:2.2px;text-transform:uppercase;padding:20px;border:1px solid var(--nuit);background:var(--nuit);color:var(--ivoire);cursor:pointer}
+  .pt-rgpd{font-size:13px;margin:0}
+  .f{display:flex;flex-direction:column;gap:9px;font-family:var(--sans);font-size:11.5px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--gris)}
+  .f input,.f select,.f textarea{font:inherit;font-size:16px;font-weight:300;letter-spacing:0;text-transform:none;color:var(--encre);background:transparent;border:none;border-bottom:1px solid #BDB2A0;padding:10px 0;width:100%;box-sizing:border-box;border-radius:0}
+  .f input:focus-visible,.f textarea:focus-visible{outline:2px solid var(--bleu);outline-offset:2px}
+  .chip{display:flex;align-items:center;gap:10px;padding:13px 18px;border:1px solid var(--filet);font-size:15px;font-weight:300;color:var(--encre);cursor:pointer}
+  .chip:has(input:checked){border-color:var(--nuit);background:var(--nuit);color:var(--ivoire)}
+  .chip:has(input:checked) input{accent-color:var(--ivoire)}
+  .chip:has(input:focus-visible){outline:2px solid var(--bleu);outline-offset:2px}
+  @media (max-width:960px){
+    .pt-hero-w{padding-top:56px;padding-bottom:56px}
+    .pt-formules,.pt-cadre,.pt-form-w{grid-template-columns:minmax(0,1fr)}
+    .pt-frise{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px 0}
+    .pt-frise li:nth-child(3){border-left:0}
+    .pt-form{grid-template-columns:minmax(0,1fr);padding:28px 22px;gap:24px}
+    .pt-tel{font-size:30px}
+  }
+</style>

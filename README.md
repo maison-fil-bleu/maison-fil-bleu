@@ -57,6 +57,13 @@ npm run preview  # sert dist/ en local
 
 **Quota Netlify (offre gratuite)** : chaque mise en ligne, y compris un clic sur « Mettre à jour les prix du site », consomme des crédits (environ 20 par mois). Regrouper les envois sur `main`.
 
+## Pages partenaires (BRIEF-pages-partenaires.md)
+
+- **`/notaires`, `/agences`, `/residences`** : adresses imprimées dans les QR codes des plaquettes, **à ne jamais changer** (`/notaires/` redirige automatiquement vers `/notaires`). Mise en page commune : `src/components/PagePartenaire.astro`.
+- **`/partenaires`** : page d'accès aux trois (lien « Espace partenaires » du pied de page).
+- **Formulaire `partenaire`** (Netlify Forms, champ caché `source`) → `/merci-partenaire`, et dossier créé dans l'appli pour la famille à rappeler (coordonnées du partenaire dans les notes).
+- **Plaquettes PDF** : `public/docs/` (à remplacer par les versions définitives, mêmes noms de fichiers).
+
 ## Simulateur d'estimation
 
 - **Prix : réglés dans l'appli** (back-office › Réglages › Prix TTC, puis « Mettre à jour les prix du site »). À chaque construction, `scripts/prix-publics.mjs` les recopie dans `src/config/prix-publics.json`, lu par `src/config/tarifs.ts` (coefficients et options propres au site).
