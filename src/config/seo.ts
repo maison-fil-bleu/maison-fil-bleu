@@ -40,7 +40,7 @@ export const localBusinessFamille = () => ({
   '@id': ID_MAISON,
   name: SITE.nom,
   description:
-    "Transition et accompagnement des personnes et des familles quand un logement doit être libéré : entrée en résidence, déménagement, succession. Tri et partage, démarches, débarras, nettoyage, remise des clés.",
+    "Transition et accompagnement des personnes et des familles quand un logement doit être libéré : entrée en résidence, déménagement, succession. Tri, démarches, débarras, nettoyage, remise des clés.",
   url: absolu('/'),
   logo: absolu('/favicon.svg'),
   image: absolu('/og/maison-fil-bleu.png'),
