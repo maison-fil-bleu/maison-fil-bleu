@@ -1,5 +1,5 @@
 ---
-import { FORMULES_PRIX as FP, OPTIONS as OP, montant, NOTE_TRAVAUX, GARDIENNAGE_DESC } from '../config/tarifs';
+import { FORMULES_PRIX as FP, OPTIONS as OP, montant, VENTE_NEUTRE, VENTE_COMPRIS } from '../config/tarifs';
 import OptionsFormule from '../components/OptionsFormule.astro';
 /** Maquette : Formule-Succession.dc.html · adresse : /succession */
 import Famille from '../layouts/Famille.astro';
@@ -17,8 +17,8 @@ const meta = META['/succession'];
 <div style="max-width: 760px; display: flex; flex-direction: column; gap: 28px">
 <span class="lbl">Accompagnement · Succession</span>
 <span style="font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-size: 26px; color: #3D5A80; margin-top: -12px">Quand un proche vous a quittés.</span>
-<h1 class="h1" style="color: #15233A">Le logement d'un proche, accompagné avec délicatesse.</h1>
-<p class="lead" style="color: #4A4F58">Après un décès, le logement devient une épreuve de plus, souvent à plusieurs et à distance. Nous vous accompagnons immédiatement, et tout au long du processus. Un reportage photo de chaque pièce est transmis à tous les héritiers. Nous organisons ensuite avec vous les choix de chacun, mettons de côté les papiers à conserver et les photos de famille, et rassemblons les documents utiles au notaire. Viennent alors les dons et le débarras, ou le stockage des meubles gardés dans un box, puis le nettoyage complet du logement. Nous restons en lien avec le notaire jusqu'à la vente du bien, si vous le souhaitez.</p>
+<h1 class="h1" style="color: #15233A">Le logement d'un proche, pris en charge avec délicatesse.</h1>
+<p class="lead" style="color: #4A4F58">Le logement d'un proche, c'est une maison pleine de souvenirs, des papiers, des décisions à prendre, souvent à plusieurs et à distance. Nous prenons le relais sur tout ce qui pèse, en lien avec le notaire. Chaque héritier garde sa place, et rien ne démarre sans votre accord.</p>
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 28px"><a class="btn" href="/contact">Demander un diagnostic offert</a><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 30px; color: #3D5A80">dès {montant(FP.S.prix[0])} TTC</span></div>
 </div>
 </div>
@@ -31,10 +31,10 @@ const meta = META['/succession'];
 <p class="lead">Le deuil ne laisse pas de place aux démarches. Nous prenons le temps qu'il faut, avec chacun des héritiers, pour que le logement ne devienne pas une source de tension.</p>
 </div>
 <div class="g4">
-<div class="card"><h3 class="h3">Des héritiers éloignés</h3><span class="p">Vous vivez loin de Marseille ? Nous sommes vos yeux et vos mains sur place, photos à l'appui.</span></div>
+<div class="card"><h3 class="h3">Des héritiers éloignés</h3><span class="p">Vous vivez loin de Marseille ? Nous sommes vos yeux et vos mains sur place, avec un suivi en ligne, sans multiplier les trajets.</span></div>
 <div class="card"><h3 class="h3">Les choix de chacun</h3><span class="p">Chacun indique ce qu'il souhaite garder. Les choix sont consignés par écrit, sans précipitation ni conflit.</span></div>
-<div class="card"><h3 class="h3">Un logement à vendre</h3><span class="p">Libéré, nettoyé et photographié, le bien est prêt pour la vente, en lien avec le notaire.</span></div>
-<div class="card"><h3 class="h3">Un logement à garder</h3><span class="p">Vous souhaitez le conserver ou le louer ? Nous le remettons en état pour sa nouvelle vie.</span></div>
+<div class="card"><h3 class="h3">En lien avec le notaire</h3><span class="p">Rien ne démarre sans l'accord des héritiers, et le notaire est informé à chaque étape.</span></div>
+<div class="card"><h3 class="h3">Et après ?</h3><span class="p">Vendre, louer, garder : le logement est prêt pour la suite.</span></div>
 </div>
 </div>
 </section>
@@ -47,9 +47,9 @@ const meta = META['/succession'];
 <div style="display: flex; flex-direction: column; gap: 18px; max-width: 760px"><span class="lbl">Le déroulé</span><h2 class="h2">Comment se déroule une Succession</h2></div>
 <div class="g4">
 <div class="card"><span class="num">01</span><h3 class="h3">Diagnostic et accord</h3><span class="p">Nous visitons le logement, écoutons chacun, puis démarrons avec l'accord écrit des héritiers. Le notaire est informé.</span></div>
-<div class="card"><span class="num">02</span><h3 class="h3">Le reportage photo</h3><span class="p">Chaque pièce est photographiée et le reportage transmis à tous les héritiers, où qu'ils soient : chacun découvre le logement et indique ce qu'il souhaite garder, avant même de venir.</span></div>
-<div class="card"><span class="num">03</span><h3 class="h3">Les choix, à vos côtés</h3><span class="p">Une à deux journées d'échange avec les héritiers, selon la taille du logement : meubles, objets, souvenirs, chacun choisit ce qu'il garde. Les papiers et les photos de famille sont triés, classés et remis, les contrats résiliés. En option, le gardiennage du logement peut être organisé jusqu'à la vente : visites régulières, relevé du courrier et autres prestations à votre demande.</span></div>
-<div class="card"><span class="num">04</span><h3 class="h3">Logement libéré</h3><span class="p">Dons et débarras, meubles compris, ou stockage de ce que vous gardez dans un box. Puis nettoyage complet. S'il faut remettre le logement en état avant de le vendre ou de le louer, nous faisons intervenir des artisans de confiance, comparons les devis et suivons les travaux. Puis remise des clés et, si vous le souhaitez, le lien avec le notaire jusqu'à la vente du bien.</span></div>
+<div class="card"><span class="num">02</span><h3 class="h3">Ensemble</h3><span class="p">Une ou plusieurs journées de tri entre héritiers, selon la taille du logement : meubles, objets, souvenirs, chacun choisit ce qu'il garde, et les choix sont consignés par écrit.</span></div>
+<div class="card"><span class="num">03</span><h3 class="h3">Papiers et souvenirs</h3><span class="p">Les papiers et les photos de famille sont classés et remis, les contrats résiliés. Un seul interlocuteur tient informée toute la famille, avec un suivi en ligne. En option, le gardiennage du logement peut être organisé.</span></div>
+<div class="card"><span class="num">04</span><h3 class="h3">Logement libéré</h3><span class="p">Débarras, dons ou box de stockage pour ce que vous gardez. Puis nettoyage complet et, si besoin, remise en état coordonnée avec des artisans *. Remise des clés, en lien avec le notaire tout au long du dossier : le logement est prêt pour la suite.</span></div>
 </div>
 </div>
 </section>
@@ -62,17 +62,12 @@ const meta = META['/succession'];
 <p class="p">Un seul interlocuteur pour tous les héritiers. Chacun reçoit les mêmes informations, au même moment, ce qui évite bien des malentendus. Besoin de plus de temps ? Nous adaptons l'offre, avec un devis complémentaire validé au préalable.</p>
 </div>
 <div style="display: flex; flex-direction: column; border-top: 1px solid #CFC5B4">
-<div class="row"><span>Tout le contenu de la formule Libération</span></div>
-<div class="row"><span>Lien avec le notaire, accord écrit avant de commencer</span></div>
-<div class="row"><span>Un interlocuteur pour tous les héritiers</span></div>
-<div class="row"><span>Reportage photo pièce par pièce, transmis à tous</span></div>
-<div class="row"><span>Une à deux journées d'échange pour les choix de chacun, selon la taille</span></div>
-<div class="row"><span>Papiers et photos de famille triés, classés et remis</span></div>
+<div class="row"><span>Tout le contenu de la formule Libération (débarras, dons, nettoyage, remise en état, démarches, etc., voir la formule Libération)</span></div>
+<div class="row"><span>Une ou plusieurs journées dédiées au tri, selon la taille du logement : chaque héritier choisit ce qu'il garde, le reste est donné ou part</span></div>
+<div class="row"><span>Papiers et photos de famille classés et remis</span></div>
+<div class="row"><span>Lien avec le notaire tout au long du dossier</span></div>
 <div class="row"><span>Box si besoin : recherche, contrat, lien avec le déménageur</span></div>
-<div class="row"><span>Contrats résiliés : énergie, assurances, courrier</span></div>
-<div class="row"><span>Nettoyage complet et remise des clés</span></div>
-<div class="row"><span>Suivi en ligne, accessible à tous les héritiers</span></div>
-<div class="row"><span>Si vous vendez : aide au choix de l'agence, en toute neutralité</span></div>
+<div class="row"><span>{VENTE_COMPRIS}</span></div>
 </div>
 </div>
 </section>
@@ -82,7 +77,7 @@ const meta = META['/succession'];
 <div style="display: flex; flex-direction: column; gap: 22px">
 <span class="lbl">Tarifs</span>
 <h2 class="h2">Un forfait selon la taille du logement</h2>
-<p class="p">Le forfait comprend tout l'accompagnement décrit sur cette page. Prix de départ pour un logement meublé standard : c'est une estimation. Le prix exact, parfois plus bas, parfois plus haut, est fixé après le diagnostic offert, selon le volume et l'accès. Le contrat est signé par tous les héritiers, ou par l'un d'eux muni de leur accord écrit. Facilités de paiement possibles.</p>
+<p class="p">Le forfait comprend tout l'accompagnement décrit sur cette page. Prix de départ pour un logement meublé standard : c'est une estimation. Le prix exact, parfois plus bas, parfois plus haut, est fixé après le diagnostic offert, selon le volume et l'accès. Le contrat est signé par tous les héritiers, ou par l'un d'eux avec leur accord écrit. Avec l'accord de tous les héritiers et du notaire, la prestation peut être réglée sur les fonds de la succession. Facilités de paiement possibles.</p>
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 26px; margin-top: 6px"><a class="btn" href="/estimation?formule=succession">Estimer mon accompagnement</a><a class="tl" href="/tarifs">Tous les tarifs et options</a></div>
 </div>
 <div style="display: flex; flex-direction: column; border-top: 1px solid #15233A">
@@ -97,21 +92,21 @@ const meta = META['/succession'];
 
 <OptionsFormule
   options={[
-    [`Gardiennage jusqu'à la vente : ${GARDIENNAGE_DESC.charAt(0).toLowerCase()}${GARDIENNAGE_DESC.slice(1, -1)}`, `${montant(OP.gardiennageParMois)} / mois`],
-    ['Estimation des meubles par un commissaire-priseur', 'sur devis'],
-    [OP.installationProche.S!.libelle, `dès ${montant(OP.installationProche.S!.prix)}`],
+    ['Gardiennage du logement', `${montant(OP.gardiennageParMois)} / mois`, 'voir conditions'],
+    [`${OP.installationProche.S!.libelle}, organisée avec un déménageur *`, montant(OP.installationProche.S!.prix), 'voir conditions'],
     ['Caves, garages, greniers', `${montant(OP.cavesParM3)} / m³`],
-    ['Remise en état par nos artisans *', 'sur devis'],
-    ['Intervention hors Bouches-du-Rhône', 'sur devis'],
+    ['Travaux de remise en état par des artisans *', 'sur devis'],
+    ['Hors Bouches-du-Rhône', 'sur devis'],
   ]}
-  note={`* ${NOTE_TRAVAUX} Non compris : les frais de notaire ; les déchets dangereux, traités sur devis spécialisé.`}
-  lien={{ texte: 'Vous hésitez entre garder, louer ou vendre ?', href: '/contact', lbl: 'Parlons-en →' }}
+  note="* Travaux des artisans et transport par le déménageur, à la demande du client : réglés directement par le client, non compris dans le forfait. Non compris : les frais de notaire, les déchets dangereux. Conditions détaillées au devis."
+  encadre={{ titre: "Plus qu'un débarras", items: ['Un interlocuteur pour tous les héritiers, suivi en ligne', 'Les choix de chacun consignés par écrit', 'Papiers et souvenirs préservés, dons aux associations', 'En lien avec le notaire, tout au long du dossier', 'Nettoyage complet, logement prêt pour la suite', 'Remise en état coordonnée avec des artisans *'] }}
+  lien={{ texte: 'Vous avez des questions ?', href: '/contact', lbl: 'Parlons-en →' }}
 />
 
 <section style="background: #EFE9DE; color: #18202C">
 <div class="w sec g2" style="align-items: center">
-<div style="display: flex; flex-direction: column; gap: 22px"><span class="lbl">Et ensuite</span><h2 class="h2">Vendre, louer ou garder le logement</h2></div>
-<p class="lead" style="color: #5B606A">Vous hésitez entre garder, louer ou vendre ? Nous faisons le point avec vous sur la situation et les projets de chacun, en lien avec le notaire, et, si vous vendez, nous vous aidons à choisir l'agence en toute neutralité : nous organisons leur venue et comparons avec vous estimations et honoraires.</p>
+<div style="display: flex; flex-direction: column; gap: 22px"><span class="lbl">Et ensuite</span><h2 class="h2">Et après ?</h2></div>
+<p class="lead" style="color: #5B606A">Vendre, louer, garder : le logement est prêt pour la suite. {VENTE_NEUTRE}</p>
 </div>
 </section>
 
@@ -119,10 +114,9 @@ const meta = META['/succession'];
 <div class="w" style="max-width: 960px; display: flex; flex-direction: column; gap: 24px">
 <span class="lbl">Questions fréquentes</span>
 <h2 class="h2" style="margin-bottom: 12px">Vos questions sur la Succession</h2>
-<details class="q" open><summary>Les héritiers vivent loin, est-ce un problème ?</summary><p class="p" style="margin-top: 12px">Non, c'est même fréquent. Le reportage photo et les comptes rendus permettent à chacun de suivre et de décider à distance.</p></details>
+<details class="q" open><summary>Les héritiers vivent loin, est-ce un problème ?</summary><p class="p" style="margin-top: 12px">Non, c'est même fréquent. Le suivi en ligne et les comptes rendus permettent à chacun de suivre et de décider à distance.</p></details>
 <details class="q"><summary>Qui signe le contrat ?</summary><p class="p" style="margin-top: 12px">Tous les héritiers, ou l'un d'eux muni de leur accord écrit. Nous ne commençons rien sans cet accord.</p></details>
-<details class="q"><summary>Faut-il attendre la fin de la succession ?</summary><p class="p" style="margin-top: 12px">Pas forcément. Le reportage photo et les choix de chacun peuvent souvent commencer avant, avec l'accord des héritiers. Nous travaillons en lien avec le notaire pour respecter chaque étape.</p></details>
-<details class="q"><summary>Et si nous souhaitons faire estimer certains meubles ?</summary><p class="p" style="margin-top: 12px">Si vous le souhaitez, nous pouvons faire intervenir un commissaire-priseur pour estimer les meubles restants, en lien avec votre notaire.</p></details>
+<details class="q"><summary>Faut-il attendre la fin de la succession ?</summary><p class="p" style="margin-top: 12px">Pas forcément. Les choix de chacun peuvent souvent commencer avant, avec l'accord des héritiers. Nous travaillons en lien avec le notaire pour respecter chaque étape.</p></details>
 </div>
 </section>
 

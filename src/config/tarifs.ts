@@ -32,24 +32,26 @@ export const OPTIONS = {
   /** Recherche d'un box de stockage, par formule (0 = comprise). La location du box est réglée par le client. */
   rechercheBox: { L: 90, T: 0, S: 0 } as Record<CleFormule, number>,
   /**
-   * Meubles gardés, apportés chez un proche : libellé et prix selon la formule.
-   * Libération : livraison organisée avec notre déménageur (120 €) ; Succession : installation chez un héritier (« dès »).
+   * Livraison chez un proche (Libération) ou chez un héritier (Succession), organisée avec un déménageur.
+   * Transport réglé directement par le client au déménageur (conditions au devis).
    */
   installationProche: {
-    L: { libelle: 'Livraison de quelques meubles chez un proche', prix: 120, des: false },
-    S: { libelle: 'Installation des objets gardés chez un héritier', prix: PRIX.installation[0], des: true },
-  } as Partial<Record<CleFormule, { libelle: string; prix: number; des: boolean }>>,
+    L: { libelle: 'Livraison de quelques meubles chez un proche', prix: 120 },
+    S: { libelle: "Livraison d'objets chez un héritier", prix: 120 },
+  } as Partial<Record<CleFormule, { libelle: string; prix: number }>>,
   /** Gardiennage : prix par mois. */
   gardiennageParMois: PRIX.gardiennage,
   /** Urgence (intervention sous sept jours) : majoration sur l'ensemble (0.25 = + 25 %). */
   urgence: PRIX.urgence / 100,
 };
 
-/** Description du gardiennage (site et appli). */
-export const GARDIENNAGE_DESC = 'Visites régulières du logement, relevé du courrier et autres prestations à votre demande.';
+/** Note sous les options des formules (fiches PDF). */
+export const NOTE_OPTIONS = "* Travaux des artisans et transport par le déménageur, à la demande du client : réglés directement par le client, non compris dans le forfait. Non compris : les déchets dangereux. Conditions détaillées au devis.";
 
-/** Note des pages formules sur les travaux et le déménagement. */
-export const NOTE_TRAVAUX = "Travaux effectués par des artisans à la demande du client et déménagement : réglés directement par le client, non compris dans le forfait.";
+/** Accompagnement neutre à la vente (pages grand public). */
+export const VENTE_NEUTRE = "Si vous vendez le logement, nous vous accompagnons dans le choix de l'agence, en toute neutralité : nous organisons leur venue, comparons avec vous estimations et honoraires, puis préparons le logement.";
+/** Même idée, dans les listes « Ce qui est compris ». */
+export const VENTE_COMPRIS = "Si vous vendez, accompagnement au choix de l'agence, préparation du logement et suivi";
 
 /**
  * Caves, garages, greniers : volume standard proposé pour chaque type (en m³ à évacuer),

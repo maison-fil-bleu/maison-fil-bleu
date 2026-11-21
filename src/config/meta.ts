@@ -19,7 +19,7 @@ export const META: Record<string, { title: string; description: string }> = {
   },
   '/succession': {
     title: "Succession : logement d'un proche à Marseille | Maison Fil Bleu",
-    description: `Débarras succession à Marseille et en PACA : partage entre héritiers, papiers, lien avec le notaire, nettoyage, aide à la vente. À partir de ${montant(FORMULES_PRIX.S.prix[0])} TTC.`,
+    description: `Débarras succession à Marseille et en PACA : choix de chacun des héritiers, papiers, lien avec le notaire, nettoyage, aide à la vente. À partir de ${montant(FORMULES_PRIX.S.prix[0])} TTC.`,
   },
   '/notre-methode': {
     title: 'Notre méthode en 5 étapes | Maison Fil Bleu Marseille',
@@ -31,7 +31,7 @@ export const META: Record<string, { title: string; description: string }> = {
   },
   '/estimation': {
     title: 'Estimation en ligne : vide-maison à Marseille | Maison Fil Bleu',
-    description: 'Trouvez en quelques clics la formule adaptée et son prix de départ à Marseille et en PACA. Prix exact fixé après le diagnostic offert, sans engagement.',
+    description: 'Trouvez en quelques clics la formule adaptée et son prix de départ à Marseille et en PACA. Prix exact fixé après le diagnostic offert.',
   },
   '/qui-sommes-nous': {
     title: 'Qui sommes-nous | Maison Fil Bleu, Marseille',
@@ -39,11 +39,11 @@ export const META: Record<string, { title: string; description: string }> = {
   },
   '/conseils': {
     title: 'Conseils : succession, EHPAD, vider une maison | Maison Fil Bleu',
-    description: "Préparer une entrée en EHPAD, vider une maison avant la vente, le logement d'un parent décédé, gérer à distance : nos conseils à Marseille et en PACA.",
+    description: "Préparer une entrée en EHPAD, vider une maison avant la vente, le logement d'un proche qui nous a quittés, gérer à distance : nos conseils à Marseille et en PACA.",
   },
   '/conseils/logement-parent-decede': {
-    title: "Logement d'un parent décédé : que faire ? | Maison Fil Bleu",
-    description: "Bail, assurance, succession, tri et partage, débarras : les étapes pour gérer le logement d'un parent décédé à Marseille et en région PACA.",
+    title: "Le logement d'un proche qui nous a quittés : que faire ? | Maison Fil Bleu",
+    description: "Bail, assurance, succession, tri, débarras : les étapes pour gérer le logement d'un proche qui nous a quittés à Marseille et en région PACA.",
   },
   '/conseils/preparer-entree-ehpad': {
     title: 'Préparer une entrée en EHPAD sans stress | Maison Fil Bleu',
@@ -79,7 +79,7 @@ export const META: Record<string, { title: string; description: string }> = {
   },
   '/contact': {
     title: 'Contact et diagnostic offert à Marseille | Maison Fil Bleu',
-    description: 'Demandez à être rappelé : un premier échange au téléphone puis un diagnostic sur place, offert et sans engagement, à Marseille et en région PACA.',
+    description: 'Demandez à être rappelé : un premier échange au téléphone puis un diagnostic sur place, offert, à Marseille et en région PACA.',
   },
   '/pro': {
     title: 'Fil Bleu Pro : débarras et nettoyage de logements à Marseille',

@@ -1,5 +1,5 @@
 ---
-import { FORMULES_PRIX as FP, OPTIONS as OP, montant, GARDIENNAGE_DESC } from '../config/tarifs';
+import { FORMULES_PRIX as FP, OPTIONS as OP, montant, NOTE_OPTIONS, VENTE_NEUTRE, VENTE_COMPRIS } from '../config/tarifs';
 import OptionsFormule from '../components/OptionsFormule.astro';
 /** Maquette : Formule-Liberation.dc.html · adresse : /liberation */
 import Famille from '../layouts/Famille.astro';
@@ -18,7 +18,7 @@ const meta = META['/liberation'];
 <span class="lbl">Accompagnement · Libération</span>
 <span style="font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-size: 26px; color: #3D5A80; margin-top: -12px">La base de tous nos accompagnements.</span>
 <h1 class="h1" style="color: #15233A">Votre logement vidé, nettoyé et prêt, sans rien avoir à gérer.</h1>
-<p class="lead" style="color: #4A4F58">Une vente, une fin de bail, un proche qui part en résidence, une maison secondaire : un logement chargé de souvenirs pèse lourd. Nous prenons le relais sur tout : l'organisation, les dons, le débarras, le nettoyage et les démarches. Vous gardez l'esprit libre et restez seul décideur.</p>
+<p class="lead" style="color: #4A4F58">Une vente, une fin de bail, un proche qui part en résidence, une maison secondaire : un logement chargé de souvenirs pèse lourd. Nous prenons le relais sur tout : l'organisation, le débarras, les dons, le nettoyage et les démarches. Vous gardez l'esprit libre et restez seul décideur.</p>
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 28px"><a class="btn" href="/contact">Demander un diagnostic offert</a><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 30px; color: #3D5A80">dès {montant(FP.L.prix[0])} TTC</span></div>
 </div>
 </div>
@@ -47,9 +47,9 @@ const meta = META['/liberation'];
 <div style="display: flex; flex-direction: column; gap: 18px; max-width: 760px"><span class="lbl">Le déroulé</span><h2 class="h2">Comment se déroule une Libération</h2></div>
 <div class="g4">
 <div class="card"><span class="num">01</span><h3 class="h3">Diagnostic offert</h3><span class="p">Nous visitons le logement avec vous, écoutons vos priorités et vos délais, puis vous remettons un devis forfaitaire et clair.</span></div>
-<div class="card"><span class="num">02</span><h3 class="h3">Vos choix, avec vous</h3><span class="p">Ce que vous gardez, ce qui revient à vos proches, ce qui part aux associations. Le forfait prévoit une demi-journée à une journée sur place avec vous selon la taille du logement ; au-delà, nous adaptons avec un devis. Une liste signée avant toute évacuation.</span></div>
-<div class="card"><span class="num">03</span><h3 class="h3">Débarras et nettoyage</h3><span class="p">Une équipe encadrée évacue le reste en filières agréées, puis nettoie le logement de fond en comble. Des travaux sont nécessaires avant une vente ou une location ? Nous faisons intervenir des artisans de confiance et suivons le chantier.</span></div>
-<div class="card"><span class="num">04</span><h3 class="h3">La remise des clés</h3><span class="p">Un reportage photo du logement vide, puis les clés remises à qui de droit : propriétaire, bailleur, agence ou vous-même.</span></div>
+<div class="card"><span class="num">02</span><h3 class="h3">Le tri, avec vous</h3><span class="p">Ce que vous gardez, ce qui revient à vos proches, ce qui part aux associations. Le forfait prévoit une ou plusieurs journées de tri avec vous selon la taille du logement. Une liste signée avant toute évacuation.</span></div>
+<div class="card"><span class="num">03</span><h3 class="h3">Débarras et nettoyage</h3><span class="p">Une équipe encadrée évacue le reste en filières agréées, puis nettoie le logement de fond en comble. Des travaux sont nécessaires avant une vente ou une location ? Nous coordonnons la remise en état avec des artisans *.</span></div>
+<div class="card"><span class="num">04</span><h3 class="h3">La remise des clés</h3><span class="p">Un compte rendu photo du logement vide, puis les clés remises à qui de droit : propriétaire, bailleur, agence ou vous-même.</span></div>
 </div>
 </div>
 </section>
@@ -63,16 +63,12 @@ const meta = META['/liberation'];
 </div>
 <div style="display: flex; flex-direction: column; border-top: 1px solid #CFC5B4">
 <div class="row"><span>Diagnostic sur place et devis forfaitaire</span></div>
-<div class="row"><span>Un seul interlocuteur, du premier appel aux clés</span></div>
-<div class="row"><span>Un accompagnement sur place pour faire vos choix</span></div>
-<div class="row"><span>Papiers et photos de famille mis de côté et remis</span></div>
-<div class="row"><span>Dons remis aux associations, avec reçus</span></div>
-<div class="row"><span>Débarras : main-d'œuvre, camion, filières agréées</span></div>
+<div class="row"><span>Tri accompagné, une ou plusieurs journées selon la taille du logement : ce que vous gardez, donnez ou laissez partir ; papiers et souvenirs remis</span></div>
+<div class="row"><span>Débarras en filières agréées, dons aux associations</span></div>
 <div class="row"><span>Nettoyage complet : sols, cuisine, sanitaires, vitres</span></div>
+<div class="row"><span>Remise en état coordonnée avec des artisans *, si besoin</span></div>
 <div class="row"><span>Démarches : résiliations, courrier, relevés de compteurs</span></div>
-<div class="row"><span>Compte rendu photo et remise des clés</span></div>
-<div class="row"><span>Suivi en ligne dans votre espace client</span></div>
-<div class="row"><span>Si vous êtes propriétaire et que vous vendez : aide au choix de l'agence, en toute neutralité</span></div>
+<div class="row"><span>{VENTE_COMPRIS}</span></div>
 </div>
 </div>
 </section>
@@ -97,23 +93,23 @@ const meta = META['/liberation'];
 
 <OptionsFormule
   options={[
-    ["Box de stockage : recherche, contrat et coordination avec le déménageur *", montant(OP.rechercheBox.L)],
+    ['Box de stockage : recherche, contrat et coordination avec le déménageur *', montant(OP.rechercheBox.L)],
     ['Caves, garages, greniers', `${montant(OP.cavesParM3)} / m³`],
-    [`${OP.installationProche.L!.libelle}, organisée avec notre déménageur *`, montant(OP.installationProche.L!.prix)],
-    [`Gardiennage du logement : ${GARDIENNAGE_DESC.charAt(0).toLowerCase()}${GARDIENNAGE_DESC.slice(1, -1)}`, `${montant(OP.gardiennageParMois)} / mois`],
-    ['Remise en état par des artisans *', 'sur devis'],
+    [`${OP.installationProche.L!.libelle}, organisée avec un déménageur *`, montant(OP.installationProche.L!.prix), 'voir conditions'],
+    ['Gardiennage du logement', `${montant(OP.gardiennageParMois)} / mois`, 'voir conditions'],
+    ['Travaux de remise en état par des artisans *', 'sur devis'],
     ['Hors Bouches-du-Rhône', 'sur devis'],
   ]}
-  note="* Travaux des artisans et transport par le déménageur, à la demande du client : réglés directement par le client, non compris dans le forfait. Non compris : les déchets dangereux."
-  encadre={{ titre: "Plus qu'un débarras", items: ['Du temps avec vous pour faire vos choix', 'Papiers et souvenirs préservés et remis', 'Dons tracés, avec reçus', "Un seul interlocuteur, du diagnostic aux clés", 'Un suivi en ligne pour les proches éloignés', 'Compte rendu photo à la remise des clés'] }}
+  note={NOTE_OPTIONS}
+  encadre={{ titre: "Plus qu'un débarras", items: ['Du temps avec vous pour faire vos choix', 'Papiers et souvenirs préservés, dons aux associations', 'Nettoyage complet, logement prêt à visiter ou à être rendu', 'Remise en état coordonnée avec des artisans *', 'Un seul interlocuteur, suivi en ligne pour les proches', 'Compte rendu photo à la remise des clés'] }}
   lien={{ texte: 'Vous emménagez ailleurs ?', href: '/transition', lbl: 'Voir la formule Transition →' }}
 />
 
 <section style="padding: 0 0 120px">
 <div class="w">
 <div class="g2" style="align-items: center; border-top: 1px solid #15233A; border-bottom: 1px solid #CFC5B4; padding: 64px 0">
-<div style="display: flex; flex-direction: column; gap: 22px"><span class="lbl">Et ensuite</span><h2 class="h2" style="color: #3D5A80; font-style: italic">Rendre, vendre ou louer le logement</h2></div>
-<div style="display: flex; flex-direction: column; gap: 26px"><div style="display: flex; flex-direction: column; gap: 6px"><h3 class="h3" style="font-size: 24px">Vous êtes locataire</h3><span class="p">Le logement est prêt pour l'état des lieux de sortie. Nous pouvons y assister et remettre les clés au propriétaire ou au bailleur, avec votre procuration.</span></div><div style="display: flex; flex-direction: column; gap: 6px"><h3 class="h3" style="font-size: 24px">Vous êtes propriétaire</h3><span class="p">Vous hésitez entre garder, louer ou vendre ? Nous faisons le point avec vous et, si vous vendez, nous vous aidons à choisir l'agence en toute neutralité : nous organisons leur venue et comparons avec vous estimations et honoraires.</span></div></div>
+<div style="display: flex; flex-direction: column; gap: 22px"><span class="lbl">Et ensuite</span><h2 class="h2" style="color: #3D5A80; font-style: italic">Rendre ou vendre le logement</h2></div>
+<div style="display: flex; flex-direction: column; gap: 26px"><div style="display: flex; flex-direction: column; gap: 6px"><h3 class="h3" style="font-size: 24px">Vous êtes locataire</h3><span class="p">Le logement est prêt pour l'état des lieux de sortie. Nous pouvons y assister et remettre les clés au propriétaire ou au bailleur, avec votre procuration.</span></div><div style="display: flex; flex-direction: column; gap: 6px"><h3 class="h3" style="font-size: 24px">Vous êtes propriétaire</h3><span class="p">{VENTE_NEUTRE}</span></div></div>
 </div>
 </div>
 </section>

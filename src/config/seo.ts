@@ -72,9 +72,9 @@ export const localBusinessPro = () => ({
 
 const SLUGS: Record<CleFormule, string> = { L: '/liberation', T: '/transition', S: '/succession' };
 const DESCRIPTIONS: Record<CleFormule, string> = {
-  L: 'Vider, nettoyer et rendre un logement : tri accompagné, dons, débarras en filières agréées, nettoyage complet, reportage photo et remise des clés.',
+  L: 'Vider, nettoyer et rendre un logement : tri accompagné, débarras en filières agréées, dons, nettoyage complet, compte rendu photo et remise des clés.',
   T: "Libérer l'ancien logement et installer le nouveau : tri, déménagement coordonné, installation complète, démarches et suivi.",
-  S: "Libérer le logement d'un proche qui nous a quittés : partage des objets, papiers de famille, lien avec le notaire, débarras, nettoyage et aide neutre au choix de l'agence.",
+  S: "Libérer le logement d'un proche qui nous a quittés : choix de chacun des héritiers, papiers de famille, lien avec le notaire, débarras, dons, nettoyage.",
 };
 
 /** Une formule (pages Libération, Transition, Succession). */

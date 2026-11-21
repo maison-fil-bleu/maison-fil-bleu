@@ -5,7 +5,8 @@
  * Textes repris des fiches PDF (public/docs/Fiche-*.pdf).
  */
 interface Props {
-  options: [string, string][];
+  /** [libellé, prix, mention facultative (« voir conditions »)] */
+  options: [string, string, string?][];
   note: string;
   encadre?: { titre: string; items: string[] };
   lien?: { texte: string; href: string; lbl: string };
@@ -15,10 +16,10 @@ const { options, note, encadre, lien } = Astro.props;
 <section style="background: #EFE9DE">
 <div class="w sec g2" style="align-items: start">
 <div style="display: flex; flex-direction: column; gap: 22px">
-<span class="lbl">En option</span>
+<span class="lbl">Les options</span>
 <h2 class="h2">Seulement si c'est utile.</h2>
 <div style="display: flex; flex-direction: column; border-top: 1px solid #CFC5B4">
-{options.map(([l, p]) => <div class="row of-row"><span>{l}</span><span class="of-prix">{p}</span></div>)}
+{options.map(([l, p, m]) => <div class="row of-row"><span>{l}{m && <span class="of-cond">{m}</span>}</span><span class="of-prix">{p}</span></div>)}
 </div>
 <p class="p of-note">{note}</p>
 </div>
@@ -36,6 +37,7 @@ const { options, note, encadre, lien } = Astro.props;
 <style is:global>
 .of-row{align-items:baseline}
 .of-prix{white-space:nowrap;font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;font-weight:500;color:#15233A}
+.of-cond{display:block;font-size:13px;color:#735A33;margin-top:2px}
 .of-note{font-size:14px;color:#5B606A}
 .of-encadre{background:#FFFFFF;border-top:3px solid #B8925A;padding:34px 32px;display:flex;flex-direction:column;gap:20px}
 .of-encadre ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}

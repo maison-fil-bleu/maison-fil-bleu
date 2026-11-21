@@ -1,5 +1,5 @@
 ---
-import { FORMULES_PRIX as FP, OPTIONS as OP, montant, GARDIENNAGE_DESC } from '../config/tarifs';
+import { FORMULES_PRIX as FP, OPTIONS as OP, montant, NOTE_OPTIONS } from '../config/tarifs';
 /** Maquette : Tarifs.dc.html · adresse : /tarifs */
 import Famille from '../layouts/Famille.astro';
 import { SITE } from '../config/site';
@@ -44,19 +44,20 @@ const meta = META['/tarifs'];
 <div style="display: flex; flex-direction: column; border-top: 1px solid #CFC5B4; margin-top: 10px">
 <div class="row"><span>Recherche de résidence (Transition)</span><span style="font-weight: 400">{montant(OP.rechercheResidence.prix)}</span></div>
 <div class="row"><span>Caves, garages, greniers</span><span style="font-weight: 400">{montant(OP.cavesParM3)} / m³</span></div>
-<div class="row"><span>Gardiennage du logement : {GARDIENNAGE_DESC.charAt(0).toLowerCase() + GARDIENNAGE_DESC.slice(1, -1)}</span><span style="font-weight: 400">{montant(OP.gardiennageParMois)} / mois</span></div>
-<div class="row"><span>Box de stockage : recherche, contrat et coordination avec le déménageur (location réglée par vous)</span><span style="font-weight: 400">comprise en Transition et Succession · {montant(OP.rechercheBox.L)} en Libération</span></div>
-<div class="row"><span>{OP.installationProche.L!.libelle}, organisée avec notre déménageur (Libération)</span><span style="font-weight: 400">{montant(OP.installationProche.L!.prix)}</span></div>
-<div class="row"><span>{OP.installationProche.S!.libelle} (Succession)</span><span style="font-weight: 400">dès {montant(OP.installationProche.S!.prix)}</span></div>
+<div class="row"><span>Gardiennage du logement</span><span style="font-weight: 400">{montant(OP.gardiennageParMois)} / mois</span></div>
+<div class="row"><span>Box de stockage : recherche, contrat et coordination avec le déménageur *</span><span style="font-weight: 400">compris en Transition et Succession · {montant(OP.rechercheBox.L)} en Libération</span></div>
+<div class="row"><span>Livraison de quelques meubles chez un proche (Libération) ou d'objets chez un héritier (Succession), organisée avec un déménageur *</span><span style="font-weight: 400">{montant(OP.installationProche.L!.prix)}</span></div>
 <div class="row"><span>Vide-maison, deux matinées au plus</span><span style="font-weight: 400">sur devis</span></div>
-<div class="row"><span>Remise en état ou aménagement par des artisans</span><span style="font-weight: 400">sur devis</span></div>
+<div class="row"><span>Travaux de remise en état ou d'aménagement par des artisans *</span><span style="font-weight: 400">sur devis</span></div>
 <div class="row"><span>Urgence, sous sept jours</span><span style="font-weight: 400">+ 25 %</span></div>
-<div class="row"><span>Intervention hors Bouches-du-Rhône</span><a href="/contact" style="font-weight: 400; color: #3D5A80">nous contacter</a></div>
+<div class="row"><span>Hors Bouches-du-Rhône</span><span style="font-weight: 400">sur devis</span></div>
+
 </div>
 </div>
+<p class="p" style="font-size: 14px; color: #5B606A; margin-top: 14px">{NOTE_OPTIONS} Conditions des options marquées « voir conditions » sur les fiches : précisées au devis.</p>
 <div style="display: flex; flex-direction: column; gap: 44px; padding-top: 8px">
 <div style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #15233A; padding-top: 26px"><h3 class="h3">Paiement</h3><span class="p">Des facilités de paiement sont possibles : nous en parlons ensemble lors du diagnostic.</span></div>
-<div style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #15233A; padding-top: 26px"><h3 class="h3">Ce qui n'est pas compris</h3><span class="p">La prestation du déménageur, réglée directement à lui ; les travaux d'artisans ; l'estimation officielle des objets ; les frais de notaire ; les déchets dangereux, traités sur devis spécialisé.</span></div>
+<div style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #15233A; padding-top: 26px"><h3 class="h3">Ce qui n'est pas compris</h3><span class="p">La prestation du déménageur, réglée directement à lui ; les travaux des artisans * ; l'estimation officielle des objets ; les frais de notaire ; les déchets dangereux, traités sur devis spécialisé.</span></div>
 </div>
 </div>
 </section>
