@@ -4,6 +4,7 @@ import { FORMULES_PRIX as FP, OPTIONS as OP, montant } from '../config/tarifs';
 import Famille from '../layouts/Famille.astro';
 import { SITE } from '../config/site';
 import Hero from '../components/Hero.astro';
+import Telechargements from '../components/Telechargements.astro';
 import Photo from '../components/Photo.astro';
 import { META } from '../config/meta';
 const meta = META['/'];
@@ -135,6 +136,8 @@ const meta = META['/'];
 </section>
 
 <!-- Appel final -->
+<Telechargements cles={['ficheL', 'ficheT', 'ficheS', 'fsm', 'plaquetteFamilles']} titre="Nos fiches à télécharger" />
+
 <section class="sec">
 <div class="w" style="display: flex; flex-direction: column; align-items: center; gap: 28px; text-align: center">
 <span class="lbl">Diagnostic offert</span>

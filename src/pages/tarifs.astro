@@ -4,6 +4,7 @@ import { FORMULES_PRIX as FP, OPTIONS as OP, montant, NOTE_OPTIONS } from '../co
 import Famille from '../layouts/Famille.astro';
 import { SITE } from '../config/site';
 import Hero from '../components/Hero.astro';
+import Telechargements from '../components/Telechargements.astro';
 import { META } from '../config/meta';
 const meta = META['/tarifs'];
 ---
@@ -61,6 +62,8 @@ const meta = META['/tarifs'];
 </div>
 </div>
 </section>
+
+<Telechargements cles={['ficheL', 'ficheT', 'ficheS', 'fsm']} titre="Le détail de chaque formule" />
 
 <section class="sec">
 <div class="w" style="display: flex; flex-direction: column; align-items: center; gap: 26px; text-align: center">

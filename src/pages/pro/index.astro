@@ -3,6 +3,7 @@
 import Pro from '../../layouts/Pro.astro';
 import { SITE } from '../../config/site';
 import Hero from '../../components/Hero.astro';
+import Telechargements from '../../components/Telechargements.astro';
 import { META } from '../../config/meta';
 const meta = META['/pro'];
 ---
@@ -51,6 +52,8 @@ const meta = META['/pro'];
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 26px"><a class="btn" href="/pro/tarifs">Recevoir la grille complète</a><a href="/pro#devis" style="font-family: 'Nunito Sans', sans-serif; font-size: 12.5px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; text-decoration: none; color: #15233A; border-bottom: 1px solid #8A6D43; padding-bottom: 5px">Demander un devis</a></div>
 </div>
 </section>
+
+<Telechargements cles={['plaquettePro', 'fichePro']} titre="La plaquette et la grille, en PDF" fond="#FFFFFF" />
 
 <section id="partenariats" style="background: #EFE9DE; color: #18202C">
 <div class="w sec" style="display: flex; flex-direction: column; gap: 64px">

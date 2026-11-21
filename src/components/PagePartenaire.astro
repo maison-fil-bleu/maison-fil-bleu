@@ -8,6 +8,8 @@
 import Famille from '../layouts/Famille.astro';
 import { SITE, lienTel } from '../config/site';
 import { FORMULES_PRIX as FP, montant } from '../config/tarifs';
+import Telechargements from './Telechargements.astro';
+import type { CleDoc } from '../config/documents';
 
 interface Props {
   cle: 'notaires' | 'agences' | 'residences';
@@ -19,9 +21,10 @@ interface Props {
   sousTitre: string;
   structure: string;          // libellé du champ « Votre structure »
   echeance: string;           // exemple pour le champ « Échéance »
-  pdf: string;                // nom du fichier dans /docs/
+  pdf: string;                // nom du fichier de la plaquette dans /docs/ (bouton du haut)
+  docs: CleDoc[];             // documents proposés (plaquette + fiches de la bonne version)
 }
-const { cle, title, description, surtitre, titre, titreItalique, sousTitre, structure, echeance, pdf } = Astro.props;
+const { cle, title, description, surtitre, titre, titreItalique, sousTitre, structure, echeance, pdf, docs } = Astro.props;
 const tel = lienTel(SITE.telephone);
 const formules = [
   { slug: 'liberation', nom: 'Libération', ligne: 'Le logement est à vider', texte: 'Tri accompagné, débarras, dons et nettoyage : le logement est rendu vide, propre, clés en main.', prix: FP.L.prix[0] },
@@ -93,10 +96,10 @@ const etapes = [
           {tel ? <a class="pt-tel" href={tel}>{SITE.telephone}</a> : <span class="pt-tel">{SITE.telephone}</span>}
           <span class="p">{SITE.emailContact}</span>
         </div>
-        <a class="pt-pdf" href={`/docs/${pdf}`} download>
-          <span class="lbl">La plaquette</span>
-          <span>Télécharger la plaquette en PDF</span>
-        </a>
+        <div class="pt-docs">
+          <span class="lbl">À télécharger</span>
+          <Telechargements cles={docs} compact />
+        </div>
       </div>
       <form class="pt-form" name="partenaire" method="POST" action="/merci-partenaire" data-netlify="true" netlify-honeypot="bot-field">
         <input type="hidden" name="form-name" value="partenaire">
@@ -175,6 +178,7 @@ const etapes = [
   .pt-form-intro{display:flex;flex-direction:column;gap:20px}
   .pt-contact{display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--nuit);padding-top:20px}
   .pt-tel{font-family:var(--serif);font-size:36px;font-weight:500;color:var(--nuit);text-decoration:none}
+  .pt-docs{display:flex;flex-direction:column;gap:12px}
   .pt-pdf{display:flex;flex-direction:column;gap:6px;background:var(--sable);padding:20px 24px;text-decoration:none;color:var(--nuit)}
   .pt-pdf span:last-child{font-family:var(--serif);font-size:22px;text-decoration:underline;text-underline-offset:4px}
   .pt-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 32px;background:#fff;border:1px solid #E3DCCF;padding:48px}

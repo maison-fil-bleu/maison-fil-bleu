@@ -1,6 +1,7 @@
 ---
 import { FORMULES_PRIX as FP, OPTIONS as OP, montant, VENTE_NEUTRE, VENTE_COMPRIS } from '../config/tarifs';
 import OptionsFormule from '../components/OptionsFormule.astro';
+import { doc } from '../config/documents';
 /** Maquette : Formule-Transition.dc.html · adresse : /transition */
 import Famille from '../layouts/Famille.astro';
 import { SITE } from '../config/site';
@@ -77,7 +78,7 @@ const meta = META['/transition'];
 <span class="lbl">Tarifs</span>
 <h2 class="h2">Un forfait selon le logement de départ</h2>
 <p class="p">Le forfait comprend tout l'accompagnement décrit sur cette page. Prix de départ pour un logement meublé standard : c'est une estimation. Le prix exact, parfois plus bas, parfois plus haut, est fixé après le diagnostic offert, selon le volume et l'accès. Facilités de paiement possibles.</p>
-<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 26px; margin-top: 6px"><a class="btn" href="/estimation?formule=transition">Estimer mon accompagnement</a><a class="tl" href="/tarifs">Tous les tarifs et options</a></div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 26px; margin-top: 6px"><a class="btn" href="/estimation?formule=transition">Estimer mon accompagnement</a><a class="tl" href="/tarifs">Tous les tarifs et options</a><a class="tl" href={doc('ficheT').href} download>Télécharger la fiche ({doc('ficheT').info})</a><a class="tl" href={doc('fsm').href} download>Faire soi-même ou nous confier ?</a></div>
 </div>
 <div style="display: flex; flex-direction: column; border-top: 1px solid #15233A">
 <span class="lbl" style="padding: 16px 0 2px">À partir de, TTC</span>

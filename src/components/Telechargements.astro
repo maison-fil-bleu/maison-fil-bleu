@@ -1,0 +1,32 @@
+---
+/** Liste de PDF à télécharger (src/config/documents.ts). */
+import { doc, type CleDoc } from '../config/documents';
+interface Props { cles: CleDoc[]; titre?: string; surtitre?: string; fond?: string; compact?: boolean }
+const { cles, titre = 'Nos documents à télécharger', surtitre = 'À télécharger', fond = '#F7F1E7', compact = false } = Astro.props;
+const docs = cles.map(doc);
+---
+{compact ? (
+  <ul class="tg-liste">
+    {docs.map((d) => <li><a class="tg-lien" href={d.href} download><span class="tg-t">{d.titre}</span><span class="tg-i">{d.info}</span></a></li>)}
+  </ul>
+) : (
+  <section style={`background: ${fond}`}>
+    <div class="w sec">
+      <span class="lbl">{surtitre}</span>
+      <h2 class="h2" style="margin: 14px 0 28px">{titre}</h2>
+      <ul class="tg-liste tg-grille">
+        {docs.map((d) => <li><a class="tg-lien" href={d.href} download><span class="tg-t">{d.titre}</span><span class="tg-i">{d.info}</span></a></li>)}
+      </ul>
+    </div>
+  </section>
+)}
+
+<style is:global>
+.tg-liste{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.tg-grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.tg-lien{display:flex;flex-direction:column;gap:4px;padding:18px 22px;background:#FFFFFF;border:1px solid #DDD4C5;border-left:3px solid #B8925A;text-decoration:none;color:#15233A;min-height:44px;transition:border-color .15s}
+.tg-lien:hover,.tg-lien:focus-visible{border-color:#B8925A}
+.tg-t{font-family:'Cormorant Garamond',Georgia,serif;font-size:21px;font-weight:600;line-height:1.2}
+.tg-t::after{content:' ↓';color:#B8925A}
+.tg-i{font-size:13px;letter-spacing:.06em;color:#5B606A}
+</style>
