@@ -21,14 +21,6 @@ export const SITE = {
   rcPro: '[assureur, contrat]',
   recepisseDechets: '[...]',
   mediateur: '[nom]',
-  agencePartenaire: {
-    agent: '[Prénom Nom]',
-    agence: '[nom]',
-    rsacVille: '[ville]',
-    rsacNumero: '[...]',
-    carte: '[...]',
-    cci: '[...]',
-  },
 } as const;
 
 /** Vrai tant que la valeur est un texte provisoire entre crochets. */

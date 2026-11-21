@@ -74,7 +74,7 @@ const SLUGS: Record<CleFormule, string> = { L: '/liberation', T: '/transition', 
 const DESCRIPTIONS: Record<CleFormule, string> = {
   L: 'Vider, nettoyer et rendre un logement : tri accompagné, dons, débarras en filières agréées, nettoyage complet, reportage photo et remise des clés.',
   T: "Libérer l'ancien logement et installer le nouveau : tri, déménagement coordonné, installation complète, démarches et suivi.",
-  S: "Libérer le logement d'un proche qui nous a quittés : partage des objets, papiers de famille, lien avec le notaire, débarras, nettoyage et accompagnement à la vente.",
+  S: "Libérer le logement d'un proche qui nous a quittés : partage des objets, papiers de famille, lien avec le notaire, débarras, nettoyage et aide neutre au choix de l'agence.",
 };
 
 /** Une formule (pages Libération, Transition, Succession). */

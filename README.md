@@ -111,7 +111,6 @@ Liste complète des 34 photos avec leur description : `src/assets/photos/LISTE.m
 - [ ] RC professionnelle (assureur, n° de contrat)
 - [ ] Récépissé de transport de déchets (n°)
 - [ ] Médiateur de la consommation (nom)
-- [ ] Agence partenaire : nom de l'agence, nom de l'agent commercial, RSAC (ville, n°), carte professionnelle de l'agence (n°, CCI)
 - [ ] Délais de réponse des pages de remerciement (rappel « le jour même ou le lendemain », devis et grille « sous 24 heures ») à confirmer
 - [ ] Délais (ex. `[2 à 3 semaines]` sur la page Libération)
 - [ ] Exemple de compte rendu (page Notre méthode) : `[Nom]`, `[date]`

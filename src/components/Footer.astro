@@ -3,7 +3,6 @@
 import Logo from './Logo.astro';
 import { SITE, FORMULES, ARTICLES, lienTel } from '../config/site';
 const tel = lienTel(SITE.telephone);
-const a = SITE.agencePartenaire;
 ---
 <footer class="ft">
   <div class="w w-l ft-in">
@@ -36,7 +35,7 @@ const a = SITE.agencePartenaire;
       </nav>
     </div>
     <div class="ft-legal">
-      <p>© Maison Fil Bleu, une marque de la {SITE.societe}, {SITE.adresse}, {SITE.codePostal} {SITE.ville} · SIRET {SITE.siret}. Accompagnement à la vente ou à la location : {a.agent}, agent commercial de l'agence {a.agence}, RSAC {a.rsacVille} n° {a.rsacNumero}, carte professionnelle de l'agence n° {a.carte} CCI {a.cci}. Médiateur de la consommation : {SITE.mediateur}.</p>
+      <p>© Maison Fil Bleu, une marque de la {SITE.societe}, {SITE.adresse}, {SITE.codePostal} {SITE.ville} · SIRET {SITE.siret}. Médiateur de la consommation : {SITE.mediateur}.</p>
       <nav class="ft-legal-nav" aria-label="Informations légales">
         <a href="/mentions-legales">Mentions légales</a>
         <a href="/cgv">CGV</a>

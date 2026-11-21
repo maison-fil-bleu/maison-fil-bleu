@@ -20,7 +20,6 @@ const DEFAULTS = {
   heuresSup: { L:[3,4,5,6], T:[30,48,56,70], S:[12,16,19,24], P:[0,0,0,0] },
   rythmeM3: 1.3, rythmeM2: 0.15, baie: 0.25, objetLourd: 1, partPorteur: 0.5,
   interim: 21.64, porteur: 28, decheterie: 18, camionJour: 110, consommables: 35, kmCout: 0.30, vitesse: 50, adminH: 4,
-  partCom: 0.7, honorairesMoyens: 12500,
   m3Sup: 75, residence: 700, installation: [350,400,720,880], gardiennage: 150, urgence: 25, horsDep: 550, tva: 20,
   soc: { siegeVille:'Les Pennes-Mirabeau', adresse:'[adresse], 13170 Les Pennes-Mirabeau', siret:'[n°]', rcs:'[n°]', tva:'[n°]', tel:'[06 00 00 00 00]', email:'[contact@maisonfilbleu.fr]', mediateur:'[nom et site du médiateur]', signataire:'[Prénom Nom], président' }
 };
@@ -75,7 +74,6 @@ const FORM_DESC = {
   S:"Libération du logement, lien avec le notaire, reportage photo, partage des objets entre les héritiers, papiers et résiliations, accompagnement jusqu'à la vente.",
   P:"Débarras et nettoyage du logement, évacuation en filières agréées, photos avant et après."
 };
-const MANDAT = [['non','Pas abordé'],['discussion','En discussion'],['signe','Mandat signé'],['refus','Refusé']];
 const SUIVI0 = { hDeb:0, hNet:0, hAutres:0, hInterim:0, hAdmin:0, m3:0, joursCamion:0, frais:0, acompte:false, solde:false, liste:false, decharge:false, objets:'', mandat:'non', mandatType:'vente', honoraires:0, vendu:false, fini:false, notes:'' };
 const STATUTS =["Appel","Diagnostic","Devis envoyé","Signé","Terminé","Perdu"];
 const TAILLES = ["1-2 pièces","3 pièces","4 pièces","5 pièces et +"];
@@ -501,14 +499,6 @@ function renderDossier(){
     ${d.formule!=='P' ? ck('acompte',`Acompte de 40 % encaissé (${eur(c.ttc*0.4)})`) : ''}
     ${ck('solde', d.formule!=='P' ? `Solde encaissé (${eur(c.ttc*0.6)})` : `Facture réglée (${eur(c.ttc)})`)}
   </div>
-  ${d.formule!=='P' ? `<div class="card"><h3>Vente ou location du logement</h3>
-    <p class="small muted" style="margin:0">L'indicateur n° 1 : la part des dossiers qui donnent un mandat.</p>
-    <label>Mandat${seg('suivi.mandat', MANDAT, s.mandat)}</label>
-    ${s.mandat==='signe' ? `<label>Type${seg('suivi.mandatType',[['vente','Vente'],['location','Location']],s.mandatType)}</label>
-      <label>Honoraires de l'agence HT (€)<input type="number" inputmode="decimal" min="0" step="100" data-f="suivi.honoraires" value="${s.honoraires||''}" placeholder="${S.honorairesMoyens}"></label>
-      ${ck('vendu', s.mandatType==='location' ? 'Bien loué' : 'Bien vendu (acte signé)')}
-      <div class="suggest">Votre commission ${s.vendu?'à encaisser':'attendue'} : <b>${eur(commission(d))}</b> (${s.mandatType==='location'?'50 %':Math.round(S.partCom*100)+' %'} des honoraires).</div>` : ''}
-  </div>` : ''}
   <div class="card"><h3>Clôture</h3>
     ${ck('fini','Chantier terminé : compter ce dossier dans le bilan')}
     <label>Ce que j'ai appris sur ce chantier<textarea data-f="suivi.notes" placeholder="Ce qui a pris plus de temps que prévu, ce qu'il faudra demander au prochain diagnostic…">${esc(s.notes)}</textarea></label>
@@ -538,7 +528,6 @@ function reel(d, c){
   return { hEquipe, saisi, cInterim, hPorteur, cPorteur, couts, marge, pct: c.ht ? marge/c.ht : 0,
     vM3: s.m3>0 && s.hDeb>0 ? s.hDeb/s.m3 : null, vM2: s.hNet>0 && d.surface>0 ? s.hNet/d.surface : null };
 }
-function commission(d){ const s = d.suivi||{}; if(s.mandat!=='signe') return 0; const h = s.honoraires || S.honorairesMoyens; return h * (s.mandatType==='location' ? 0.5 : S.partCom); }
 function devisNo(d){ const t = new Date(d.created); return `FB-${t.getFullYear()}${String(t.getMonth()+1).padStart(2,'0')}-${d.id.slice(-4).toUpperCase()}`; }
 
 function renderBilan(){
@@ -548,28 +537,18 @@ function renderBilan(){
   finis.forEach(d => { const c = calc(d), r = reel(d,c); ca += c.ht; mP += c.marge; mR += r.saisi ? r.marge : c.marge;
     if(r.vM3!=null){ hDeb += d.suivi.hDeb; m3 += d.suivi.m3; nV++; } if(r.vM2!=null){ hNet += d.suivi.hNet; surf += d.surface; nN++; } });
   const vM3 = m3 ? hDeb/m3 : null, vM2 = surf ? hNet/surf : null;
-  const fam = all.filter(d => d.formule!=='P' && (d.suivi.fini || ['Signé','Terminé'].includes(d.statut)));
-  const succ = fam.filter(d => d.formule==='S'), trans = fam.filter(d => d.formule==='T');
-  const rate = arr => arr.length ? arr.filter(d => d.suivi.mandat==='signe').length / arr.length : null;
-  const pctTxt = (v,arr) => v==null ? '—' : `${Math.round(v*100)} %`;
-  const comAtt = all.filter(d => d.suivi.mandat==='signe' && !d.suivi.vendu).reduce((a,d)=>a+commission(d),0);
-  const comOk = all.filter(d => d.suivi.mandat==='signe' && d.suivi.vendu).reduce((a,d)=>a+commission(d),0);
   const envoyes = all.filter(d => d.statut==='Devis envoyé'), signes = all.filter(d => ['Signé','Terminé'].includes(d.statut));
   const perdus = all.filter(d => d.statut==='Perdu');
   const tSign = (signes.length+perdus.length) ? signes.length/(signes.length+perdus.length) : null;
-  const rS = rate(succ);
   app.innerHTML = header('Bilan') + `<h1>Bilan</h1>
   <div class="card"><h3>Les deux chiffres décisifs</h3>
     <div class="kpis">
       <div class="kpi"><b>${vM3!=null?num(vM3,2):'—'}</b><span>h/m³ réels en débarras (${nV} chantier${nV>1?'s':''}) · prévu ${num(S.rythmeM3,2)}</span></div>
-      <div class="kpi"><b>${pctTxt(rate(fam))}</b><span>des dossiers familles donnent un mandat (${fam.filter(d=>d.suivi.mandat==='signe').length} sur ${fam.length})</span></div>
+      <div class="kpi"><b>${tSign==null?'—':Math.round(tSign*100)+' %'}</b><span>des devis signés (${signes.length} signé${signes.length>1?'s':''}, ${perdus.length} perdu${perdus.length>1?'s':''})</span></div>
     </div>
     <table>
-      <tr><td>Successions qui donnent un mandat</td><td class="n">${pctTxt(rS)} <span class="muted">(${succ.length})</span></td></tr>
-      <tr><td>Transitions qui donnent un mandat</td><td class="n">${pctTxt(rate(trans))} <span class="muted">(${trans.length})</span></td></tr>
       <tr><td>Vitesse nettoyage</td><td class="n">${vM2!=null?num(vM2,2)+' h/m²':'—'} <span class="muted">(prévu ${num(S.rythmeM2,2)})</span></td></tr>
     </table>
-    ${succ.length>=5 && rS!=null && rS<1/3 ? `<div class="suggest" style="border-color:var(--bad)">Moins d'une Succession sur trois donne un mandat : c'est le seuil fixé pour revoir les hypothèses du prévisionnel.</div>` : `<p class="small muted" style="margin:0">Premier bilan sérieux après 5 à 10 dossiers. Seuil d'alerte : moins d'une Succession sur trois avec mandat.</p>`}
     ${nV>=3 || nN>=3 ? `<button class="btn ghost" id="b-rythme">Utiliser ma vraie vitesse dans les devis${vM3!=null?` (${num(vM3,2)} h/m³`:''}${vM2!=null?`${vM3!=null?', ':' ('}${num(vM2,2)} h/m²`:''})</button>` : `<p class="small muted" style="margin:0">Après 3 chantiers notés dans l'onglet Suivi, vous pourrez remplacer le rythme prudent par votre vraie vitesse.</p>`}
   </div>
   <div class="card"><h3>Chantiers terminés</h3>
@@ -580,15 +559,10 @@ function renderBilan(){
       <tr><td><b>Marge réelle</b></td><td class="n"><b class="${mR<0?'bad':ca&&mR/ca<0.15?'warn':'good'}">${eur(mR)}${ca?` (${Math.round(mR/ca*100)} %)`:''}</b></td></tr>
     </table>
   </div>
-  <div class="card"><h3>Commissions</h3>
-    <table><tr><td>Attendues (mandats signés, pas encore vendus)</td><td class="n">${eur(comAtt)}</td></tr>
-    <tr><td>À encaisser ou encaissées (biens vendus ou loués)</td><td class="n">${eur(comOk)}</td></tr></table>
-  </div>
   <div class="card"><h3>Devis</h3>
     <table><tr><td>En attente de réponse</td><td class="n">${envoyes.length} · ${eur(envoyes.reduce((a,d)=>a+calc(d).ttc,0))}</td></tr>
     <tr><td>Signés</td><td class="n">${signes.length} · ${eur(signes.reduce((a,d)=>a+calc(d).ttc,0))}</td></tr>
-    <tr><td>Perdus</td><td class="n">${perdus.length}</td></tr>
-    <tr><td>Taux de signature</td><td class="n">${tSign==null?'—':Math.round(tSign*100)+' %'}</td></tr></table>
+    <tr><td>Perdus</td><td class="n">${perdus.length}</td></tr></table>
   </div>`;
   const br = $('#b-rythme'); if(br) br.onclick = () => { if(vM3!=null && nV>=3) S.rythmeM3 = Math.round(vM3*100)/100; if(vM2!=null && nN>=3) S.rythmeM2 = Math.round(vM2*1000)/1000; persistSettings(); showToast('Rythmes mis à jour dans les devis.'); render(); };
 }
@@ -1037,7 +1011,6 @@ function renderSettings(){
   const tf = (k,l) => `<label>${esc(l)}<input data-st="${k}" value="${esc(so[k])}"></label>`;
   app.innerHTML = header('Réglages') + `<h1>Réglages</h1>
   <div class="card"><h3>Société (mentions du devis PDF)</h3><label>Commune du siège (point de départ des distances)<select data-st="siegeVille">${Object.keys(COORDS).filter(k=>COORDS[k]).map(v=>`<option ${v===so.siegeVille?'selected':''}>${esc(v)}</option>`).join('')}</select></label>${tf('adresse','Adresse du siège')}<div class="grid2">${tf('siret','SIRET')}${tf('rcs','RCS')}${tf('tva','N° de TVA')}${tf('tel','Téléphone')}</div>${tf('email','E-mail')}${tf('mediateur','Médiateur de la consommation')}${tf('signataire','Signataire pour la société')}</div>
-  <div class="card"><h3>Commissions</h3><div class="grid2">${f('partCom','Votre part des honoraires de vente (0 à 1)')}${f('honorairesMoyens','Honoraires moyens HT','100')}</div></div>
   <div class="card"><h3>Prix TTC (1-2 p. / 3 p. / 4 p. / 5 p.+)</h3>${grid('grids.L','Libération')}${grid('grids.T','Transition')}${grid('grids.S','Succession')}${grid('installation','Installation (chambre / studio / 2 p. / 3 p.)')}
   <div class="grid2">${f('m3Sup','Volume en plus, €/m³ TTC','1')}${f('residence','Recherche de résidence','1')}${f('gardiennage','Gardiennage, €/mois','1')}${f('urgence','Urgence, %','1')}</div>
   <div class="suggest">Ces prix (Libération, Transition, Succession, installation, volume en plus, recherche de résidence, gardiennage, urgence) sont aussi ceux du site : simulateur, page Tarifs, pages des formules. Après une modification, mettez le site à jour.</div>
