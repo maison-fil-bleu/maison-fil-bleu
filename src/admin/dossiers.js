@@ -20,7 +20,7 @@ const DEFAULTS = {
   heuresSup: { L:[3,4,5,6], T:[30,48,56,70], S:[12,16,19,24], P:[0,0,0,0] },
   rythmeM3: 1.3, rythmeM2: 0.15, baie: 0.25, objetLourd: 1, partPorteur: 0.5,
   interim: 21.64, porteur: 28, decheterie: 18, camionJour: 110, consommables: 35, kmCout: 0.30, vitesse: 50, adminH: 4,
-  m3Sup: 75, residence: 700, installation: [350,400,720,880], gardiennage: 150, urgence: 25, horsDep: 550, tva: 20,
+  m3Sup: 75, residence: 700, installation: [350,400,720,880], gardiennage: 150, box: 90, livraison: 120, urgence: 25, horsDep: 550, tva: 20,
   soc: { siegeVille:'Les Pennes-Mirabeau', adresse:'[adresse], 13170 Les Pennes-Mirabeau', siret:'[n°]', rcs:'[n°]', tva:'[n°]', tel:'[06 00 00 00 00]', email:'[contact@maisonfilbleu.fr]', mediateur:'[nom et site du médiateur]', signataire:'[Prénom Nom], président' }
 };
 const COORDS = {"Marseille":[43.296,5.370],"Marseille 1er":[43.300,5.384],"Marseille 2e":[43.312,5.366],"Marseille 3e":[43.311,5.380],"Marseille 4e":[43.307,5.401],"Marseille 5e":[43.293,5.398],"Marseille 6e":[43.287,5.381],"Marseille 7e":[43.283,5.362],"Marseille 8e":[43.248,5.383],"Marseille 9e":[43.233,5.433],"Marseille 10e":[43.274,5.426],"Marseille 11e":[43.290,5.481],"Marseille 12e":[43.307,5.443],"Marseille 13e":[43.350,5.432],"Marseille 14e":[43.343,5.393],"Marseille 15e":[43.360,5.362],"Marseille 16e":[43.362,5.317],
@@ -69,9 +69,9 @@ function applyVol(d){ const mode = d.diag.volMode || 'base'; if(mode==='base') d
 const PRO_OPTS = [["vitres","Baie vitrée ou grande fenêtre en plus","u"],["four","Four (intérieur)","u"],["frigo","Réfrigérateur (intérieur)","u"],["hotte","Hotte","u"],["placards","Intérieur des placards (par pièce)","u"],["murs","Lessivage des murs","m²"],["moquette","Shampoing moquette","m²"],["balcon","Balcon ou terrasse","u"],["cave","Cave ou garage","u"]];
 const PRO_TYPES = {finbail:"Fin de bail", vente:"Avant vente ou location", travaux:"Après travaux"};
 const FORM_DESC = {
-  L:"Tri avec vous de ce que vous gardez, donnez ou laissez partir, dons aux associations, débarras, nettoyage, reportage photo et remise des clés.",
-  T:"Libération du logement, plan du nouveau logement, tri accompagné, comparaison des devis de déménageurs, coordination du jour J, installation complète, démarches et visite de suivi à J+15.",
-  S:"Libération du logement, lien avec le notaire, reportage photo, partage des objets entre les héritiers, papiers et résiliations, accompagnement jusqu'à la vente.",
+  L:"Diagnostic et devis forfaitaire, tri accompagné (ce que vous gardez, donnez ou laissez partir ; papiers et souvenirs remis), débarras en filières agréées, dons aux associations, nettoyage complet, remise en état coordonnée avec des artisans * si besoin, démarches : résiliations, courrier, relevés de compteurs.",
+  T:"Tout le contenu de la Libération, journées dédiées au tri (ce qui suit, ce qui est donné, ce qui part), coordination du déménagement * et présence le jour J, installation complète du nouveau logement, démarches du nouveau logement, box si besoin, suivi à 15 jours.",
+  S:"Tout le contenu de la Libération, journées dédiées au tri (chaque héritier choisit ce qu'il garde, le reste est donné ou part), papiers et photos de famille classés et remis, lien avec le notaire tout au long du dossier, box si besoin.",
   P:"Débarras et nettoyage du logement, évacuation en filières agréées, photos avant et après."
 };
 const SUIVI0 = { hDeb:0, hNet:0, hAutres:0, hInterim:0, hAdmin:0, m3:0, joursCamion:0, frais:0, acompte:false, solde:false, liste:false, decharge:false, objets:'', mandat:'non', mandatType:'vente', honoraires:0, vendu:false, fini:false, notes:'' };
@@ -221,7 +221,7 @@ function newDossier(){
     ville:'Marseille', km: kmEst(siegePt(), COORDS['Marseille']) || 14, typeLog:'appartement', taille:1, surface:70, etage:0, ascenseur:true, urgence:false, notes:'',
     formule:'L', formuleAuto:true,
     diag:{ volMode:'base', volume:25, evac:70, cave:0, jardin:0, baies:0, objetsLourds:0, etagesMaison:1, salete:'normal', stationnement:false, dechetsSpeciaux:false, monteMeubles:false, notes:'' },
-    options:{ residence:false, installation:-1, gardiennage:0, videMaison:0, horsDepJours:0 },
+    options:{ residence:false, box:false, livraison:false, gardiennage:0, videMaison:0, horsDepJours:0 },
     pro:{ debarras:false, type:'finbail', opts:{} },
     photos:[], suivi: structuredClone(SUIVI0) };
   return d;
@@ -243,10 +243,10 @@ function calc(d){
   const hDeb = (volEvac + extraVol) * S.rythmeM3 * (1+access);
   const hNet = d.surface * S.rythmeM2 * saleCoef * travauxCoef + (g.baies||0) * S.baie + proOptH;
   const hLourd = (g.objetsLourds||0) * S.objetLourd;
-  const hSup = (S.heuresSup[f]||[0,0,0,0])[i] + (o.installation>=0 && f!=='T' ? 6 : 0);
+  const hSup = (S.heuresSup[f]||[0,0,0,0])[i] + (o.livraison && f!=='T' ? 2 : 0);
   const hEquipe = hDeb + hNet + hLourd + hSup;
   const jours = Math.max(1, Math.ceil(hEquipe / 14));
-  const nv = d.nouveau, avecNouv = nv && (f==='T' || o.installation>=0) && (nv.km>0);
+  const nv = d.nouveau, avecNouv = nv && f==='T' && (nv.km>0);
   const jInstall = avecNouv ? (f==='T' && i>=2 ? 2 : 1) : 0;
   const kmTotal = d.km*2*jours + (avecNouv ? jInstall*2*nv.km + (f==='T' ? (nv.kmAN||0) : 0) : 0);
   const trajetH = kmTotal / S.vitesse;
@@ -270,8 +270,9 @@ function calc(d){
     const sup = Math.max(0, volEvac - inclus) + extraVol;
     if(sup > 0.4){ const v = sup * S.m3Sup; ttc += v; lignes.push([`Volume en plus (caves, jardin, surplus) ${num(sup)} m³`, v]); }
     if(o.residence){ ttc += S.residence; lignes.push(['Recherche de résidence', S.residence]); }
-    if(o.installation>=0 && f!=='T'){ const v = S.installation[o.installation]; ttc += v; lignes.push(['Installation', v]); }
-    if(o.gardiennage>0){ const v = o.gardiennage*S.gardiennage; ttc += v; lignes.push([`Gardiennage ${o.gardiennage} mois`, v]); }
+    if(o.box){ const v = f==='L' ? S.box : 0; ttc += v; lignes.push([f==='L' ? 'Box de stockage : recherche, contrat et coordination avec le déménageur *' : 'Box de stockage : recherche, contrat et coordination avec le déménageur * (compris)', v]); }
+    if(o.livraison && f!=='T'){ ttc += S.livraison; lignes.push([f==='S' ? "Livraison d'objets chez un héritier, organisée avec un déménageur *" : 'Livraison de quelques meubles chez un proche, organisée avec un déménageur *', S.livraison]); }
+    if(o.gardiennage>0){ const v = o.gardiennage*S.gardiennage; ttc += v; lignes.push([`Gardiennage du logement, ${o.gardiennage} mois`, v]); }
     if(o.videMaison>0){ ttc += o.videMaison; lignes.push(['Vide-maison', o.videMaison]); }
     if(d.urgence){ const u = ttc*S.urgence/100; ttc += u; lignes.push([`Urgence +${S.urgence} %`, u]); }
     if(o.horsDepJours>0){ const v = o.horsDepJours*S.horsDep; ttc += v; lignes.push([`Hors département ${o.horsDepJours} j`, v]); }
@@ -333,7 +334,7 @@ function distBlock(d){
   <div class="small muted" style="margin-top:6px">Distances aller, ${d.kmManuel?'saisie à la main':src}. ${d.kmManuel?'':'Corrigez si besoin :'}</div>
   <label style="margin-top:6px">Distance siège → logement (km)<input data-f="km" type="number" inputmode="decimal" min="0" value="${d.km}"></label></div>`;
 }
-function showNouveau(d){ return d.formule==='T' || ['residence','demenage'].includes(d.situation) || d.options.installation>=0; }
+function showNouveau(d){ return d.formule==='T' || ['residence','demenage'].includes(d.situation) ; }
 function volCard(d, compact){
   const inv = d.diag.inventaire||{}, nInv = Object.values(inv).reduce((a,b)=>a+b,0) + (d.diag.mesures||[]).length, det = invTotal(inv, d.diag.mesures), mode = d.diag.volMode||'base';
   const quick = INVENTAIRE.flatMap(([,it])=>it).filter(([k])=>QUICK_INV.includes(k));
@@ -427,7 +428,8 @@ function renderDossier(){
   </div>
   ${d.formule!=='P' ? `<div class="card"><h3>Options</h3>
     <label class="row" style="flex-direction:row;color:var(--ink);font-size:15px"><input type="checkbox" data-f="options.residence" ${d.options.residence?'checked':''} style="width:auto"> Recherche de résidence (${eur(S.residence)})</label>
-    ${d.formule!=='T' ? `<label>Installation${seg('options.installation',[[-1,'Non'],[0,'Chambre'],[1,'Studio'],[2,'2 pièces'],[3,'3 pièces']],d.options.installation)}</label>`:''}
+    <label class="row" style="flex-direction:row;color:var(--ink);font-size:15px"><input type="checkbox" data-f="options.box" ${d.options.box?'checked':''} style="width:auto"> Box de stockage (${d.formule==='L' ? eur(S.box) : 'compris'})</label>
+    ${d.formule!=='T' ? `<label class="row" style="flex-direction:row;color:var(--ink);font-size:15px"><input type="checkbox" data-f="options.livraison" ${d.options.livraison?'checked':''} style="width:auto"> ${d.formule==='S' ? "Livraison d'objets chez un héritier" : 'Livraison de quelques meubles chez un proche'} (${eur(S.livraison)})</label>`:''}
     ${stepper('options.gardiennage','Gardiennage (mois)',d.options.gardiennage,1)}
     <label>Vide-maison, montant TTC<input type="number" inputmode="decimal" min="0" data-f="options.videMaison" value="${d.options.videMaison}"></label>
     ${stepper('options.horsDepJours','Jours hors département',d.options.horsDepJours,1)}
@@ -649,6 +651,17 @@ function makePdf(){
 function dataUrlBytes(u){ const b = atob(u.split(',')[1]); return Uint8Array.from(b, ch => ch.charCodeAt(0)); }
 async function imgSize(u){ return new Promise(res => { const i = new Image(); i.onload = () => res([i.naturalWidth, i.naturalHeight]); i.onerror = () => res([480,180]); i.src = u; }); }
 
+/** Conditions imprimées sur le devis selon les options choisies (brief final, section 3). */
+function conditionsOptions(d){
+  const o = d.options || {}, f = d.formule, l = [];
+  if(o.residence) l.push("Recherche de résidence : jusqu'à 3 visites accompagnées d'établissements dans les Bouches-du-Rhône et constitution du dossier d'admission. Visites supplémentaires ou hors département : devis complémentaire.");
+  if(o.gardiennage>0) l.push("Gardiennage : 1 visite du logement par mois (aération, relevé du courrier, contrôle visuel). Autres prestations à la demande. Pas de surveillance permanente.");
+  if(o.livraison && f!=='T') l.push(`Livraison ${f==='S' ? 'chez un héritier' : 'chez un proche'} : organisation avec un déménageur indépendant et présence au chargement. Transport facturé et réglé directement par le client au déménageur. Sans installation.`);
+  if(o.box) l.push("Box de stockage : recherche, aide à la souscription du contrat au nom du client, coordination avec le déménageur. Location payée par le client au loueur.");
+  if(f==='S') l.push("Possibilité de règlement sur les fonds de la succession avec l'accord de tous les héritiers et du notaire.");
+  l.push("* Travaux des artisans et transport par le déménageur, à la demande du client : réglés directement par le client, non compris dans le forfait. Non compris : les déchets dangereux.");
+  return l;
+}
 async function devisPdf(d){
   const c = calc(d), P = makePdf(), so = {...DEFAULTS.soc, ...(S.soc||{})};
   const pro = d.formule==='P', ink='#1E2430', blue='#3D5A80', muted='#5A5F68', line='#E2DDD4', tint='#E6EBF0';
@@ -704,6 +717,7 @@ async function devisPdf(d){
     `Contrat conclu hors établissement : vous disposez de 14 jours à compter de la signature pour vous rétracter (formulaire remis avec le contrat).`,
     `Ce devis est complété par le contrat de prestation et ses conditions générales. Médiateur de la consommation : ${so.mediateur}.`
   ];
+  if(!pro) cond.push(...conditionsOptions(d));
   cond.filter(Boolean).forEach(t => { wrap('• ' + t, 8.5, W).forEach(l => { P.text(L, y, l, {size:8.5, color:muted}); y += 11; }); y += 2; });
   y += 12;
   // Signatures
@@ -815,9 +829,9 @@ function renderEspace(d){
       <label>Message pour la famille<textarea data-etape-msg="${x.cle}" placeholder="Ex. : Le tri est terminé, les dons partent mardi à l'association.">${esc(x.message||'')}</textarea></label>
     </div>`).join('')}
   </div>
-  <div class="card"><h3>Photos partagées</h3>
-    <p class="small muted" style="margin:0">Cochez les photos que la famille peut voir. Par défaut, aucune n'est partagée.</p>
-    ${photos.length ? `<div class="thumbs">${photos.map(x => `<label style="position:relative;cursor:pointer;gap:4px"><img data-chemin="${esc(x.chemin)}" alt="Photo du logement" style="outline:${partagees.has(x.chemin)?'3px solid var(--blue)':'none'};outline-offset:-3px"><span class="small" style="display:flex;gap:6px;align-items:center;color:var(--ink)"><input type="checkbox" data-partage="${esc(x.chemin)}" ${partagees.has(x.chemin)?'checked':''} style="width:auto"> Partagée</span></label>`).join('')}</div>` : `<p class="small" style="margin:0">Aucune photo dans ce dossier (ajoutez-en dans « 2 · Sur place »).</p>`}
+  <div class="card"><h3>Photos visibles par la famille</h3>
+    <p class="small muted" style="margin:0">Cochez les photos que la famille peut voir. Par défaut, aucune n'est visible.</p>
+    ${photos.length ? `<div class="thumbs">${photos.map(x => `<label style="position:relative;cursor:pointer;gap:4px"><img data-chemin="${esc(x.chemin)}" alt="Photo du logement" style="outline:${partagees.has(x.chemin)?'3px solid var(--blue)':'none'};outline-offset:-3px"><span class="small" style="display:flex;gap:6px;align-items:center;color:var(--ink)"><input type="checkbox" data-partage="${esc(x.chemin)}" ${partagees.has(x.chemin)?'checked':''} style="width:auto"> Visible</span></label>`).join('')}</div>` : `<p class="small" style="margin:0">Aucune photo dans ce dossier (ajoutez-en dans « 2 · Sur place »).</p>`}
   </div>
   <div class="card"><h3>Documents</h3>
     ${e.docs.length ? `<table>${e.docs.map(x => `<tr><td>${esc(x.nom)}<br><span class="small muted">${esc(TYPES_DOC[x.type]||'Document')} · ${new Date(x.date).toLocaleDateString('fr-FR')}</span></td><td class="n" style="white-space:nowrap"><button type="button" class="btn ghost" data-voir="${esc(x.chemin)}" style="padding:8px 10px">Voir</button> <button type="button" class="btn danger" data-retdoc="${esc(x.id)}" style="padding:8px 10px">Retirer</button></td></tr>`).join('')}</table>` : `<p class="small" style="margin:0">Aucun document publié.</p>`}
@@ -889,7 +903,7 @@ function bindEspace(d){
     if(L._nouveau) await new Promise(r => { enregistrerEspace(d, true); setTimeout(r, 400); });
     if(cb.checked){
       const { data, error } = await sb.from('photos_partagees').insert({ dossier_id: d.id, chemin, ordre: e.photos.length }).select().single();
-      if(error){ cb.checked = false; showToast("Photo non partagée : " + error.message); return; }
+      if(error){ cb.checked = false; showToast("Photo non publiée : " + error.message); return; }
       e.photos.push(data);
     } else {
       const { error } = await sb.from('photos_partagees').delete().eq('dossier_id', d.id).eq('chemin', chemin);
@@ -1011,9 +1025,9 @@ function renderSettings(){
   const tf = (k,l) => `<label>${esc(l)}<input data-st="${k}" value="${esc(so[k])}"></label>`;
   app.innerHTML = header('Réglages') + `<h1>Réglages</h1>
   <div class="card"><h3>Société (mentions du devis PDF)</h3><label>Commune du siège (point de départ des distances)<select data-st="siegeVille">${Object.keys(COORDS).filter(k=>COORDS[k]).map(v=>`<option ${v===so.siegeVille?'selected':''}>${esc(v)}</option>`).join('')}</select></label>${tf('adresse','Adresse du siège')}<div class="grid2">${tf('siret','SIRET')}${tf('rcs','RCS')}${tf('tva','N° de TVA')}${tf('tel','Téléphone')}</div>${tf('email','E-mail')}${tf('mediateur','Médiateur de la consommation')}${tf('signataire','Signataire pour la société')}</div>
-  <div class="card"><h3>Prix TTC (1-2 p. / 3 p. / 4 p. / 5 p.+)</h3>${grid('grids.L','Libération')}${grid('grids.T','Transition')}${grid('grids.S','Succession')}${grid('installation','Installation (chambre / studio / 2 p. / 3 p.)')}
+  <div class="card"><h3>Prix TTC (1-2 p. / 3 p. / 4 p. / 5 p.+)</h3>${grid('grids.L','Libération')}${grid('grids.T','Transition')}${grid('grids.S','Succession')}
   <div class="grid2">${f('m3Sup','Volume en plus, €/m³ TTC','1')}${f('residence','Recherche de résidence','1')}${f('gardiennage','Gardiennage, €/mois','1')}${f('urgence','Urgence, %','1')}</div>
-  <div class="suggest">Ces prix (Libération, Transition, Succession, installation, volume en plus, recherche de résidence, gardiennage, urgence) sont aussi ceux du site : simulateur, page Tarifs, pages des formules. Après une modification, mettez le site à jour.</div>
+  <div class="suggest">Ces prix (Libération, Transition, Succession, volume en plus, recherche de résidence, gardiennage, urgence) sont aussi ceux du site : simulateur, page Tarifs, pages des formules. Après une modification, mettez le site à jour.</div>
   <button class="btn" id="b-prix-site" type="button">Mettre à jour les prix du site</button></div>
   <div class="card"><h3>Fil Bleu Pro (HT)</h3>${grid('proNettoyage','Nettoyage seul (jusqu\'à 30 m² / 55 m² / 75 m² / 100 m²)')}<div class="grid2">${PRO_OPTS.map(([k,l,u])=>`<label>${esc(l)}, € HT/${u}<input type="number" inputmode="decimal" step="0.5" data-s="proOpts.${k}.0" value="${(S.proOpts?.[k]||DEFAULTS.proOpts[k])[0]}"></label>`).join('')}</div><div class="grid2">${f('proForfait','Forfait d\'intervention','1')}${f('proM3','Débarras au-delà du forfait, €/m³','1')}${f('proM3Inclus','m³ compris dans le forfait','1')}</div></div>
   <div class="card"><h3>Coûts</h3><div class="grid2">${f('interim','Intérim, €/h')}${f('porteur','Vos heures, €/h chargé')}${f('decheterie','Déchèterie, €/m³')}${f('camionJour','Camion, €/jour','1')}${f('kmCout','Trajet, €/km')}${f('consommables','Consommables par chantier','1')}</div></div>

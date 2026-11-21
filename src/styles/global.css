@@ -41,6 +41,7 @@ main:focus{outline:none}
 .w{max-width:1200px;margin:0 auto;padding:0 48px}
 .w-l{max-width:1296px}
 .sec{padding:112px 0}
+.w.sec{padding:112px 48px} /* .w et .sec ensemble : garder la gouttière latérale */
 .sand{background:var(--sable)}
 .g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:88px}
 .g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:56px}
@@ -99,6 +100,7 @@ details.q summary::-webkit-details-marker{display:none}
   .h2{font-size:36px}
   .w{padding:0 22px}
   .sec{padding:80px 0}
+  .w.sec{padding:80px 22px}
   .hide-m{display:none!important}
   /* Sur mobile : voile en dégradé, plus dense en haut (titre), la photo réapparaît vers le bas */
   .hero::before{background:linear-gradient(170deg,rgba(248,245,239,.9) 0%,rgba(248,245,239,.8) 45%,rgba(248,245,239,.62) 100%)}
