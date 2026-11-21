@@ -4,6 +4,8 @@
  * repris à l'identique de fil-bleu-dossiers.html ; seuls le stockage (Supabase),
  * les photos, le téléchargement et le mode hors ligne ont changé.
  */
+import { CGV_PARTICULIERS, CGV_PRO, texte as texteCgv } from '../config/cgv';
+
 export function demarrerAppli({ sb, utilisateur, actions }) {
 const $ = (s, el=document) => el.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -435,6 +437,7 @@ function renderDossier(){
     ${stepper('options.horsDepJours','Jours hors département',d.options.horsDepJours,1)}
   </div>`:''}
   <div class="card"><h3>Photos</h3>
+    ${d.signature ? `<p class="small ${photosPubliables(d)?'':'muted'}" style="margin:0">${photosPubliables(d) ? 'Publication sur le site et les réseaux : autorisée par le client (case « Photos » cochée au devis).' : 'Publication sur le site et les réseaux : non autorisée (case « Photos » non cochée au devis).'}</p>` : ''}
     <div class="thumbs">${(d.photos||[]).filter(p=>p.chemin).map(p=>`<img data-chemin="${esc(p.chemin)}" alt="Photo du logement">`).join('')}</div>
     <label class="btn ghost" style="text-align:center;cursor:pointer">Ajouter des photos<input id="ph" type="file" accept="image/*" capture="environment" multiple hidden></label>
     <label>Notes de visite<textarea data-f="diag.notes" placeholder="Ce que la famille garde, objets de valeur signalés, accès…">${esc(d.diag.notes)}</textarea></label>
@@ -444,7 +447,7 @@ function renderDossier(){
     <table>${c.lignes.map(([l,v])=>`<tr><td>${esc(l)}</td><td class="n">${eur(v)}</td></tr>`).join('')}
     <tr><td><b>Total ${d.formule==='P' && d.client==='agence' ? 'HT' : 'TTC'}</b></td><td class="n"><b>${eur(c.ttc)}</b></td></tr>
     <tr><td class="muted">Soit HT</td><td class="n muted">${eur(c.ht)}</td></tr>
-    ${d.formule!=='P'?`<tr><td class="muted">Acompte 40 %</td><td class="n muted">${eur(c.ttc*0.4)}</td></tr>`:''}</table>
+    ${d.formule!=='P'?`<tr><td class="muted">Acompte 40 %, ${txtAcompte(d)}</td><td class="n muted">${eur(c.ttc*0.4)}</td></tr>`:''}</table>
     ${d.diag.dechetsSpeciaux?'<div class="suggest">Déchets spéciaux signalés : à chiffrer à part.</div>':''}
   </div>
   <div class="card"><h3>Coûts et marge</h3>
@@ -498,7 +501,7 @@ function renderDossier(){
     ${r.saisi ? `<p class="small" style="margin:0">Écart de marge : ${ecart(r.marge,c.marge,eur)} (${Math.round(r.pct*100)} % réel contre ${Math.round(c.pct*100)} % prévu).</p>`:''}
   </div>
   <div class="card"><h3>Paiement</h3>
-    ${d.formule!=='P' ? ck('acompte',`Acompte de 40 % encaissé (${eur(c.ttc*0.4)})`) : ''}
+    ${d.formule!=='P' ? ck('acompte',`Acompte de 40 % encaissé (${eur(c.ttc*0.4)}, ${txtAcompte(d)})`) : ''}
     ${ck('solde', d.formule!=='P' ? `Solde encaissé (${eur(c.ttc*0.6)})` : `Facture réglée (${eur(c.ttc)})`)}
   </div>
   <div class="card"><h3>Clôture</h3>
@@ -513,7 +516,7 @@ function renderDossier(){
 }
 function f_label(d){ return FORM[d.formule]; }
 function quoteText(d,c){
-  return `Maison Fil Bleu — estimation\n${d.contact.nom ? 'Pour : '+d.contact.nom+'\n':''}Logement : ${d.typeLog}, ${TAILLES[d.taille]}, ${d.surface} m², ${d.ville}\nFormule : ${FORM[d.formule]}\n${showNouveau(d) && d.nouveau && (d.nouveau.adr?.label||d.nouveau.ville) ? `Nouveau logement : ${d.nouveau.nom ? d.nouveau.nom+', ' : ''}${d.nouveau.adr?.label || d.nouveau.ville}\n` : ''}\n` + c.lignes.map(([l,v])=>`• ${l} : ${eur(v)}`).join('\n') + `\n\nTotal ${d.formule==='P'&&d.client==='agence'?'HT':'TTC'} : ${eur(c.ttc)}${d.formule!=='P'?`\nAcompte de 40 % : ${eur(c.ttc*0.4)}, solde en fin de chantier.`:''}\nLe déménageur, s'il y en a un, est choisi avec vous et réglé directement.\nDevis définitif remis après le diagnostic.`;
+  return `Maison Fil Bleu — estimation\n${d.contact.nom ? 'Pour : '+d.contact.nom+'\n':''}Logement : ${d.typeLog}, ${TAILLES[d.taille]}, ${d.surface} m², ${d.ville}\nFormule : ${FORM[d.formule]}\n${showNouveau(d) && d.nouveau && (d.nouveau.adr?.label||d.nouveau.ville) ? `Nouveau logement : ${d.nouveau.nom ? d.nouveau.nom+', ' : ''}${d.nouveau.adr?.label || d.nouveau.ville}\n` : ''}\n` + c.lignes.map(([l,v])=>`• ${l} : ${eur(v)}`).join('\n') + `\n\nTotal ${d.formule==='P'&&d.client==='agence'?'HT':'TTC'} : ${eur(c.ttc)}${d.formule!=='P'?`\nAcompte de 40 % : ${eur(c.ttc*0.4)}, exigible 7 jours après la signature ; solde à la remise des clés.`:''}\nLe déménageur, s'il y en a un, est choisi avec vous et réglé directement.\nDevis définitif remis après le diagnostic.`;
 }
 
 /* ---------- Suivi réel et bilan ---------- */
@@ -576,8 +579,9 @@ function openSignature(d){
   m.innerHTML = `<div class="sheet"><h2>Bon pour accord</h2>
     <p class="small muted" style="margin:0">${esc(FORM[d.formule])} · ${esc(TAILLES[d.taille])} · total ${d.formule==='P'&&d.client==='agence'?'HT':'TTC'} <b style="color:var(--ink)">${eur(c.ttc)}</b></p>
     <label>Nom du signataire<input id="sg-nom" value="${esc(d.contact.nom)}" autocomplete="name"></label>
+    ${estConso(d) ? `<div class="suggest" style="font-size:13px;line-height:1.5">${esc(infoRetractation(d, {...DEFAULTS.soc, ...(S.soc||{})}, c.ttc*0.4))}</div>` : ''}
+    ${casesDevis(d).map(k => `<label class="row" style="flex-direction:row;align-items:flex-start;gap:10px;color:var(--ink);font-size:14px;line-height:1.45"><input type="checkbox" data-case="${k}" style="width:auto;margin-top:3px"> <span>${esc(CASES[k](d))}${k==='acceptation' ? ' <b>(obligatoire)</b>' : k==='photos' ? ' <span class="muted">(facultatif)</span>' : ''}</span></label>${k==='succession' ? `<label>Notaire chargé de la succession<input id="sg-notaire" value="${esc(d.notaire||'')}" placeholder="Nom, étude, commune"></label>` : ''}`).join('')}
     <canvas class="pad" id="sg-pad" aria-label="Zone de signature"></canvas>
-    <label class="row" style="flex-direction:row;color:var(--ink);font-size:15px"><input type="checkbox" id="sg-ok" style="width:auto"> J'ai lu le devis et je l'accepte</label>
     <div class="row"><button class="btn ghost" id="sg-clear" style="flex:1">Effacer</button><button class="btn ghost" id="sg-cancel" style="flex:1">Annuler</button><button class="btn" id="sg-save" style="flex:2">Valider la signature</button></div></div>`;
   document.body.appendChild(m);
   const cv = $('#sg-pad', m), ctx = cv.getContext('2d'); let drawn = false, last = null;
@@ -592,12 +596,48 @@ function openSignature(d){
   $('#sg-cancel', m).onclick = close;
   $('#sg-save', m).onclick = () => {
     if(!drawn){ showToast('Le client doit signer dans le cadre.'); return; }
-    if(!$('#sg-ok', m).checked){ showToast('Cochez « J\'ai lu le devis et je l\'accepte ».'); return; }
+    const coche = k => !!$(`[data-case="${k}"]`, m)?.checked;
+    if(!coche('acceptation')){ showToast('Le client doit cocher la case d\'acceptation du devis.'); return; }
     const out = document.createElement('canvas'); out.width = 480; out.height = Math.round(480*cv.height/cv.width);
     const o = out.getContext('2d'); o.fillStyle='#fff'; o.fillRect(0,0,out.width,out.height); o.drawImage(cv,0,0,out.width,out.height);
-    d.signature = { img: out.toDataURL('image/jpeg', 0.7), nom: $('#sg-nom', m).value.trim() || d.contact.nom || 'Client', date: new Date().toISOString(), total: c.ttc };
+    const cases = {}; casesDevis(d).forEach(k => cases[k] = coche(k));
+    const notaire = $('#sg-notaire', m)?.value.trim() || '';
+    if(notaire) d.notaire = notaire;
+    // Date et heure de signature, cases cochées par le client lui-même (jamais pré-cochées).
+    d.signature = { img: out.toDataURL('image/jpeg', 0.7), nom: $('#sg-nom', m).value.trim() || d.contact.nom || 'Client', date: new Date().toISOString(), total: c.ttc, cases, notaire };
+    const exig = dateAcompte(d); if(exig && d.formule!=='P') d.signature.acompteExigible = exig.toISOString();
     if(['Appel','Diagnostic','Devis envoyé'].includes(d.statut)) d.statut = 'Signé';
     persist(d); close(); showToast('Devis signé.'); render();
+    remettreDevisSigne(d);
+  };
+}
+/** Copie du devis signé, avec le formulaire de rétractation : dépôt dans l'espace client, puis envoi au client. */
+async function remettreDevisSigne(d){
+  let blob; try{ blob = await devisPdf(d); }catch(e){ showToast('Le PDF signé n\'a pas pu être créé.'); return; }
+  let depose = false;
+  if(navigator.onLine){
+    try{
+      const chemin = await deposerDevis(d, blob);
+      const { error } = await sb.from('documents').upsert({ dossier_id: d.id, chemin, type: 'devis', nom: `Devis ${devisNo(d)} signé`, date: new Date().toISOString() }, { onConflict: 'dossier_id,chemin' });
+      depose = !error;
+    }catch(e){ depose = false; }
+  }
+  // Envoi au client : partage natif (Mail, Messages…) en attendant l'envoi automatique par e-mail (prestataire à brancher).
+  const nom = `Devis ${devisNo(d)} signé.pdf`, fichier = new File([blob], nom, { type: 'application/pdf' });
+  const m = document.createElement('div'); m.className = 'modal'; m.setAttribute('role','dialog'); m.setAttribute('aria-modal','true'); m.setAttribute('aria-label','Remettre le devis signé');
+  m.innerHTML = `<div class="sheet"><h2>Remettre le devis signé</h2>
+    <p class="small" style="margin:0">${depose ? 'Le devis signé est déposé dans l\'espace client du dossier.' : 'Le devis n\'a pas pu être déposé dans l\'espace client (hors ligne ?) : utilisez « Publier » dans l\'onglet Espace client dès le retour du réseau.'}</p>
+    <p class="small muted" style="margin:0">Le client doit en recevoir une copie maintenant, avec le formulaire de rétractation${d.contact.email ? ` (${esc(d.contact.email)})` : ''}.</p>
+    <div class="row"><button class="btn ghost" id="rd-later" style="flex:1">Plus tard</button><button class="btn" id="rd-send" style="flex:2">Envoyer au client</button></div></div>`;
+  document.body.appendChild(m);
+  $('#rd-later', m).onclick = () => m.remove();
+  $('#rd-send', m).onclick = async () => {
+    try{
+      if(navigator.canShare && navigator.canShare({ files: [fichier] })){ await navigator.share({ files: [fichier], title: nom, text: `Votre devis Maison Fil Bleu signé (${devisNo(d)}), avec le formulaire de rétractation.` }); m.remove(); return; }
+    }catch(e){ if(e && e.name === 'AbortError') return; }
+    const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = nom; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u), 4000);
+    if(d.contact.email) location.href = `mailto:${encodeURIComponent(d.contact.email)}?subject=${encodeURIComponent('Votre devis Maison Fil Bleu signé')}&body=${encodeURIComponent('Bonjour,\n\nVeuillez trouver ci-joint votre devis signé, avec le formulaire de rétractation.\n\nBien cordialement,')}`;
+    m.remove();
   };
 }
 
@@ -650,6 +690,29 @@ function makePdf(){
 }
 function dataUrlBytes(u){ const b = atob(u.split(',')[1]); return Uint8Array.from(b, ch => ch.charCodeAt(0)); }
 async function imgSize(u){ return new Promise(res => { const i = new Image(); i.onload = () => res([i.naturalWidth, i.naturalHeight]); i.onerror = () => res([480,180]); i.src = u; }); }
+
+/* ---------- Règles du contrat hors établissement (export juridique, « Clauses à ajouter au devis ») ---------- */
+/** Devis « consommateur » : toutes les formules familles, et Fil Bleu Pro pour un particulier. */
+function estConso(d){ return d.formule!=='P' || d.client!=='agence'; }
+/** Date d'exigibilité de l'acompte : signature + 7 jours (article L221-10 du Code de la consommation). */
+function dateAcompte(d){ if(!d.signature?.date) return null; const x = new Date(d.signature.date); x.setDate(x.getDate()+7); return x; }
+function dateFr(x){ return x ? x.toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' }) : ''; }
+function txtAcompte(d){ const x = dateAcompte(d); return x ? `exigible à partir du ${dateFr(x)}` : 'exigible 7 jours après la signature'; }
+const CASES = {
+  acceptation: d => d.formule==='P' && d.client==='agence'
+    ? "J'accepte le présent devis et les conditions générales professionnelles jointes."
+    : "J'accepte le présent devis et les conditions générales de vente qui m'ont été remises.",
+  demarrage: () => "Je demande expressément que les prestations commencent avant la fin du délai de rétractation de quatorze jours. Je reconnais que si je me rétracte ensuite, je devrai payer la part des prestations déjà réalisées, proportionnellement au prix total.",
+  succession: () => "Je déclare agir avec l'accord de l'ensemble des héritiers, ou en vertu d'un mandat, et je communique les coordonnées du notaire chargé de la succession :",
+  photos: () => "J'accepte que des photos du logement, sans personne ni élément permettant de m'identifier, soient utilisées sur le site et les réseaux de Maison Fil Bleu. Je peux retirer cet accord à tout moment.",
+};
+/** Cases proposées au client selon le devis : Pro (professionnel) = acceptation seule ; Succession = case Succession en plus. */
+function casesDevis(d){ if(!estConso(d)) return ['acceptation']; return d.formule==='S' ? ['acceptation','demarrage','succession','photos'] : ['acceptation','demarrage','photos']; }
+function infoRetractation(d, so, montant){
+  return `Vous disposez d'un délai de quatorze jours à compter du lendemain de la signature pour vous rétracter, sans motif, au moyen du formulaire joint ou de toute déclaration claire envoyée à ${so.email}, ${so.adresse}. Aucun paiement ne vous sera demandé avant l'expiration d'un délai de sept jours à compter de la signature.` + (d.formule!=='P' ? ` L'acompte de 40 %, soit ${eur(montant)}, sera ${txtAcompte(d)}.` : '');
+}
+/** Publication d'une photo du dossier (site, réseaux) : seulement si le client a coché la case « Photos ». */
+function photosPubliables(d){ return !!d.signature?.cases?.photos; }
 
 /** Conditions imprimées sur le devis selon les options choisies (brief final, section 3). */
 function conditionsOptions(d){
@@ -707,19 +770,34 @@ async function devisPdf(d){
   // Conditions
   if(y > 640){ P.addPage(); y = 60; }
   P.text(L, y, 'CONDITIONS', {size:7.5, color:blue}); y += 13;
+  const conso = estConso(d);
   const cond = pro ? [
-    `Professionnels : facture à la fin du chantier, payable à 30 jours. Particuliers : 40 % à la commande, solde à la fin du chantier.`,
-    `Déchets évacués en filières agréées, justificatifs sur demande. Non compris : déchets dangereux (amiante, produits chimiques), travaux d'artisans.`,
-    d.client!=='agence' ? `Contrat conclu hors établissement : vous disposez de 14 jours pour vous rétracter, aucun paiement ne peut être exigé avant 7 jours.` : null
+    conso ? `Facture à la fin de l'intervention. Aucun paiement ne vous sera demandé avant l'expiration d'un délai de sept jours à compter de la signature.` : `Facture à la fin de l'intervention, payable à trente jours par virement.`,
+    `Déchets évacués en filières agréées, justificatifs sur demande. Non compris : déchets dangereux (amiante, produits chimiques), travaux des artisans *.`,
+    conso ? infoRetractation(d, so, 0) : `Ce devis est complété par les conditions générales professionnelles jointes. Le client professionnel ne bénéficie pas du droit de rétractation des consommateurs.`
   ] : [
-    `Acompte de 40 % à la signature (${eur(c.ttc*0.4)}), encaissé au plus tôt 8 jours après. Solde (${eur(c.ttc*0.6)}) à la fin du chantier. Des facilités de paiement sont possibles, à convenir par écrit.`,
+    `Acompte de 40 % (${eur(c.ttc*0.4)}), ${txtAcompte(d)}. Solde (${eur(c.ttc*0.6)}) à la remise des clés. Des facilités de paiement sont possibles, à convenir par écrit.`,
     `Le déménageur éventuel est choisi avec vous sur devis comparés et réglé directement par vous.`,
-    `Contrat conclu hors établissement : vous disposez de 14 jours à compter de la signature pour vous rétracter (formulaire remis avec le contrat).`,
-    `Ce devis est complété par le contrat de prestation et ses conditions générales. Médiateur de la consommation : ${so.mediateur}.`
+    infoRetractation(d, so, c.ttc*0.4),
+    `Ce devis est complété par les conditions générales de vente jointes. Médiateur de la consommation : ${so.mediateur}.`
   ];
   if(!pro) cond.push(...conditionsOptions(d));
-  cond.filter(Boolean).forEach(t => { wrap('• ' + t, 8.5, W).forEach(l => { P.text(L, y, l, {size:8.5, color:muted}); y += 11; }); y += 2; });
-  y += 12;
+  cond.filter(Boolean).forEach(t => { wrap('• ' + t, 8.5, W).forEach(l => { if(y > 770){ P.addPage(); y = 60; } P.text(L, y, l, {size:8.5, color:muted}); y += 11; }); y += 2; });
+  y += 10;
+  // Accord du client : cases cochées par lui à l'écran (jamais pré-cochées)
+  if(y > 660){ P.addPage(); y = 60; }
+  P.text(L, y, 'VOTRE ACCORD', {size:7.5, color:blue}); y += 13;
+  const cs = d.signature?.cases || {};
+  casesDevis(d).forEach(k => {
+    const lib = CASES[k](d) + (k==='succession' ? ' ' + (d.signature?.notaire || d.notaire || '[notaire]') : '') + (k==='photos' ? ' (facultatif)' : '');
+    const ls = wrap(lib, 8.5, W-22);
+    if(y + ls.length*11 > 770){ P.addPage(); y = 60; }
+    P.box(L, y-8, 9, 9, ink); if(cs[k]) P.text(L+1.6, y, 'X', {size:8, bold:true});
+    ls.forEach((l,i) => P.text(L+18, y + i*11, l, {size:8.5, color: ink}));
+    y += ls.length*11 + 5;
+  });
+  if(d.signature?.date) { P.text(L, y+2, `Signé le ${new Date(d.signature.date).toLocaleDateString('fr-FR')} à ${new Date(d.signature.date).toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' })}.`, {size:8, color:muted}); y += 14; }
+  y += 8;
   // Signatures
   if(y > 690){ P.addPage(); y = 60; }
   const bw = W/2 - 10;
@@ -732,8 +810,26 @@ async function devisPdf(d){
     P.image(dataUrlBytes(d.signature.img), iw, ih, colR+10, y+36, dw, dw*ih/iw > dh ? dh : dw*ih/iw);
   } else P.text(colR+10, y+28, 'Date, nom et signature précédés de « bon pour accord »', {size:8, color:muted});
   // Pied de page
-  P.line(L, 800, R, 800, line);
-  P.text(L, 812, `SAS Groupe Fil Bleu · ${so.adresse} · SIRET ${so.siret} · RCS Marseille ${so.rcs} · TVA ${so.tva}`, {size:7, color:muted});
+  const pied = () => { P.line(L, 800, R, 800, line); P.text(L, 812, `SAS Groupe Fil Bleu · ${so.adresse} · SIRET ${so.siret} · RCS Marseille ${so.rcs} · TVA ${so.tva}`, {size:7, color:muted}); };
+  pied();
+  // Texte courant sur plusieurs pages (formulaire, conditions générales)
+  const bloc = (txt, o = {}) => { const size = o.size || 8.5; wrap(txt, size, W - (o.indent||0), o.bold).forEach(l => { if(y > 775){ pied(); P.addPage(); y = 60; } P.text(L + (o.indent||0), y, l, {size, bold:o.bold, color:o.color||ink}); y += size*1.32; }); y += o.after ?? 4; };
+  // Formulaire de rétractation : page à part, détachable (modèle légal)
+  if(conso){
+    P.addPage(); y = 60;
+    P.text(L, y, 'FORMULAIRE DE RÉTRACTATION', {size:13, bold:true}); y += 18;
+    bloc("Veuillez compléter et renvoyer le présent formulaire uniquement si vous souhaitez vous rétracter du contrat.", {color:muted, after:14});
+    bloc(`À l'attention de Groupe Fil Bleu, ${so.adresse}, ${so.email} :`, {size:10, after:10});
+    bloc("Je vous notifie par la présente ma rétractation du contrat portant sur la prestation de services ci-dessous :", {size:10, after:16});
+    [`Devis n° : ${devisNo(d)}`, `Signé le : ${d.signature?.date ? new Date(d.signature.date).toLocaleDateString('fr-FR') : '…'}`, 'Nom du ou des consommateurs : …', 'Adresse du ou des consommateurs : …', 'Signature du ou des consommateurs (uniquement en cas d\'envoi sur papier) : …', 'Date : …'].forEach(l => { bloc(l, {size:10, after:18}); });
+    pied();
+  }
+  // Conditions générales jointes au devis (texte de la page /cgv)
+  const cg = conso && !pro ? CGV_PARTICULIERS : (!conso ? CGV_PRO : CGV_PARTICULIERS);
+  P.addPage(); y = 60;
+  P.text(L, y, conso ? 'CONDITIONS GÉNÉRALES DE VENTE · PARTICULIERS' : 'CONDITIONS GÉNÉRALES · PROFESSIONNELS (FIL BLEU PRO)', {size:11, bold:true}); y += 18;
+  cg.forEach(a => { if(y > 740){ pied(); P.addPage(); y = 60; } bloc(a.titre, {size:9, bold:true, after:3}); a.blocs.forEach(b => { if('p' in b) bloc(texteCgv(b.p), {size:8, color:muted}); else b.ul.forEach(li => bloc('• ' + texteCgv(li), {size:8, color:muted, indent:8, after:2})); }); y += 4; });
+  pied();
   return P.build();
 }
 async function downloadDevis(d){
