@@ -1,47 +1,47 @@
 ---
 /**
- * Politique de confidentialité : PROJET à faire valider (conseil juridique) avant le lancement.
- * Les éléments entre crochets sont à compléter (voir README, « Informations à compléter »).
+ * Politique de confidentialité : texte de l'export juridique du 17/11/2026, à faire relire avant la mise en ligne.
+ * Crochets à compléter. Prestataires et cookies vérifiés le 21/11/2026.
  */
 import PageLegale from '../components/PageLegale.astro';
 import { SITE } from '../config/site';
-const responsable = `${SITE.societe}, ${SITE.adresse}, ${SITE.codePostal} ${SITE.ville}`;
 ---
-<PageLegale titre="Politique de confidentialité" title="Politique de confidentialité | Maison Fil Bleu" description="Comment Maison Fil Bleu et Fil Bleu Pro utilisent et protègent vos données : formulaires, espace client, photos et documents.">
-  <p>Cette page explique quelles informations nous recueillons, pourquoi, combien de temps nous les gardons et comment exercer vos droits. Elle concerne le site Maison Fil Bleu, Fil Bleu Pro, l'espace client et l'accompagnement lui-même.</p>
+<PageLegale titre="Politique de confidentialité" title="Politique de confidentialité | Maison Fil Bleu" description="Comment Maison Fil Bleu et Fil Bleu Pro utilisent et protègent vos données : formulaires, devis, espace client, photos et documents.">
+  <p class="version">Version du [date].</p>
 
   <h2>Qui est responsable de vos données</h2>
-  <p>Le responsable du traitement est {responsable}. Pour toute question sur vos données : {SITE.emailContact}.</p>
+  <p>Groupe Fil Bleu, SAS, {SITE.adresse}, {SITE.codePostal} {SITE.ville}. Pour toute question : [adresse e-mail dédiée, par exemple confidentialite@…].</p>
 
-  <h2>Les informations que nous recueillons</h2>
-  <p><strong>Quand vous nous contactez</strong> (formulaire « Être rappelé », demande de devis ou de grille tarifaire Fil Bleu Pro) : votre nom, votre téléphone, votre e-mail, la commune et la taille du logement, votre situation, le moment où vous souhaitez être rappelé, votre message et, le cas échéant, l'estimation et les besoins cochés dans le simulateur.</p>
-  <p><strong>Pendant l'accompagnement</strong> : les informations utiles à votre dossier (adresse du logement, personne concernée, inventaire, photos du logement prises lors des visites, devis signé, factures, état des lieux et documents échangés).</p>
-  <p><strong>Dans l'espace client</strong> : l'adresse e-mail des personnes que vous nous demandez d'inviter (vous-même et, si vous le souhaitez, vos proches), et la date de leurs connexions.</p>
-  <p>Nous ne recueillons que ce qui est nécessaire à votre demande et à votre accompagnement. Nous ne vendons ni ne louons aucune donnée.</p>
-
-  <h2>Pourquoi nous les utilisons</h2>
-  <p>Pour vous rappeler et répondre à votre demande ; pour établir le devis, organiser et réaliser l'accompagnement ; pour vous permettre, à vous et à vos proches, de suivre le dossier dans l'espace client ; pour la facturation et nos obligations comptables et légales.</p>
-  <p>Ces traitements reposent sur les mesures précontractuelles prises à votre demande et sur l'exécution du contrat qui nous lie ; la facturation et la conservation comptable reposent sur nos obligations légales.</p>
-
-  <h2>L'espace client</h2>
-  <p>Votre espace est ouvert par votre interlocuteur, uniquement pour les adresses e-mail que vous lui indiquez. La connexion se fait par un lien envoyé par e-mail, sans mot de passe. Chaque personne invitée ne voit que le dossier auquel elle a été rattachée : les étapes, les photos que nous avons choisi de vous transmettre et les documents publiés. Nos notes internes et nos éléments de gestion n'y figurent jamais. Vous pouvez à tout moment nous demander de retirer l'accès d'un proche.</p>
+  <h2>Ce que nous collectons, pourquoi et combien de temps</h2>
+  <div class="table">
+    <table>
+      <thead><tr><th scope="col">Usage</th><th scope="col">Données</th><th scope="col">Fondement</th><th scope="col">Durée de conservation</th></tr></thead>
+      <tbody>
+        <tr><td>Répondre à une demande de rappel ou d'estimation</td><td>Nom, téléphone, e-mail, situation, commune, taille du logement, message</td><td>Mesures précontractuelles à votre demande</td><td>3 ans après le dernier contact</td></tr>
+        <tr><td>Établir le devis et réaliser la prestation</td><td>Identité, coordonnées, adresse et description du logement, inventaire, photos, signature du devis</td><td>Exécution du contrat</td><td>Durée de la prestation, puis 5 ans (délai de prescription)</td></tr>
+        <tr><td>Facturation et comptabilité</td><td>Identité, adresse, montants, paiements</td><td>Obligation légale</td><td>10 ans</td></tr>
+        <tr><td>Espace client</td><td>Adresses e-mail des titulaires et proches invités, étapes, photos et documents mis à disposition, journaux de connexion</td><td>Exécution du contrat</td><td>Jusqu'à 12 mois après la remise des clés, puis fermeture des accès</td></tr>
+        <tr><td>Relations avec les professionnels (Fil Bleu Pro)</td><td>Nom, société, coordonnées professionnelles</td><td>Intérêt légitime</td><td>3 ans après le dernier contact</td></tr>
+        <tr><td>Publication de photos du logement sur notre site et nos réseaux</td><td>Photos sans personne ni élément identifiant</td><td>Votre consentement, retirable à tout moment</td><td>Jusqu'au retrait de votre accord</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Nous ne vous demandons aucune information de santé. Les informations concernant un proche disparu ne sont utilisées que pour la prestation commandée.</p>
 
   <h2>Qui y a accès</h2>
-  <p>Seule l'équipe Maison Fil Bleu accède aux dossiers, avec une connexion protégée par une double authentification. Nos prestataires techniques n'agissent que sur nos instructions :</p>
-  <p>Supabase (base de données, stockage des photos et documents, connexion à l'espace client), hébergé dans l'Union européenne (Paris) ; Netlify (hébergement du site et réception des formulaires), société américaine, dont les transferts de données sont encadrés par les clauses contractuelles types de la Commission européenne ; [prestataire d'envoi d'e-mails, à compléter].</p>
-  <p>Avec votre accord, certaines informations peuvent être transmises aux partenaires que vous choisissez de solliciter (notaire, agence immobilière, déménageur, association).</p>
-
-  <h2>Combien de temps nous les gardons</h2>
-  <p>Demande de contact sans suite : [3 ans] après notre dernier échange. Dossier d'accompagnement : pendant l'accompagnement, puis [5 ans] (délai de prescription). Photos du logement : [6 mois] après la fin de l'accompagnement, sauf demande contraire de votre part. Factures et pièces comptables : 10 ans, comme l'exige la loi. Accès à l'espace client : fermés [3 mois] après la fin de l'accompagnement.</p>
-
-  <h2>Sécurité</h2>
-  <p>Les données sont chiffrées pendant leur transport (HTTPS). Les photos et documents sont conservés dans des espaces privés et ne sont accessibles qu'au moyen de liens temporaires, réservés aux personnes autorisées. Chaque accès est contrôlé par des règles strictes au niveau de la base de données.</p>
-
-  <h2>Cookies et mesure d'audience</h2>
-  <p>Le site n'utilise ni cookie publicitaire ni outil de mesure d'audience. Seules sont enregistrées dans votre navigateur les informations strictement nécessaires au fonctionnement de l'espace client (votre session de connexion), qui ne demandent pas de consentement.</p>
+  <ul>
+    <li>Les membres de notre équipe qui interviennent sur votre dossier.</li>
+    <li>Nos prestataires techniques, qui agissent sur nos instructions : Netlify (hébergement du site et réception des formulaires, États-Unis ; transfert encadré par le Data Privacy Framework ou des clauses contractuelles types de la Commission européenne), Supabase (base de données de l'espace client, hébergée dans l'Union européenne, à Paris), [Brevo ou Resend] (envoi des e-mails).</li>
+    <li>Avec votre accord seulement : les artisans, le déménageur, l'agence immobilière ou le notaire qui interviennent pour vous.</li>
+  </ul>
+  <p>Nous ne vendons ni ne louons vos données.</p>
 
   <h2>Vos droits</h2>
-  <p>Vous pouvez demander l'accès à vos données, leur rectification, leur effacement, la limitation de leur utilisation, vous opposer à leur traitement et recevoir vos données dans un format courant (portabilité). Écrivez-nous à {SITE.emailContact} ; nous répondons dans un délai d'un mois. Si vous estimez que vos droits ne sont pas respectés, vous pouvez adresser une réclamation à la CNIL (cnil.fr).</p>
+  <p>Vous pouvez accéder à vos données, les faire corriger ou supprimer, en limiter l'usage, vous opposer à leur traitement, en demander une copie dans un format réutilisable, et définir des directives sur leur sort après votre décès. Écrivez à [adresse e-mail] ; nous répondons sous un mois. Si vous estimez que vos droits ne sont pas respectés, vous pouvez adresser une réclamation à la CNIL (cnil.fr).</p>
 
-  <p><em>Dernière mise à jour : [date de mise en ligne].</em></p>
+  <h2>Sécurité</h2>
+  <p>Les accès à l'espace client et à notre outil de gestion sont protégés par identification. Chaque client ne voit que son propre dossier. Les photos et documents sont stockés dans des espaces privés.</p>
+
+  <h2>Cookies</h2>
+  <p>Notre site n'utilise aucun cookie publicitaire ni de mesure d'audience soumis à consentement. Seuls des cookies techniques nécessaires sont déposés, par exemple pour garder votre connexion à l'espace client. Si nous ajoutons un jour un outil de mesure d'audience ou de publicité, nous vous demanderons votre accord au préalable.</p>
 </PageLegale>

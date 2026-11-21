@@ -1,11 +1,33 @@
 ---
+/** Mentions légales : texte de l'export juridique du 17/11/2026, à faire relire avant la mise en ligne. Crochets à compléter. */
 import PageLegale from '../components/PageLegale.astro';
 import { SITE } from '../config/site';
 ---
 <PageLegale titre="Mentions légales" title="Mentions légales | Maison Fil Bleu, Les Pennes-Mirabeau" description="Mentions légales du site Maison Fil Bleu et Fil Bleu Pro, marques de la SAS Groupe Fil Bleu, Les Pennes-Mirabeau (13170).">
   <h2>Éditeur du site</h2>
-  <p>{SITE.societe}, {SITE.adresse}, {SITE.codePostal} {SITE.ville}. SIRET {SITE.siret} · RCS [...] · TVA {SITE.tva}.</p>
+  <p>Le site [maisonfilbleu.fr] est édité par la société Groupe Fil Bleu, société par actions simplifiée au capital de [montant] €, dont le siège est situé {SITE.adresse}, {SITE.codePostal} {SITE.ville}, immatriculée au RCS de [ville du greffe] sous le numéro [n°], SIRET {SITE.siret}, TVA intracommunautaire {SITE.tva}. Maison Fil Bleu et Fil Bleu Pro sont des marques de la société Groupe Fil Bleu. Téléphone : {SITE.telephone} · E-mail : {SITE.emailContact}</p>
+
+  <h2>Directeur de la publication</h2>
+  <p>[Prénom Nom], président.</p>
+
   <h2>Hébergement</h2>
-  <p>[Hébergeur : nom, adresse.]</p>
-  <p>[Texte complet des mentions légales à fournir.]</p>
+  <p>Netlify, Inc., 101 2nd Street, San Francisco, CA 94105, États-Unis. Les données de l'espace client sont hébergées dans l'Union européenne (Paris) par Supabase.</p>
+
+  <h2>Assurance</h2>
+  <p>Responsabilité civile professionnelle souscrite auprès de [assureur], contrat n° [n°], couvrant la France métropolitaine.</p>
+
+  <h2>Transport de déchets</h2>
+  <p>Récépissé de déclaration de transport de déchets n° [n°], délivré par la préfecture des Bouches-du-Rhône.</p>
+
+  <h2>Aide au choix de l'agence</h2>
+  <p>Groupe Fil Bleu ne réalise aucune opération d'entremise immobilière, ne détient aucun mandat de vente ou de location et ne perçoit aucune rémunération d'une agence. L'aide au choix d'une agence est un conseil neutre et gratuit : le client confie librement la vente ou la location à l'agence de son choix.</p>
+
+  <h2>Médiation de la consommation</h2>
+  <p>En cas de litige non résolu avec notre service client, vous pouvez recourir gratuitement au médiateur de la consommation : [nom], [site internet], [adresse].</p>
+
+  <h2>Propriété intellectuelle</h2>
+  <p>Les textes, photographies, logos et éléments graphiques de ce site sont la propriété de Groupe Fil Bleu ou utilisés avec autorisation. Toute reproduction sans accord écrit est interdite.</p>
+
+  <h2>Données personnelles</h2>
+  <p>Voir notre <a href="/confidentialite">politique de confidentialité</a>.</p>
 </PageLegale>

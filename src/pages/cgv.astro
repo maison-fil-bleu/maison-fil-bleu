@@ -1,6 +1,100 @@
 ---
+/**
+ * Conditions générales : particuliers (Maison Fil Bleu) puis professionnels (Fil Bleu Pro).
+ * Texte de l'export juridique du 17/11/2026, à faire relire avant la mise en ligne. Crochets à compléter.
+ * Les mentions légales obligatoires (14 jours, 7 jours, acompte) n'ont leur place qu'ici et sur le devis.
+ */
 import PageLegale from '../components/PageLegale.astro';
+import { SITE } from '../config/site';
 ---
-<PageLegale titre="Conditions générales de vente" title="Conditions générales de vente | Maison Fil Bleu Marseille" description="Conditions générales de vente des prestations Maison Fil Bleu et Fil Bleu Pro à Marseille et en région PACA.">
-  <p>[Texte des conditions générales de vente à fournir.]</p>
+<PageLegale titre="Conditions générales de vente" title="Conditions générales de vente | Maison Fil Bleu Marseille" description="Conditions générales de vente des prestations Maison Fil Bleu (particuliers) et Fil Bleu Pro (professionnels) à Marseille et en région PACA.">
+  <p><a href="#particuliers">Particuliers (Maison Fil Bleu)</a> · <a href="#professionnels">Professionnels (Fil Bleu Pro)</a></p>
+
+  <h2 id="particuliers">Conditions générales de vente · particuliers</h2>
+  <p class="version">Version du [date].</p>
+
+  <h3>1. Objet</h3>
+  <p>Les présentes conditions s'appliquent aux prestations Maison Fil Bleu réalisées par Groupe Fil Bleu (ci-après « nous ») pour des particuliers (ci-après « le client »). Elles sont remises avec chaque devis. Le devis signé et les présentes conditions forment le contrat.</p>
+
+  <h3>2. Prestations</h3>
+  <p>Nous proposons trois formules, décrites sur notre site et détaillées dans le devis : Libération, Transition et Succession, ainsi que des options (gardiennage, recherche de résidence, box de stockage, livraison de quelques meubles chez un proche organisée avec un déménageur, caves et volumes supplémentaires).</p>
+  <ul>
+    <li>Les <strong>journées de tri</strong> comprises dépendent de la formule et de la taille du logement ; elles sont indiquées dans le devis. Au-delà, une journée supplémentaire fait l'objet d'un devis complémentaire, accepté par le client avant d'être réalisée.</li>
+    <li>Les <strong>travaux</strong> de remise en état ou d'aménagement sont réalisés par des artisans indépendants, sur leur propre devis, accepté et payé directement par le client. Nous les sélectionnons, comparons les devis et suivons le chantier, sans être responsables de leur exécution.</li>
+    <li>La <strong>location d'un box de stockage</strong> est souscrite au nom du client et payée par lui au loueur.</li>
+    <li>Le <strong>déménagement</strong> et la livraison de meubles chez un proche sont réalisés par une entreprise de déménagement indépendante, sur son propre devis, accepté et payé directement par le client. Nous la sélectionnons et coordonnons son intervention, sans être responsables de son exécution.</li>
+    <li>Le <strong>gardiennage</strong> consiste en une visite du logement par mois (aération, relevé du courrier, contrôle visuel), sauf fréquence différente prévue au devis ; d'autres prestations peuvent être ajoutées à la demande du client. Il ne constitue pas une surveillance permanente.</li>
+    <li>La <strong>recherche de résidence</strong> comprend jusqu'à trois visites accompagnées d'établissements situés dans les Bouches-du-Rhône et la constitution du dossier d'admission. Les visites supplémentaires ou hors du département font l'objet d'un devis complémentaire.</li>
+    <li>La <strong>livraison de quelques meubles chez un proche</strong> comprend l'organisation avec un déménageur indépendant et notre présence au chargement. Le transport est facturé et réglé directement par le client au déménageur ; il ne comprend pas l'installation.</li>
+    <li>La <strong>recherche d'un box de stockage</strong> comprend la recherche, l'aide à la souscription du contrat (au nom du client) et la coordination avec le déménageur.</li>
+    <li>L'<strong>aide au choix de l'agence</strong>, lorsque le client vend ou loue, est un conseil neutre et gratuit : nous organisons la venue des agences et comparons avec lui estimations et honoraires. Nous ne prenons aucun mandat et ne percevons aucune commission ; le client choisit librement.</li>
+  </ul>
+
+  <h3>3. Diagnostic et devis</h3>
+  <p>Le diagnostic est gratuit et sans engagement. Il donne lieu à un devis forfaitaire détaillé, valable un mois. Le prix est ferme pour les prestations décrites ; toute prestation non prévue fait l'objet d'un devis complémentaire accepté par écrit avant d'être réalisée.</p>
+
+  <h3>4. Prix</h3>
+  <p>Les prix sont exprimés en euros toutes taxes comprises (TVA au taux en vigueur). Les prix affichés sur le site sont des prix de départ. Une intervention en urgence (sous sept jours) est majorée de 25 %. Une intervention hors des Bouches-du-Rhône fait l'objet d'un supplément indiqué au devis.</p>
+
+  <h3>5. Paiement</h3>
+  <p>Un acompte de 40 % est demandé avant le début des interventions, le solde à la remise des clés. Lorsque le contrat est signé au domicile du client ou hors de nos locaux, <strong>aucun paiement n'est demandé avant l'expiration d'un délai de sept jours</strong> à compter de la signature. Des facilités de paiement peuvent être accordées ; elles sont précisées au devis. En cas de retard de paiement, des pénalités au taux de l'intérêt légal peuvent être appliquées après mise en demeure.</p>
+
+  <h3>6. Droit de rétractation</h3>
+  <p>Le client dispose d'un délai de <strong>quatorze jours</strong> pour se rétracter, sans avoir à se justifier, à compter du lendemain de la signature du devis lorsque celui-ci a été signé à son domicile, hors de nos locaux ou à distance. Il exerce ce droit en nous adressant le formulaire de rétractation joint au devis, ou toute déclaration dénuée d'ambiguïté, par courrier ou par e-mail à {SITE.emailContact}. Les sommes éventuellement versées sont remboursées dans les quatorze jours. Si le client a <strong>expressément demandé</strong> que les prestations commencent avant la fin de ce délai, il reste redevable, en cas de rétractation, d'un montant proportionnel aux prestations déjà réalisées. Le droit de rétractation ne peut plus être exercé lorsque la prestation a été entièrement exécutée avec son accord avant la fin du délai.</p>
+
+  <h3>7. Engagements du client</h3>
+  <p>Le client :</p>
+  <ul>
+    <li>garantit qu'il a qualité pour commander la prestation (propriétaire, locataire, héritier ou mandataire). En cas de succession, il déclare agir avec l'accord de l'ensemble des héritiers ou en vertu d'un mandat, et nous fournit sur demande les coordonnées du notaire chargé de la succession ;</li>
+    <li>nous donne accès au logement et nous informe des contraintes (étage, stationnement, horaires de copropriété, produits dangereux) ;</li>
+    <li>valide par écrit, avant tout débarras, la liste de ce qui est conservé, donné ou évacué ;</li>
+    <li>retire ou nous signale avant le début des interventions les sommes d'argent, valeurs, documents et objets auxquels il tient particulièrement.</li>
+  </ul>
+
+  <h3>8. Nos engagements</h3>
+  <p>Nous exécutons les prestations avec soin, dans les délais convenus, par du personnel encadré. Les documents, photos de famille, valeurs et souvenirs découverts pendant le tri sont mis de côté et remis au client. Les biens donnés sont remis à des associations ou ressourceries ; les biens évacués rejoignent des filières de traitement autorisées. Nous sommes tenus à la confidentialité sur tout ce que nous voyons et apprenons dans le logement.</p>
+
+  <h3>9. Report et annulation</h3>
+  <p>Un report demandé par le client plus de sept jours avant l'intervention est sans frais. Après le délai de rétractation, une annulation par le client donne lieu au paiement des seuls frais réellement engagés à la date de l'annulation, sur justificatifs.</p>
+
+  <h3>10. Responsabilité et assurance</h3>
+  <p>Nous sommes assurés en responsabilité civile professionnelle auprès de [assureur]. Tout dommage constaté doit nous être signalé par écrit dans les sept jours suivant l'intervention, avec photos si possible. Nous ne pouvons être tenus responsables des travaux réalisés par des artisans indépendants ou du transport réalisé par un déménageur, ni des biens que le client a choisi de conserver dans le logement pendant le gardiennage.</p>
+
+  <h3>11. Force majeure</h3>
+  <p>Ni le client ni nous ne sommes responsables d'un retard ou d'une inexécution causés par un événement de force majeure au sens de l'article 1218 du Code civil.</p>
+
+  <h3>12. Photos</h3>
+  <p>Nous ne publions aucune photo du logement sans l'accord écrit du client, donné sur le devis. Les photos publiées ne montrent ni personne, ni adresse, ni élément permettant d'identifier le client.</p>
+
+  <h3>13. Données personnelles</h3>
+  <p>Voir notre <a href="/confidentialite">politique de confidentialité</a>.</p>
+
+  <h3>14. Réclamations, médiation et litiges</h3>
+  <p>Toute réclamation est adressée par écrit à [adresse e-mail et postale]. À défaut de solution amiable dans un délai de deux mois, le client peut saisir gratuitement le médiateur de la consommation : [nom], [site], [adresse]. Les présentes conditions sont soumises au droit français. Le client peut saisir, à son choix, la juridiction du lieu où il demeurait lors de la signature ou celle du lieu de l'intervention.</p>
+
+  <h2 id="professionnels">Conditions générales · professionnels (Fil Bleu Pro)</h2>
+
+  <h3>1. Champ d'application</h3>
+  <p>Ces conditions s'appliquent aux prestations Fil Bleu Pro (débarras, nettoyage de logements vides, remise en état coordonnée) commandées par des professionnels : agences immobilières, syndics, bailleurs, notaires, mandataires. Elles prévalent sur les conditions d'achat du client, sauf accord écrit contraire.</p>
+
+  <h3>2. Devis et commande</h3>
+  <p>Le devis est établi sous 24 heures ouvrées, sur photos ou après visite, et reste valable un mois. La commande est ferme à réception du devis signé ou d'un bon de commande. Le client professionnel ne bénéficie pas du droit de rétractation des consommateurs.</p>
+
+  <h3>3. Prix</h3>
+  <p>Les prix sont exprimés hors taxes, selon la grille tarifaire professionnelle en vigueur à la date du devis. Une intervention urgente (sous 72 heures) est majorée de 25 %. Les déchets dangereux (amiante, produits chimiques, bouteilles de gaz) font l'objet d'un devis spécifique.</p>
+
+  <h3>4. Exécution</h3>
+  <p>Le client fournit les accès (clés, codes, autorisations du syndic) et nous signale toute contrainte. Des photos avant et après sont transmises à la fin de chaque intervention. Les justificatifs de traitement des déchets sont fournis sur demande.</p>
+
+  <h3>5. Annulation</h3>
+  <p>Une intervention annulée moins de 48 heures à l'avance, ou rendue impossible faute d'accès, donne lieu à la facturation d'un forfait de déplacement de [montant] € HT.</p>
+
+  <h3>6. Paiement</h3>
+  <p>Les factures sont payables à trente jours à compter de leur date d'émission, par virement. Tout retard entraîne de plein droit des pénalités au taux d'intérêt appliqué par la Banque centrale européenne à son opération de refinancement la plus récente majoré de 10 points, ainsi qu'une indemnité forfaitaire pour frais de recouvrement de 40 € (article L441-10 du Code de commerce). Aucun escompte n'est accordé pour paiement anticipé.</p>
+
+  <h3>7. Réception et responsabilité</h3>
+  <p>Le client dispose de trois jours ouvrés après réception des photos de fin d'intervention pour formuler par écrit une réserve ; passé ce délai, la prestation est réputée conforme. Notre responsabilité est couverte par notre assurance responsabilité civile professionnelle ([assureur]).</p>
+
+  <h3>8. Litiges</h3>
+  <p>Ces conditions sont soumises au droit français. À défaut d'accord amiable, tout litige relève du tribunal de commerce de [ville du siège].</p>
 </PageLegale>
