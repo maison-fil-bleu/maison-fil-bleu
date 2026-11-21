@@ -32,7 +32,9 @@ const arrondir = (n: number) => Math.round(n / COEFFICIENTS.arrondi) * COEFFICIE
 export const euros = (n: number) => `${arrondir(n).toLocaleString('fr-FR')} €`;
 
 export const residenceProposee = (f: CleFormule) => OPTIONS.rechercheResidence.formules.includes(f);
-export const installationProposee = (f: CleFormule) => OPTIONS.installationProche.formules.includes(f);
+export const installationProposee = (f: CleFormule) => Boolean(OPTIONS.installationProche[f]);
+/** Libellé de l'option « meubles chez un proche » selon la formule. */
+export const libelleInstallation = (f: CleFormule) => OPTIONS.installationProche[f]?.libelle ?? '';
 export const futurPropose = (f: CleFormule) => FUTUR_LOGEMENT.formules.includes(f);
 /** Recherche de box comprise dans la formule ? (sinon : sur devis) */
 export const boxComprise = (f: CleFormule) => OPTIONS.rechercheBox[f] === 0;
@@ -59,7 +61,7 @@ export function resumer(c: Choix): Resume {
   if (deps.length) besoins.push(`${deps.join(', ')} à vider`);
   if (residenceProposee(c.formule) && c.residence) besoins.push('Recherche de résidence');
   if (c.box) besoins.push(`Recherche d'un box de stockage${boxComprise(c.formule) ? ' (comprise)' : ''}`);
-  if (installationProposee(c.formule) && c.installation) besoins.push('Installation des objets gardés chez un proche');
+  if (installationProposee(c.formule) && c.installation) besoins.push(libelleInstallation(c.formule));
   if (c.gardiennage) besoins.push('Gardiennage du logement');
   if (c.urgence) besoins.push('Intervention en urgence, sous 7 jours');
   const taille = TAILLES[c.taille];
@@ -85,7 +87,7 @@ export function fourchette(c: Choix): { bas: number; haut: number } {
   if (futurPropose(c.formule) && c.futur !== null) opts += FUTUR_LOGEMENT.choix[c.futur].supplement;
   if (residenceProposee(c.formule) && c.residence) opts += OPTIONS.rechercheResidence.prix;
   if (c.box) opts += OPTIONS.rechercheBox[c.formule];
-  if (installationProposee(c.formule) && c.installation) opts += OPTIONS.installationProche.prix;
+  if (installationProposee(c.formule) && c.installation) opts += OPTIONS.installationProche[c.formule]!.prix;
   if (c.gardiennage) opts += OPTIONS.gardiennageParMois;
   const marge = COEFFICIENTS.base + (c.maison ? COEFFICIENTS.maison : 0) + (c.sansAscenseur ? COEFFICIENTS.sansAscenseur : 0);
   let bas = base + opts;

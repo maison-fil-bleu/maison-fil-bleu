@@ -1,5 +1,6 @@
 ---
-import { FORMULES_PRIX as FP, OPTIONS as OP, montant } from '../config/tarifs';
+import { FORMULES_PRIX as FP, OPTIONS as OP, montant, NOTE_TRAVAUX, GARDIENNAGE_DESC } from '../config/tarifs';
+import OptionsFormule from '../components/OptionsFormule.astro';
 /** Maquette : Formule-Transition.dc.html · adresse : /transition */
 import Famille from '../layouts/Famille.astro';
 import { SITE } from '../config/site';
@@ -17,7 +18,7 @@ const meta = META['/transition'];
 <span class="lbl">Accompagnement · Transition</span>
 <span style="font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-size: 26px; color: #3D5A80; margin-top: -12px">La Libération, quand un déménagement suit.</span>
 <h1 class="h1" style="color: #15233A">Passer d'un logement à l'autre, sans aucune charge, ni physique ni mentale.</h1>
-<p class="lead" style="color: #4A4F58">Vous entrez en résidence, vous changez de logement, vous vous rapprochez de vos enfants, ou c'est un proche qui déménage. Nous organisons le tri, le déménagement, l'installation et les démarches, puis nous rendons l'ancien logement vidé et nettoyé.</p>
+<p class="lead" style="color: #4A4F58">Vous entrez en résidence, vous changez de logement, vous vous rapprochez de vos enfants, ou c'est un proche qui déménage. Nous organisons tout : le plan du nouveau logement, le déménagement, les dons, l'installation et les démarches, puis nous rendons l'ancien logement vidé et nettoyé.</p>
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 28px"><a class="btn" href="/contact">Demander un diagnostic offert</a><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 30px; color: #3D5A80">dès {montant(FP.T.prix[0])} TTC</span></div>
 </div>
 </div>
@@ -32,7 +33,7 @@ const meta = META['/transition'];
 <div class="card"><h3 class="h3">Un nouveau logement, quelle que soit sa taille</h3><span class="p">Plus petit, plus grand ou de même taille : un plan du nouveau logement pour savoir où chaque meuble trouvera sa place, avant de trier. Et pour s'y sentir bien, nos artisans l'aménagent si besoin : barre d'appui dans la douche, éclairage, petits travaux.</span></div>
 <div class="card"><h3 class="h3">Rapprochement familial</h3><span class="p">Les enfants vivent loin ? Nous sommes leurs yeux et leurs mains sur place.</span></div>
 </div>
-<p class="p" style="max-width: 820px">Le tri se fait toujours avec la personne, sur des journées préparées et planifiées ensemble. Rien ne part sans son accord ou celui de la personne de confiance qu'elle a désignée.</p>
+<p class="p" style="max-width: 820px">Les choix se font toujours avec la personne, sur des journées préparées et planifiées ensemble. Rien ne part sans son accord ou celui de la personne de confiance qu'elle a désignée.</p>
 </div>
 </section>
 
@@ -44,7 +45,7 @@ const meta = META['/transition'];
 <div style="display: flex; flex-direction: column; gap: 18px; max-width: 760px"><span class="lbl">Le déroulé</span><h2 class="h2">Comment se déroule une Transition</h2></div>
 <div class="g4">
 <div class="card"><span class="num">01</span><h3 class="h3">Diagnostic et plan</h3><span class="p">Visite des deux logements, plan du nouveau, devis forfaitaire et clair.</span></div>
-<div class="card"><span class="num">02</span><h3 class="h3">Tri accompagné</h3><span class="p">Une à trois journées selon la taille du logement, planifiées ensemble : ce qui part au nouveau logement, chez les proches, aux associations.</span></div>
+<div class="card"><span class="num">02</span><h3 class="h3">Vos choix, à votre rythme</h3><span class="p">Une à trois journées selon la taille du logement, planifiées ensemble : ce qui part au nouveau logement, chez les proches, aux associations.</span></div>
 <div class="card"><span class="num">03</span><h3 class="h3">Jour J</h3><span class="p">Nous coordonnons le déménagement de bout en bout, sur place. Le soir, le lit est fait, la cuisine rangée, les cadres accrochés.</span></div>
 <div class="card"><span class="num">04</span><h3 class="h3">L'ancien logement rendu</h3><span class="p">Débarras, nettoyage complet et, si besoin, remise en état avec nos artisans avant une vente ou une location. Puis remise des clés, et une visite de suivi quinze jours après.</span></div>
 </div>
@@ -60,18 +61,15 @@ const meta = META['/transition'];
 </div>
 <div style="display: flex; flex-direction: column; border-top: 1px solid #CFC5B4">
 <div class="row"><span>Tout le contenu de la formule Libération</span></div>
-<div class="row"><span>Diagnostic et plan du nouveau logement</span></div>
-<div class="row"><span>Tri accompagné, avec vous et vos proches</span></div>
-<div class="row"><span>Comparaison des devis de déménageurs</span></div>
+<div class="row"><span>Plan du nouveau logement</span></div>
+<div class="row"><span>Une à trois journées pour faire vos choix avec vous, selon la taille</span></div>
+<div class="row"><span>Devis de déménageurs comparés, vous choisissez</span></div>
 <div class="row"><span>Coordination et présence le jour J</span></div>
 <div class="row"><span>Installation complète du nouveau logement</span></div>
-<div class="row"><span>Aménagement du nouveau logement avec nos artisans : barre d'appui, éclairage, petits travaux (facturés à part)</span></div>
-<div class="row"><span>Démarches : énergie, courrier, assurances, résiliations</span></div>
-<div class="row"><span>Ancien logement vidé, nettoyé, clés rendues</span></div>
-<div class="row"><span>Si besoin, remise en état de l'ancien logement : devis comparés et suivi des travaux</span></div>
-<div class="row"><span>Si besoin, recherche d'un box de stockage à proximité, au meilleur prix</span></div>
+<div class="row"><span>Démarches du nouveau logement : compteurs, adresse, assurance</span></div>
+<div class="row"><span>Box si besoin : recherche, contrat, lien avec le déménageur</span></div>
+<div class="row"><span>Ancien logement nettoyé, clés rendues</span></div>
 <div class="row"><span>Visite de suivi à quinze jours</span></div>
-<div class="row"><span>En option : gardiennage de l'ancien logement pendant la vente ou la location (visites régulières, aération, courrier)</span></div>
 </div>
 </div>
 </section>
@@ -85,7 +83,7 @@ const meta = META['/transition'];
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 26px; margin-top: 6px"><a class="btn" href="/estimation?formule=transition">Estimer mon accompagnement</a><a class="tl" href="/tarifs">Tous les tarifs et options</a></div>
 </div>
 <div style="display: flex; flex-direction: column; border-top: 1px solid #15233A">
-<span class="lbl" style="padding: 16px 0 2px">À partir de · TTC</span>
+<span class="lbl" style="padding: 16px 0 2px">À partir de, TTC</span>
 <div class="row" style="padding: 22px 0"><span style="font-size: 18px">1-2 pièces</span><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 500">{montant(FP.T.prix[0])}</span></div>
 <div class="row" style="padding: 22px 0"><span style="font-size: 18px">3 pièces</span><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 500">{montant(FP.T.prix[1])}</span></div>
 <div class="row" style="padding: 22px 0"><span style="font-size: 18px">4 pièces</span><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 500">{montant(FP.T.prix[2])}</span></div>
@@ -93,6 +91,20 @@ const meta = META['/transition'];
 </div>
 </div>
 </section>
+
+<OptionsFormule
+  options={[
+    ['Recherche de résidence', montant(OP.rechercheResidence.prix)],
+    ['Caves, garages, greniers', `${montant(OP.cavesParM3)} / m³`],
+    ['Aménagement : barre d’appui, éclairage, petits travaux *', 'sur devis'],
+    ["Remise en état de l'ancien logement *", 'sur devis'],
+    [`Gardiennage de l'ancien logement : ${GARDIENNAGE_DESC.charAt(0).toLowerCase()}${GARDIENNAGE_DESC.slice(1, -1)}`, `${montant(OP.gardiennageParMois)} / mois`],
+    ['Intervention hors Bouches-du-Rhône', 'sur devis'],
+  ]}
+  note={`* ${NOTE_TRAVAUX} Les déchets dangereux sont traités sur devis spécialisé.`}
+  encadre={{ titre: "Plus qu'un déménagement", items: ['Le plan du nouveau logement : ce qui suit, ce qui reste', 'Devis de déménageurs comparés et coordination', 'Notre présence toute la journée du déménagement', 'Installation complète, habitable dès le premier soir', 'Les démarches administratives prises en charge', 'Un seul interlocuteur pour les deux logements, suivi à 15 jours'] }}
+  lien={{ texte: 'Un proche vous a quittés ?', href: '/succession', lbl: 'Voir la formule Succession →' }}
+/>
 
 <section style="background: #EFE9DE; color: #18202C">
 <div class="w sec g2" style="align-items: center">
@@ -105,7 +117,7 @@ const meta = META['/transition'];
 <div class="w" style="max-width: 960px; display: flex; flex-direction: column; gap: 24px">
 <span class="lbl">Questions fréquentes</span>
 <h2 class="h2" style="margin-bottom: 12px">Vos questions sur la Transition</h2>
-<details class="q" open><summary>Et si l'on n'est pas prêt à tout trier d'un coup ?</summary><p class="p" style="margin-top: 12px">C'est fréquent, et c'est pour cela que le tri se prépare. Le forfait comprend une à trois journées de tri accompagné selon la taille du logement : une journée pour un 1-2 pièces, deux pour un 3 ou 4 pièces, trois au-delà. Nous les planifions ensemble, à l'avance. Avant notre venue, nous vous aidons à repérer ce qui compte le plus, pour que ces journées soient sereines et efficaces. Besoin de plus de temps ? Pas de souci : nous adaptons l'offre, avec un devis complémentaire validé au préalable.</p></details>
+<details class="q" open><summary>Et si l'on n'est pas prêt à tout trier d'un coup ?</summary><p class="p" style="margin-top: 12px">C'est fréquent, et c'est pour cela que ces journées se préparent. Le forfait comprend une à trois journées pour faire vos choix avec vous, selon la taille du logement : une journée pour un 1-2 pièces, deux pour un 3 ou 4 pièces, trois au-delà. Nous les planifions ensemble, à l'avance. Avant notre venue, nous vous aidons à repérer ce qui compte le plus, pour que ces journées soient sereines et efficaces. Besoin de plus de temps ? Pas de souci : nous adaptons l'offre, avec un devis complémentaire validé au préalable.</p></details>
 <details class="q"><summary>Vous vivez loin, mais votre proche habite près de Marseille : est-ce possible ?</summary><p class="p" style="margin-top: 12px">Oui, c'est fréquent. Le diagnostic peut se faire avec votre proche sur place et vous à distance. Nous coordonnons tout et vous recevez des nouvelles et des photos à chaque étape.</p></details>
 <details class="q"><summary>Et si je veux garder des meubles qui ne rentrent pas ?</summary><p class="p" style="margin-top: 12px">Nous vous trouvons un box de stockage à proximité, au meilleur prix, et organisons le transport avec le déménagement. La location du box est réglée directement par vous, sans marge de notre part.</p></details>
 <details class="q"><summary>Qui paie le déménageur ?</summary><p class="p" style="margin-top: 12px">Vous, directement, après avoir choisi parmi les devis que nous avons comparés avec vous.</p></details>

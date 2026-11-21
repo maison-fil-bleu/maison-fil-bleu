@@ -1,0 +1,45 @@
+---
+/**
+ * Bloc « En option » des pages formules (Libération, Transition, Succession) :
+ * options et prix, note sur les travaux et le déménagement, encadré « Plus qu'un… » facultatif.
+ * Textes repris des fiches PDF (public/docs/Fiche-*.pdf).
+ */
+interface Props {
+  options: [string, string][];
+  note: string;
+  encadre?: { titre: string; items: string[] };
+  lien?: { texte: string; href: string; lbl: string };
+}
+const { options, note, encadre, lien } = Astro.props;
+---
+<section style="background: #EFE9DE">
+<div class="w sec g2" style="align-items: start">
+<div style="display: flex; flex-direction: column; gap: 22px">
+<span class="lbl">En option</span>
+<h2 class="h2">Seulement si c'est utile.</h2>
+<div style="display: flex; flex-direction: column; border-top: 1px solid #CFC5B4">
+{options.map(([l, p]) => <div class="row of-row"><span>{l}</span><span class="of-prix">{p}</span></div>)}
+</div>
+<p class="p of-note">{note}</p>
+</div>
+{encadre && (
+<div class="of-encadre">
+<h3 class="h3">{encadre.titre}</h3>
+<ul>{encadre.items.map((t) => <li>{t}</li>)}</ul>
+{lien && <p class="p" style="margin: 0">{lien.texte} <a class="tl" href={lien.href}>{lien.lbl}</a></p>}
+</div>
+)}
+{!encadre && lien && <p class="p">{lien.texte} <a class="tl" href={lien.href}>{lien.lbl}</a></p>}
+</div>
+</section>
+
+<style is:global>
+.of-row{align-items:baseline}
+.of-prix{white-space:nowrap;font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;font-weight:500;color:#15233A}
+.of-note{font-size:14px;color:#5B606A}
+.of-encadre{background:#FFFFFF;border-top:3px solid #B8925A;padding:34px 32px;display:flex;flex-direction:column;gap:20px}
+.of-encadre ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.of-encadre li{position:relative;padding-left:28px;font-size:16px;line-height:1.5;color:#18202C}
+.of-encadre li::before{content:'✓';position:absolute;left:0;top:0;color:#B8925A;font-weight:700}
+@media (max-width: 760px){.of-encadre{padding:26px 20px}.of-row{flex-wrap:wrap;gap:4px 20px}}
+</style>
