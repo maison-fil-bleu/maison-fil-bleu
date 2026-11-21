@@ -17,6 +17,7 @@ export const DOCS = {
   ficheTNotaires: { titre: 'Fiche Transition', fichier: 'Fiche-Transition-notaires.pdf' },
   ficheSNotaires: { titre: 'Fiche Succession', fichier: 'Fiche-Succession-notaires.pdf' },
   plaquetteAgences: { titre: 'La plaquette agences', fichier: 'Maison-Fil-Bleu-plaquette-agences.pdf' },
+  plaquetteFamillesAgences: { titre: 'La plaquette pour vos vendeurs', fichier: 'Maison-Fil-Bleu-plaquette-familles-agences.pdf' },
   ficheLAgences: { titre: 'Fiche Libération', fichier: 'Fiche-Liberation-agences.pdf' },
   ficheTAgences: { titre: 'Fiche Transition', fichier: 'Fiche-Transition-agences.pdf' },
   ficheSAgences: { titre: 'Fiche Succession', fichier: 'Fiche-Succession-agences.pdf' },
