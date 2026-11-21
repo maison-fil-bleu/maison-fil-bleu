@@ -16,7 +16,7 @@ export const TAILLES = ['1-2 pièces', '3 pièces', '4 pièces', '5 pièces et p
 
 /** Formules : prix de départ par taille (1-2 pièces, 3, 4, 5 et plus). */
 export const FORMULES_PRIX = {
-  L: { nom: 'Libération', ligne: 'Le logement est à vider', prix: PRIX.grids.L },
+  L: { nom: 'Libération', ligne: 'Vous quittez un logement', prix: PRIX.grids.L },
   T: { nom: 'Transition', ligne: 'Vous ou un proche déménagez', prix: PRIX.grids.T },
   S: { nom: 'Succession', ligne: 'Un proche vous a quittés', prix: PRIX.grids.S },
 } as const;
@@ -49,7 +49,11 @@ export const OPTIONS = {
 export const NOTE_OPTIONS = "* Travaux des artisans et transport par le déménageur, à la demande du client : réglés directement par le client, non compris dans le forfait. Non compris : les déchets dangereux. Conditions détaillées au devis.";
 
 /** Accompagnement neutre à la vente (pages grand public). */
-export const VENTE_NEUTRE = "Si vous vendez le logement, nous vous accompagnons dans le choix de l'agence, en toute neutralité : nous organisons leur venue, comparons avec vous estimations et honoraires, puis préparons le logement.";
+export const VENTE_NEUTRE = "Vous êtes propriétaire ? Vous souhaitez louer ou vendre votre logement ? Nous vous accompagnons dans le choix d’une agence : prise de rendez-vous avec les agences, comparaison des honoraires et des mandats. Puis nous préparons le logement à la vente ou à la location.";
+/** Même texte, sans la première question, sous un titre « Vous êtes propriétaire ». */
+export const VENTE_NEUTRE_SUITE = VENTE_NEUTRE.replace(/^Vous êtes propriétaire \? /, '');
+/** Version agences (/agences et contenus destinés aux vendeurs d'une agence). */
+export const VENTE_AGENCES = "Vous êtes propriétaire ? Vous souhaitez louer ou vendre votre logement ? Nous le vidons, le nettoyons et le préparons pour les photos et les visites, en lien avec votre agence. Le logement est prêt à être présenté dès la remise des clés.";
 /** Même idée, dans les listes « Ce qui est compris ». */
 export const VENTE_COMPRIS = "Si vous vendez, accompagnement au choix de l'agence, préparation du logement et suivi";
 

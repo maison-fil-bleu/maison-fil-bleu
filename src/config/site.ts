@@ -32,7 +32,7 @@ export const lienTel = (num: string) =>
 
 /** Les trois formules (menu, pied de page, données structurées). */
 export const FORMULES = [
-  { slug: 'liberation', nom: 'Libération', ligne: 'Le logement est à vider' },
+  { slug: 'liberation', nom: 'Libération', ligne: 'Vous quittez un logement' },
   { slug: 'transition', nom: 'Transition', ligne: 'Vous ou un proche déménagez' },
   { slug: 'succession', nom: 'Succession', ligne: 'Un proche vous a quittés' },
 ] as const;

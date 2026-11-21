@@ -2,6 +2,7 @@
 /** Page partenaires : agences immobilières. Adresse imprimée (QR code de la plaquette) : /agences, ne pas changer. */
 import PagePartenaire from '../components/PagePartenaire.astro';
 import { META } from '../config/meta';
+import { VENTE_AGENCES } from '../config/tarifs';
 const meta = META['/agences'];
 ---
 <PagePartenaire cle="agences" title={meta.title} description={meta.description}
@@ -29,6 +30,10 @@ const meta = META['/agences'];
         <div><h3>L'ancien logement rendu net</h3><p class="p">Tri, débarras, dons, nettoyage et démarches : rien n'est oublié. Si besoin, préparation du logement pour les photos et les visites.</p></div>
       </div>
       <p class="p" style="margin-top:28px">Devis forfaitaire après diagnostic offert, signé directement avec le client. Rien à gérer pour l'agence. <span style="font-size:14px;color:#5B606A">* Travaux des artisans, à la demande du client : réglés directement par le client.</span></p>
+      <div class="pt-encart">
+        <h3>Et ensuite ?</h3>
+        <p class="p">{VENTE_AGENCES}</p>
+      </div>
       <div class="pt-encart">
         <h3>Un bien déjà vide ?</h3>
         <p class="p">Pour les biens vacants à débarrasser et nettoyer avant les photos ou l'état des lieux, Fil Bleu Pro intervient avec un devis sous 24 h.</p>

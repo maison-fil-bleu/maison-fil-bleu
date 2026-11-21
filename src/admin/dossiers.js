@@ -274,7 +274,7 @@ function calc(d){
     if(o.residence){ ttc += S.residence; lignes.push(['Recherche de résidence', S.residence]); }
     if(o.box){ const v = f==='L' ? S.box : 0; ttc += v; lignes.push([f==='L' ? 'Box de stockage : recherche, contrat et coordination avec le déménageur *' : 'Box de stockage : recherche, contrat et coordination avec le déménageur * (compris)', v]); }
     if(o.livraison && f!=='T'){ ttc += S.livraison; lignes.push([f==='S' ? "Livraison d'objets chez un héritier, organisée avec un déménageur *" : 'Livraison de quelques meubles chez un proche, organisée avec un déménageur *', S.livraison]); }
-    if(o.gardiennage>0){ const v = o.gardiennage*S.gardiennage; ttc += v; lignes.push([`Gardiennage du logement, ${o.gardiennage} mois`, v]); }
+    if(o.gardiennage>0){ const v = o.gardiennage*S.gardiennage; ttc += v; lignes.push([`Gardiennage (voir conditions), ${o.gardiennage} mois`, v]); }
     if(o.videMaison>0){ ttc += o.videMaison; lignes.push(['Vide-maison', o.videMaison]); }
     if(d.urgence){ const u = ttc*S.urgence/100; ttc += u; lignes.push([`Urgence +${S.urgence} %`, u]); }
     if(o.horsDepJours>0){ const v = o.horsDepJours*S.horsDep; ttc += v; lignes.push([`Hors département ${o.horsDepJours} j`, v]); }

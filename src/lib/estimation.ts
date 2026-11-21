@@ -62,7 +62,7 @@ export function resumer(c: Choix): Resume {
   if (residenceProposee(c.formule) && c.residence) besoins.push('Recherche de résidence');
   if (c.box) besoins.push(`Recherche d'un box de stockage${boxComprise(c.formule) ? ' (comprise)' : ''}`);
   if (installationProposee(c.formule) && c.installation) besoins.push(libelleInstallation(c.formule));
-  if (c.gardiennage) besoins.push('Gardiennage du logement');
+  if (c.gardiennage) besoins.push('Gardiennage (voir conditions)');
   if (c.urgence) besoins.push('Intervention en urgence, sous 7 jours');
   const taille = TAILLES[c.taille];
   return {

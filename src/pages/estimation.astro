@@ -68,7 +68,7 @@ const cles = Object.keys(FORMULES_PRIX) as CleFormule[];
 <div class="opt" data-si="residence" hidden={!residenceProposee(initial.formule)}><span class="opt-l"><span>Recherche de résidence</span><span class="p">Nous vous aidons à trouver la résidence adaptée</span></span><button type="button" class="pill" data-bascule="residence" aria-pressed="false">Ajouter</button></div>
 <div class="opt"><span class="opt-l"><span>Recherche d'un box de stockage</span><span class="p" data-sortie="infoBox">{boxComprise(initial.formule) ? 'Comprise dans la formule · location réglée par vous' : 'Location réglée par vous'}</span></span><button type="button" class="pill" data-bascule="box" aria-pressed="false">Ajouter</button></div>
 <div class="opt" data-si="installation" hidden={!installationProposee(initial.formule)}><span class="opt-l"><span data-sortie="libInstall">{libelleInstallation(initial.formule)}</span></span><button type="button" class="pill" data-bascule="installation" aria-pressed="false">Ajouter</button></div>
-<div class="opt"><span class="opt-l"><span>Gardiennage du logement</span><span class="p">Visites régulières, relevé du courrier</span></span><button type="button" class="pill" data-bascule="gardiennage" aria-pressed="false">Ajouter</button></div>
+<div class="opt"><span class="opt-l"><span>Gardiennage (voir conditions)</span><span class="p">Visites régulières, relevé du courrier</span></span><button type="button" class="pill" data-bascule="gardiennage" aria-pressed="false">Ajouter</button></div>
 <div class="opt"><span class="opt-l"><span>Intervention en urgence, sous 7 jours</span></span><button type="button" class="pill" data-bascule="urgence" aria-pressed="false">Ajouter</button></div>
 </div>
 </div>

@@ -27,8 +27,8 @@ interface Props {
 const { cle, title, description, surtitre, titre, titreItalique, sousTitre, structure, echeance, pdf, docs } = Astro.props;
 const tel = lienTel(SITE.telephone);
 const formules = [
-  { slug: 'liberation', nom: 'Libération', ligne: 'Le logement est à vider', texte: 'Tri accompagné, débarras, dons et nettoyage : le logement est rendu vide, propre, clés en main.', prix: FP.L.prix[0] },
-  { slug: 'transition', nom: 'Transition', ligne: 'Un déménagement suit', texte: "Tout ce que comprend la Libération, plus le déménagement coordonné et l'installation du nouveau logement.", prix: FP.T.prix[0] },
+  { slug: 'liberation', nom: 'Libération', ligne: 'Vous quittez un logement', texte: 'Tri accompagné, débarras, dons et nettoyage : le logement est rendu vide, propre, clés en main.', prix: FP.L.prix[0] },
+  { slug: 'transition', nom: 'Transition', ligne: 'Vous ou un proche déménagez', texte: "Tout ce que comprend la Libération, plus le déménagement coordonné et l'installation du nouveau logement.", prix: FP.T.prix[0] },
   { slug: 'succession', nom: 'Succession', ligne: 'Un proche vous a quittés', texte: 'Un seul interlocuteur pour tous les héritiers : tri, papiers, débarras et nettoyage, en lien avec le notaire.', prix: FP.S.prix[0] },
 ];
 const etapes = [
@@ -59,9 +59,9 @@ const etapes = [
       <div class="pt-formules">
         {formules.map((f, i) => (
           <a class="pt-formule" href={`/${f.slug}`}>
+            <span class="pt-fligne">{f.ligne}</span>
             <span class="pt-num">0{i + 1}</span>
             <span class="pt-fnom">{f.nom}</span>
-            <span class="pt-fligne">{f.ligne}</span>
             <span class="p">{f.texte}</span>
             <span class="pt-prix"><span>À partir de</span> {montant(f.prix)}</span>
           </a>
@@ -155,7 +155,7 @@ const etapes = [
   .pt-formule:hover{box-shadow:0 14px 34px rgba(21,35,58,.08)}
   .pt-num{font-family:var(--serif);font-size:24px;color:var(--laiton-texte)}
   .pt-fnom{font-family:var(--serif);font-size:32px;font-weight:500;color:var(--nuit);line-height:1.1}
-  .pt-fligne{font-family:var(--serif);font-style:italic;font-size:19px;color:var(--bleu)}
+  .pt-fligne{font-family:var(--serif);font-style:italic;font-size:26px;line-height:1.2;color:var(--bleu)}
   .pt-prix{margin-top:auto;padding-top:16px;border-top:1px solid var(--filet-2);font-family:var(--serif);font-size:28px;color:var(--nuit)}
   .pt-prix span{font-family:var(--sans);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gris);margin-right:8px}
   .pt-note{margin-top:24px;font-size:14px;max-width:900px}

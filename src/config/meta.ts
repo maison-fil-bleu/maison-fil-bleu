@@ -59,7 +59,7 @@ export const META: Record<string, { title: string; description: string }> = {
   },
   '/conseils/gerer-logement-a-distance': {
     title: 'Gérer un logement à distance | Maison Fil Bleu Marseille',
-    description: 'Vous habitez loin ? Photos, comptes rendus et un seul interlocuteur pour vider et libérer un logement à Marseille et en PACA sans vous déplacer.',
+    description: 'Vous-même ou vos proches vivez loin ? Photos, comptes rendus et un seul interlocuteur pour vider et libérer un logement à Marseille et en PACA sans vous déplacer.',
   },
   '/notaires': {
     title: 'Notaires : libérer le logement de vos clients | Maison Fil Bleu',
