@@ -66,11 +66,11 @@ export const META: Record<string, { title: string; description: string }> = {
     description: "Études notariales à Marseille et en PACA : nous prenons en charge le logement de vos clients, vente, départ en résidence ou succession, en lien avec votre étude.",
   },
   '/agences': {
-    title: 'Agences immobilières : un bien libéré à temps | Maison Fil Bleu',
-    description: "Agences immobilières à Marseille et en PACA : tri, déménagement, débarras et nettoyage du bien de votre vendeur, à la date de l'acte. Le mandat reste le vôtre.",
+    title: 'Agences immobilières : le bien est prêt, votre vendeur aussi | Maison Fil Bleu',
+    description: "Agences immobilières à Marseille et en PACA : dès la prise de mandat, le bien de votre vendeur est vidé et nettoyé pour les photos et les visites. Vous gardez le mandat.",
   },
   '/residences': {
-    title: 'Résidences seniors et EHPAD : une entrée préparée | Fil Bleu',
+    title: 'Résidences seniors et EHPAD : préparation à l’entrée | Maison Fil Bleu',
     description: "Résidences seniors et EHPAD à Marseille et en PACA : tri, déménagement, installation de la chambre et ancien logement, au rythme du résident.",
   },
   '/partenaires': {

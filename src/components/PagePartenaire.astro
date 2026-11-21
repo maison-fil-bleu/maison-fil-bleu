@@ -24,7 +24,7 @@ interface Props {
 const { cle, title, description, surtitre, titre, titreItalique, sousTitre, structure, echeance, pdf } = Astro.props;
 const tel = lienTel(SITE.telephone);
 const formules = [
-  { slug: 'liberation', nom: 'Libération', ligne: 'Le logement est à vider', texte: 'Tri accompagné, dons, débarras et nettoyage : le logement est rendu vide, propre, clés en main.', prix: FP.L.prix[0] },
+  { slug: 'liberation', nom: 'Libération', ligne: 'Le logement est à vider', texte: 'Tri accompagné, débarras, dons et nettoyage : le logement est rendu vide, propre, clés en main.', prix: FP.L.prix[0] },
   { slug: 'transition', nom: 'Transition', ligne: 'Un déménagement suit', texte: "Tout ce que comprend la Libération, plus le déménagement coordonné et l'installation du nouveau logement.", prix: FP.T.prix[0] },
   { slug: 'succession', nom: 'Succession', ligne: 'Un proche vous a quittés', texte: 'Un seul interlocuteur pour tous les héritiers : tri, papiers, débarras et nettoyage, en lien avec le notaire.', prix: FP.S.prix[0] },
 ];
@@ -166,6 +166,9 @@ const etapes = [
   .pt-cadre > div{border-top:1px solid var(--filet);padding-top:18px;display:flex;flex-direction:column;gap:8px}
   .pt-cadre h3{font-family:var(--serif);font-weight:500;font-size:24px;color:var(--nuit);margin:0}
   .pt-encart{margin-top:36px;background:var(--sable);padding:26px 30px;display:flex;flex-direction:column;gap:10px}
+  .pt-liste{margin:4px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
+  .pt-liste li{position:relative;padding-left:26px;font-size:16px;line-height:1.5;color:var(--encre,#18202C)}
+  .pt-liste li::before{content:'✓';position:absolute;left:0;color:#B8925A;font-weight:700}
   .pt-encart.blanc{background:#fff;border:1px solid var(--filet-2)}
   .pt-encart h3{font-family:var(--serif);font-weight:500;font-size:26px;color:var(--nuit);margin:0}
   .pt-form-w{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:56px;align-items:start}
