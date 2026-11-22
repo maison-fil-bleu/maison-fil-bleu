@@ -1,7 +1,7 @@
 # Maison Fil Bleu · site statique (Astro)
 
 Site de **Maison Fil Bleu** et de sa partie **Fil Bleu Pro** (SAS Groupe Fil Bleu, Les Pennes-Mirabeau).
-Référence : `../passation/maison-fil-bleu-passation/PASSATION.md` et les maquettes `maquettes/*.dc.html`.
+Référence : `../5-Passation (documents d'origine)/maison-fil-bleu-passation/PASSATION.md` et les maquettes `maquettes/*.dc.html`.
 
 ## Commandes
 
