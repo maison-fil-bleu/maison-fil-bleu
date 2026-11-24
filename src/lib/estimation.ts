@@ -18,13 +18,14 @@ export interface Choix {
   residence: boolean;
   box: boolean;
   installation: boolean;
+  installation2: boolean; // Installation dans la nouvelle chambre ou le nouveau logement (une demi-journée)
   gardiennage: boolean;
   urgence: boolean;
 }
 
 export const CHOIX_VIDE: Omit<Choix, 'formule' | 'taille'> = {
   maison: false, sansAscenseur: false, dependances: [], futur: null,
-  residence: false, box: false, installation: false, gardiennage: false, urgence: false,
+  residence: false, box: false, installation: false, installation2: false, gardiennage: false, urgence: false,
 };
 
 const arrondir = (n: number) => Math.round(n / COEFFICIENTS.arrondi) * COEFFICIENTS.arrondi;
@@ -35,6 +36,8 @@ export const residenceProposee = (f: CleFormule) => OPTIONS.rechercheResidence.f
 export const installationProposee = (f: CleFormule) => Boolean(OPTIONS.installationProche[f]);
 /** Libellé de l'option « meubles chez un proche » selon la formule. */
 export const libelleInstallation = (f: CleFormule) => OPTIONS.installationProche[f]?.libelle ?? '';
+/** Option « Installation » (demi-journée), proposée seulement dans les formules listées. */
+export const installation2Proposee = (f: CleFormule) => OPTIONS.installation.formules.includes(f);
 export const futurPropose = (f: CleFormule) => FUTUR_LOGEMENT.formules.includes(f);
 /** Recherche de box comprise dans la formule ? (sinon : sur devis) */
 export const boxComprise = (f: CleFormule) => OPTIONS.rechercheBox[f] === 0;
@@ -62,8 +65,9 @@ export function resumer(c: Choix): Resume {
   if (residenceProposee(c.formule) && c.residence) besoins.push('Recherche de résidence');
   if (c.box) besoins.push(`Recherche d'un box de stockage${boxComprise(c.formule) ? ' (comprise)' : ''}`);
   if (installationProposee(c.formule) && c.installation) besoins.push(libelleInstallation(c.formule));
-  if (c.gardiennage) besoins.push('Gardiennage (voir conditions)');
-  if (c.urgence) besoins.push('Intervention en urgence, sous 7 jours');
+  if (installation2Proposee(c.formule) && c.installation2) besoins.push(OPTIONS.installation.libelle);
+  if (c.gardiennage) besoins.push('Gardiennage');
+  if (c.urgence) besoins.push('Intervention en urgence, sous 7 jours, selon disponibilités');
   const taille = TAILLES[c.taille];
   return {
     formule: F.nom,
@@ -88,6 +92,7 @@ export function fourchette(c: Choix): { bas: number; haut: number } {
   if (residenceProposee(c.formule) && c.residence) opts += OPTIONS.rechercheResidence.prix;
   if (c.box) opts += OPTIONS.rechercheBox[c.formule];
   if (installationProposee(c.formule) && c.installation) opts += OPTIONS.installationProche[c.formule]!.prix;
+  if (installation2Proposee(c.formule) && c.installation2) opts += OPTIONS.installation.prix;
   if (c.gardiennage) opts += OPTIONS.gardiennageParMois;
   const marge = COEFFICIENTS.base + (c.maison ? COEFFICIENTS.maison : 0) + (c.sansAscenseur ? COEFFICIENTS.sansAscenseur : 0);
   let bas = base + opts;

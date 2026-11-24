@@ -6,8 +6,8 @@
  */
 import Famille from '../layouts/Famille.astro';
 import { META } from '../config/meta';
-import { FORMULES_PRIX, TAILLES, PAR_DEFAUT, DEPENDANCES, FUTUR_LOGEMENT, type CleFormule } from '../config/tarifs';
-import { resumer, residenceProposee, installationProposee, libelleInstallation, futurPropose, boxComprise, CHOIX_VIDE, type Choix } from '../lib/estimation';
+import { FORMULES_PRIX, TAILLES, PAR_DEFAUT, DEPENDANCES, FUTUR_LOGEMENT, OPTIONS, type CleFormule } from '../config/tarifs';
+import { resumer, residenceProposee, installationProposee, installation2Proposee, libelleInstallation, futurPropose, boxComprise, CHOIX_VIDE, type Choix } from '../lib/estimation';
 
 const meta = META['/estimation'];
 const initial: Choix = { formule: PAR_DEFAUT.formule, taille: PAR_DEFAUT.taille, ...CHOIX_VIDE };
@@ -68,8 +68,9 @@ const cles = Object.keys(FORMULES_PRIX) as CleFormule[];
 <div class="opt" data-si="residence" hidden={!residenceProposee(initial.formule)}><span class="opt-l"><span>Recherche de résidence</span><span class="p">Nous vous aidons à trouver la résidence adaptée</span></span><button type="button" class="pill" data-bascule="residence" aria-pressed="false">Ajouter</button></div>
 <div class="opt"><span class="opt-l"><span>Recherche d'un box de stockage</span><span class="p" data-sortie="infoBox">{boxComprise(initial.formule) ? 'Comprise dans la formule · location réglée par vous' : 'Location réglée par vous'}</span></span><button type="button" class="pill" data-bascule="box" aria-pressed="false">Ajouter</button></div>
 <div class="opt" data-si="installation" hidden={!installationProposee(initial.formule)}><span class="opt-l"><span data-sortie="libInstall">{libelleInstallation(initial.formule)}</span></span><button type="button" class="pill" data-bascule="installation" aria-pressed="false">Ajouter</button></div>
-<div class="opt"><span class="opt-l"><span>Gardiennage (voir conditions)</span><span class="p">Visites régulières, relevé du courrier</span></span><button type="button" class="pill" data-bascule="gardiennage" aria-pressed="false">Ajouter</button></div>
-<div class="opt"><span class="opt-l"><span>Intervention en urgence, sous 7 jours</span></span><button type="button" class="pill" data-bascule="urgence" aria-pressed="false">Ajouter</button></div>
+<div class="opt" data-si="installation2" hidden={!installation2Proposee(initial.formule)}><span class="opt-l"><span>{OPTIONS.installation.libelle}</span><span class="p">Meubles placés, lit fait, photos accrochées, le jour de l'arrivée</span></span><button type="button" class="pill" data-bascule="installation2" aria-pressed="false">Ajouter</button></div>
+<div class="opt"><span class="opt-l"><span>Gardiennage</span><span class="p">Visites régulières, relevé du courrier</span></span><button type="button" class="pill" data-bascule="gardiennage" aria-pressed="false">Ajouter</button></div>
+<div class="opt"><span class="opt-l"><span>Intervention en urgence, sous 7 jours, selon disponibilités</span></span><button type="button" class="pill" data-bascule="urgence" aria-pressed="false">Ajouter</button></div>
 </div>
 </div>
 </div>
@@ -98,12 +99,12 @@ const cles = Object.keys(FORMULES_PRIX) as CleFormule[];
 
 <a class="est-barre" href="#est-res-t" data-sortie="barre" aria-hidden="true" tabindex="-1">
 <span class="est-barre-l" data-sortie="barre-formule">{r.formule}</span>
-<span class="est-barre-m">dès <span data-sortie="barre-prix">{r.prixTxt}</span></span>
+<span class="est-barre-m">à partir de <span data-sortie="barre-prix">{r.prixTxt}</span></span>
 </a>
 </Famille>
 
 <script>
-  import { resumer, residenceProposee, installationProposee, libelleInstallation, futurPropose, boxComprise, CHOIX_VIDE, type Choix } from '../lib/estimation';
+  import { resumer, residenceProposee, installationProposee, installation2Proposee, libelleInstallation, futurPropose, boxComprise, CHOIX_VIDE, type Choix } from '../lib/estimation';
   import { PAR_DEFAUT, TAILLES, type CleFormule } from '../config/tarifs';
 
   const racine = document.getElementById('simulateur')!;
@@ -112,12 +113,12 @@ const cles = Object.keys(FORMULES_PRIX) as CleFormule[];
 
   const etat: Choix = { formule: PAR_DEFAUT.formule, taille: PAR_DEFAUT.taille, ...CHOIX_VIDE, dependances: [] };
 
-  // Préselection depuis l'adresse : /estimation?formule=liberation|transition|succession
-  const noms: Record<string, CleFormule> = { liberation: 'L', transition: 'T', succession: 'S' };
+  // Préselection depuis l'adresse : /estimation?formule=cles-en-main|nouveau-depart|succession (anciens noms acceptés)
+  const noms: Record<string, CleFormule> = { 'cles-en-main': 'L', 'nouveau-depart': 'T', succession: 'S', liberation: 'L', transition: 'T' };
   const demande = new URLSearchParams(location.search).get('formule');
   if (demande && noms[demande]) etat.formule = noms[demande];
 
-  type Bascule = 'sansAscenseur' | 'residence' | 'box' | 'installation' | 'gardiennage' | 'urgence';
+  type Bascule = 'sansAscenseur' | 'residence' | 'box' | 'installation' | 'installation2' | 'gardiennage' | 'urgence';
 
   function afficher() {
     const r = resumer(etat);
@@ -134,6 +135,7 @@ const cles = Object.keys(FORMULES_PRIX) as CleFormule[];
     $('[data-si="futur"]').hidden = !futurPropose(etat.formule);
     $('[data-si="residence"]').hidden = !residenceProposee(etat.formule);
     $('[data-si="installation"]').hidden = !installationProposee(etat.formule);
+    $('[data-si="installation2"]').hidden = !installation2Proposee(etat.formule);
     $('[data-sortie="libInstall"]').textContent = libelleInstallation(etat.formule);
     $('[data-sortie="titreTaille"]').textContent = futurPropose(etat.formule) ? 'Logement actuel' : 'Taille du logement';
     $('[data-sortie="infoBox"]').textContent = boxComprise(etat.formule) ? 'Comprise dans la formule · location réglée par vous' : 'Location réglée par vous';

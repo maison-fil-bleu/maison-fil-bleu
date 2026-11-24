@@ -9,12 +9,12 @@ export const META: Record<string, { title: string; description: string }> = {
     title: 'Maison Fil Bleu : accompagnement des familles à Marseille',
     description: "Entrée en résidence, logement à libérer, succession à Marseille et en PACA : tri, débarras, nettoyage, démarches. Prix fixé d'avance, diagnostic offert.",
   },
-  '/liberation': {
-    title: 'Vider et nettoyer un logement à Marseille | Maison Fil Bleu',
+  '/cles-en-main': {
+    title: 'Clés en main : vider un logement à Marseille | Maison Fil Bleu',
     description: `Vider une maison ou un appartement à Marseille et en PACA : tri, dons, débarras, nettoyage, remise des clés. À partir de ${montant(FORMULES_PRIX.L.prix[0])} TTC, diagnostic offert.`,
   },
-  '/transition': {
-    title: 'Déménagement en résidence ou EHPAD à Marseille | Maison Fil Bleu',
+  '/nouveau-depart': {
+    title: 'Nouveau départ : changer de logement à Marseille | Maison Fil Bleu',
     description: `Entrée en résidence ou en EHPAD, logement plus petit à Marseille et en PACA : tri, déménagement, installation, démarches. À partir de ${montant(FORMULES_PRIX.T.prix[0])} TTC.`,
   },
   '/succession': {
@@ -23,11 +23,11 @@ export const META: Record<string, { title: string; description: string }> = {
   },
   '/notre-methode': {
     title: 'Notre méthode en 5 étapes | Maison Fil Bleu Marseille',
-    description: 'Diagnostic offert, devis forfaitaire, intervention coordonnée, nouvelles à chaque étape, remise des clés : notre méthode à Marseille et en région PACA.',
+    description: 'Diagnostic offert, devis forfaitaire, intervention supervisée, nouvelles à chaque étape, remise des clés : notre méthode à Marseille et en région PACA.',
   },
   '/tarifs': {
     title: 'Tarifs vide-maison et débarras à Marseille | Maison Fil Bleu',
-    description: 'Prix de départ des formules Libération, Transition et Succession et options : tous nos tarifs à Marseille et en région PACA, diagnostic offert.',
+    description: 'Prix de départ des formules Clés en main, Nouveau départ et Succession et options : tous nos tarifs à Marseille et en région PACA, diagnostic offert.',
   },
   '/estimation': {
     title: 'Estimation en ligne : vide-maison à Marseille | Maison Fil Bleu',

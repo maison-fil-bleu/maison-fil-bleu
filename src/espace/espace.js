@@ -13,7 +13,7 @@ export function creerClient() {
   });
 }
 
-const FORMULES = { L: 'Libération', T: 'Transition', S: 'Succession', P: 'Fil Bleu Pro' };
+const FORMULES = { L: 'Clés en main', T: 'Nouveau départ', S: 'Succession', P: 'Fil Bleu Pro' };
 const ETAPES = [['diagnostic', 'Diagnostic'], ['devis', 'Devis signé'], ['preparation', 'Préparation'], ['interventions', 'Interventions'], ['cles', 'Remise des clés']];
 const ETATS = { a_venir: 'À venir', en_cours: 'En cours', termine: 'Terminé' };
 const TYPES_DOC = { devis: 'Devis', facture: 'Facture', etat_des_lieux: 'État des lieux', autre: 'Document' };

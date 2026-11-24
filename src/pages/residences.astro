@@ -2,6 +2,7 @@
 /** Page partenaires : résidences seniors et EHPAD. Adresse imprimée (QR code de la plaquette) : /residences, ne pas changer. */
 import PagePartenaire from '../components/PagePartenaire.astro';
 import { META } from '../config/meta';
+import { OPTIONS, montant } from '../config/tarifs';
 const meta = META['/residences'];
 ---
 <PagePartenaire cle="residences" title={meta.title} description={meta.description}
@@ -9,17 +10,31 @@ const meta = META['/residences'];
   titre="Préparation et accompagnement" titreItalique="à l'entrée en résidence."
   sousTitre="Avec le futur résident et sa famille, nous prenons tout en charge : l'organisation, le déménagement, le tri, l'installation de la chambre et l'ancien logement."
   structure="Votre résidence ou établissement" echeance="Date d'entrée prévue…" pdf="Maison-Fil-Bleu-plaquette-residences.pdf"
-  docs={['plaquetteResidences', 'ficheL', 'ficheT', 'ficheS']}>
+  docs={['plaquetteResidences', 'ficheL', 'ficheT', 'ficheS']}
+  pictos={['Au rythme du résident', 'Entrées à la date prévue', "Aucun frais pour l'établissement"]}
+  cartes={[
+    { texte: "L'ancien logement vidé, nettoyé et préparé. Si la famille vend, nous l'aidons à préparer ses rendez-vous avec les agences." },
+    { texte: "L'accompagnement complet : tri, coordination du déménagement, installation de la chambre, démarches, suivi à 15 jours." },
+    { texte: 'Quand un résident nous a quittés : tri avec les héritiers, papiers, débarras, nettoyage, en lien avec le notaire.' },
+  ]}
+  quiSommesNous="Nous travaillons avec vos équipes, dans votre cadre, et toujours au rythme du résident, pour que l'entrée en résidence soit une nouvelle étape, pas un déracinement."
+  engagements={[
+    ['Le rythme du résident', 'Il reste le décideur.'],
+    ['Un planning clair', "La date d'entrée, fixée au devis."],
+    ['Discrétion', 'Votre règlement et la tranquillité des résidents.'],
+    ['Un cadre clair', 'Devis écrit, contrat signé, chaque étape tracée.'],
+  ]}
+  confierTexte="Dès que la date d'entrée est connue, transmettez-nous le contact de la famille, avec son accord : nous la rencontrons sous [72 h] et organisons tout selon cette date.">
 
   <section class="sec pt-sec">
     <div class="w">
       <span class="lbl">Le cadre de travail</span>
       <h2 class="h2">Entrer en résidence, sans tout porter seul.</h2>
       <div class="pt-cadre">
-        <div><h3>Avant l'entrée</h3><p class="p">Tri accompagné, à son rythme. Plan de la chambre : ce qui suit, ce qui reste. Déménagement coordonné.</p></div>
+        <div><h3>Avant l'entrée</h3><p class="p">Tri accompagné, à son rythme. Plan de la chambre : ce qui suit, ce qui reste. Coordination du déménagement.</p></div>
         <div><h3>Le jour de l'arrivée</h3><p class="p">Meubles placés, lit fait, photos accrochées, objets familiers à leur place dès le premier soir.</p></div>
-        <div><h3>L'ancien logement</h3><p class="p">Vidé, nettoyé, démarches faites. Si la famille vend le logement, nous l'accompagnons dans le choix de l'agence, en toute neutralité, puis préparons le logement.</p></div>
-        <div><h3>Des entrées à la date prévue</h3><p class="p">Planning calé sur la date d'entrée ; sous 7 jours en cas d'urgence.</p></div>
+        <div><h3>L'ancien logement</h3><p class="p">Vidé, nettoyé, démarches faites. Si la famille vend, nous l'aidons à préparer ses rendez-vous avec les agences.</p></div>
+        <div><h3>Les délais</h3><p class="p">Diagnostic sous [72 h]. Entrée préparée en [2 à 3 semaines], ou sous 7 jours en urgence, selon disponibilités : sortie d'hôpital, place qui se libère.</p></div>
       </div>
       <h2 class="h2" style="margin-top:72px">Ce que votre établissement y gagne.</h2>
       <div class="pt-cadre">
@@ -29,14 +44,18 @@ const meta = META['/residences'];
         <div><h3>Un frein en moins</h3><p class="p">L'ancien logement est pris en charge : il ne retarde plus l'entrée.</p></div>
       </div>
       <div class="pt-encart">
+        <h3>Installation</h3>
+        <p class="p">Pour les familles qui gèrent le reste : une demi-journée sur place le jour de l'arrivée, en lien avec le déménageur. Meubles placés, lit fait, photos accrochées. À partir de {montant(OPTIONS.installation.prix)}.</p>
+      </div>
+      <div class="pt-encart">
         <h3>Dans le respect de votre cadre.</h3>
-        <p class="p">Nous intervenons selon vos horaires et votre règlement intérieur, dans la tranquillité des résidents. Aucun frais pour l'établissement : le devis est établi et signé avec la famille.</p>
+        <p class="p">Nous intervenons selon vos horaires et votre règlement intérieur. Aucun frais pour l'établissement, aucune commission perçue.</p>
       </div>
       <div class="pt-encart">
         <h3>Ce que vous pouvez dire aux familles</h3>
         <ul class="pt-liste">
           <li>Un seul interlocuteur s'occupe de tout, même pour les proches éloignés.</li>
-          <li>L'ancien logement est vidé et nettoyé ; aide neutre au choix de l'agence.</li>
+          <li>L'ancien logement est vidé et nettoyé ; aide à vos rendez-vous avec les agences.</li>
           <li>La chambre est installée avant l'arrivée, avec ses meubles et ses photos.</li>
           <li>Rien ne part sans l'accord du futur résident.</li>
           <li>Diagnostic offert, devis forfaitaire, facilités de paiement possibles.</li>

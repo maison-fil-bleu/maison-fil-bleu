@@ -1,0 +1,52 @@
+---
+/**
+ * Pages formules : encadré du prix « à partir de » (ligne « compris » et paiement),
+ * blocs « Paiement » et « Délais », exemple de coût (Nouveau départ). Textes des fiches PDF,
+ * centralisés dans src/config/tarifs.ts (TEXTES_FORMULE, DELAIS_FORMULE).
+ */
+import { FORMULES_PRIX as FP, TEXTES_FORMULE, DELAIS_FORMULE, montant, type CleFormule } from '../config/tarifs';
+
+interface Props { cle: CleFormule }
+const { cle } = Astro.props;
+const t = TEXTES_FORMULE[cle];
+---
+<div class="pf">
+  <div class="pf-prix">
+    <span class="pf-ap">À partir de</span>
+    <span class="pf-montant">{montant(FP[cle].prix[0])} <small>TTC</small></span>
+    <span class="pf-compris">{t.compris}</span>
+    <ul class="pf-paie">{t.encadrePaiement.map((x) => <li>{x}</li>)}</ul>
+    {t.notePaiement && <span class="pf-note">{t.notePaiement}</span>}
+  </div>
+  {cle === 'T' && (
+    <div class="pf-exemple">
+      <span class="lbl">Exemple pour un 2 pièces</span>
+      <p class="pf-calc"><span><small>Nouveau départ</small>{montant(FP.T.prix[0])}</span><span aria-hidden="true">+</span><span><small>Déménageur *</small>500 à 1 500 €</span><span aria-hidden="true">=</span><span><small>Total estimé</small>{`${montant(FP.T.prix[0] + 500).replace(' €', '')} à ${montant(FP.T.prix[0] + 1500)}`}</span></p>
+      <p class="pf-note">Déménageur : prix moyen constaté dans la même ville, devis comparés par nos soins. Prix exact fixé après le diagnostic.</p>
+    </div>
+  )}
+  <div class="pf-blocs">
+    <div><span class="lbl">Paiement</span><p class="p">{t.paiement}</p></div>
+    <div><span class="lbl">Délais</span><p class="p">{DELAIS_FORMULE}</p></div>
+  </div>
+</div>
+
+<style is:global>
+.pf{display:flex;flex-direction:column;gap:22px;margin-top:6px}
+.pf-prix{background:#FFFFFF;border-top:3px solid #B8925A;padding:26px 28px;display:flex;flex-direction:column;gap:8px}
+.pf-ap{font-family:'Nunito Sans',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:#5B606A}
+.pf-montant{font-family:'Cormorant Garamond',Georgia,serif;font-size:40px;font-weight:500;color:#15233A;line-height:1.1}
+.pf-montant small{font-size:18px}
+.pf-compris{font-size:15px;color:#18202C;line-height:1.5}
+.pf-paie{list-style:none;margin:8px 0 0;padding:12px 0 0;border-top:1px solid #DDD4C5;display:flex;flex-wrap:wrap;gap:6px 22px}
+.pf-paie li{font-size:14px;font-weight:500;color:#3D5A80}
+.pf-note{font-size:13px;color:#5B606A}
+.pf-exemple{background:#EFE9DE;padding:22px 26px;display:flex;flex-direction:column;gap:12px}
+.pf-calc{margin:0;display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 16px;font-family:'Cormorant Garamond',Georgia,serif;font-size:26px;color:#15233A}
+.pf-calc small{display:block;font-family:'Nunito Sans',sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#5B606A}
+.pf-blocs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+.pf-blocs > div{border-top:1px solid #CFC5B4;padding-top:14px;display:flex;flex-direction:column;gap:8px}
+.pf-blocs .p{font-size:15px;margin:0}
+.pf-signature{border-top:1px solid #DDD4C5;padding:22px 0;text-align:center;font-family:'Nunito Sans',sans-serif;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#735A33}
+@media (max-width:760px){.pf-blocs{grid-template-columns:minmax(0,1fr)}.pf-prix{padding:22px 20px}}
+</style>

@@ -1,26 +1,28 @@
 ---
-import { FORMULES_PRIX as FP, OPTIONS as OP, montant, VENTE_NEUTRE_SUITE, VENTE_COMPRIS } from '../config/tarifs';
+import { FORMULES_PRIX as FP, OPTIONS as OP, montant, VENTE_NEUTRE_SUITE, VENTE_COMPRIS, TEXTES_FORMULE, NOTE_OPTIONS_T } from '../config/tarifs';
 import OptionsFormule from '../components/OptionsFormule.astro';
+import PrixFormule from '../components/PrixFormule.astro';
 import { doc } from '../config/documents';
-/** Maquette : Formule-Transition.dc.html · adresse : /transition */
+/** Maquette : Formule-Transition.dc.html · adresse : /nouveau-depart */
 import Famille from '../layouts/Famille.astro';
 import { SITE } from '../config/site';
 import Hero from '../components/Hero.astro';
 import Photo from '../components/Photo.astro';
 import { META } from '../config/meta';
 import { service, filAriane } from '../config/seo';
-const meta = META['/transition'];
+const meta = META['/nouveau-depart'];
 ---
-<Famille title={meta.title} description={meta.description} onglet="prestations" jsonld={[service('T'), filAriane([{ nom: 'Accueil', chemin: '/' }, { nom: 'Transition', chemin: '/transition' }])]}>
-<!-- Photo en fond : src/assets/photos/transition-haut.jpg · chambre de résidence installée avec ses meubles et ses cadres -->
+<Famille title={meta.title} description={meta.description} onglet="prestations" jsonld={[service('T'), filAriane([{ nom: 'Accueil', chemin: '/' }, { nom: 'Nouveau départ', chemin: '/nouveau-depart' }])]}>
+<!-- Photo en fond : src/assets/photos/nouveau-depart-haut.jpg · chambre de résidence installée avec ses meubles et ses cadres -->
 <Hero photo="transition-haut" desc="chambre de résidence installée avec ses meubles et ses cadres">
 <div class="w" style="position: relative; padding-top: 140px; padding-bottom: 128px">
 <div style="max-width: 760px; display: flex; flex-direction: column; gap: 28px">
-<span class="lbl">Accompagnement · Transition</span>
-<span style="font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-size: 26px; color: #3D5A80; margin-top: -12px">La Libération, quand un déménagement suit.</span>
+<span class="lbl">Accompagnement · Nouveau départ</span>
+<span style="font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-size: 26px; color: #3D5A80; margin-top: -12px">Vous ou un proche déménagez</span>
 <h1 class="h1" style="color: #15233A">Passer d'un logement à l'autre, sans aucune charge, ni physique ni mentale.</h1>
-<p class="lead" style="color: #4A4F58">Vers plus petit, une résidence ou plus près de la famille : changer de logement, ce sont des choix, un déménagement, une nouvelle installation. Nous prenons tout en charge, ancien logement et démarches compris. Vous avancez à votre rythme, l'esprit libre.</p>
-<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 28px"><a class="btn" href="/contact">Demander un diagnostic offert</a><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 30px; color: #3D5A80">dès {montant(FP.T.prix[0])} TTC</span></div>
+<p class="lead" style="color: #4A4F58">Vers plus petit, une résidence ou plus près de la famille : changer de logement, ce sont des choix, un déménagement, une nouvelle installation. Nous prenons tout en charge, ancien et nouveau logement, démarches comprises. Rien ne part sans votre accord écrit, et vous avancez à votre rythme.</p>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 28px"><a class="btn" href="/contact">Demander un diagnostic offert</a><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 30px; color: #3D5A80">à partir de {montant(FP.T.prix[0])} TTC</span></div>
+<span class="p" style="font-size: 15px; color: #4A4F58; margin-top: -12px">{TEXTES_FORMULE.T.compris}</span>
 </div>
 </div>
 </Hero>
@@ -38,12 +40,12 @@ const meta = META['/transition'];
 </div>
 </section>
 
-<!-- Photo : src/assets/photos/transition-01.jpg · cartons étiquetés, plan du nouveau logement sur la table -->
+<!-- Photo : src/assets/photos/nouveau-depart-01.jpg · cartons étiquetés, plan du nouveau logement sur la table -->
 <Photo nom="transition-01" alt="Cartons étiquetés, plan du nouveau logement sur la table" tag="Photo pleine largeur · cartons étiquetés, plan du nouveau logement sur la table" style="height: 500px" />
 
 <section class="sec">
 <div class="w" style="display: flex; flex-direction: column; gap: 64px">
-<div style="display: flex; flex-direction: column; gap: 18px; max-width: 760px"><span class="lbl">Le déroulé</span><h2 class="h2">Comment se déroule une Transition</h2></div>
+<div style="display: flex; flex-direction: column; gap: 18px; max-width: 760px"><span class="lbl">Le déroulé</span><h2 class="h2">Comment se déroule la formule Nouveau départ</h2></div>
 <div class="g4">
 <div class="card"><span class="num">01</span><h3 class="h3">Diagnostic et plan</h3><span class="p">Visite des deux logements, plan du nouveau, devis forfaitaire et clair.</span></div>
 <div class="card"><span class="num">02</span><h3 class="h3">Le tri, à votre rythme</h3><span class="p">Une ou plusieurs journées selon la taille du logement, planifiées ensemble : ce qui suit au nouveau logement, ce qui est donné, ce qui part.</span></div>
@@ -61,7 +63,7 @@ const meta = META['/transition'];
 <p class="p">Nous demandons plusieurs devis de déménageurs et les comparons avec vous. Vous choisissez et vous le réglez directement, sans intermédiaire ni marge de notre part.</p>
 </div>
 <div style="display: flex; flex-direction: column; border-top: 1px solid #CFC5B4">
-<div class="row"><span>Tout le contenu de la formule Libération (débarras, dons, nettoyage, remise en état, démarches, etc., voir la formule Libération)</span></div>
+<div class="row"><span>Tout le contenu de la formule Clés en main (débarras, dons, nettoyage, remise en état, démarches, etc., voir la formule Clés en main)</span></div>
 <div class="row"><span>Une ou plusieurs journées dédiées au tri, selon la taille du logement : ce qui suit, ce qui est donné, ce qui part</span></div>
 <div class="row"><span>Coordination du déménagement * et présence le jour J</span></div>
 <div class="row"><span>Installation complète du nouveau logement</span></div>
@@ -77,8 +79,9 @@ const meta = META['/transition'];
 <div style="display: flex; flex-direction: column; gap: 22px">
 <span class="lbl">Tarifs</span>
 <h2 class="h2">Un forfait selon le logement de départ</h2>
-<p class="p">Le forfait comprend tout l'accompagnement décrit sur cette page. Prix de départ pour un logement meublé standard : c'est une estimation. Le prix exact, parfois plus bas, parfois plus haut, est fixé après le diagnostic offert, selon le volume et l'accès. Facilités de paiement possibles.</p>
-<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 26px; margin-top: 6px"><a class="btn" href="/estimation?formule=transition">Estimer mon accompagnement</a><a class="tl" href="/tarifs">Tous les tarifs et options</a><a class="tl" href={doc('ficheT').href} download>Télécharger la fiche ({doc('ficheT').info})</a><a class="tl" href={doc('fsm').href} download>Faire soi-même ou nous confier ?</a></div>
+<p class="p">Le forfait comprend tout l'accompagnement décrit sur cette page. Prix de départ pour un logement meublé standard. Le prix exact est fixé après le diagnostic, selon le volume et l'accès.</p>
+<PrixFormule cle="T" />
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 26px; margin-top: 6px"><a class="btn" href="/estimation?formule=nouveau-depart">Estimer mon accompagnement</a><a class="tl" href="/tarifs">Tous les tarifs et options</a><a class="tl" href={doc('ficheT').href} download>Télécharger la fiche ({doc('ficheT').info})</a><a class="tl" href={doc('fsm').href} download>Faire soi-même ou nous confier ?</a></div>
 </div>
 <div style="display: flex; flex-direction: column; border-top: 1px solid #15233A">
 <span class="lbl" style="padding: 16px 0 2px">TTC · à partir de</span>
@@ -92,15 +95,15 @@ const meta = META['/transition'];
 
 <OptionsFormule
   options={[
-    ['Recherche de résidence', montant(OP.rechercheResidence.prix), 'voir conditions'],
+    ['Recherche de résidence', montant(OP.rechercheResidence.prix)],
     ['Caves, garages, greniers', `${montant(OP.cavesParM3)} / m³`],
     ["Travaux d'aménagement par des artisans * : barre d'appui, éclairage…", 'sur devis'],
     ["Remise en état de l'ancien logement par des artisans *", 'sur devis'],
-    ["Gardiennage de l'ancien logement", `${montant(OP.gardiennageParMois)} / mois`, 'voir conditions'],
+    ["Gardiennage de l'ancien logement", `${montant(OP.gardiennageParMois)} / mois`],
     ['Hors Bouches-du-Rhône', 'sur devis'],
   ]}
-  note="* Travaux des artisans et déménagement, à la demande du client : réglés directement par le client, non compris dans le forfait. Non compris : les déchets dangereux. Conditions détaillées au devis."
-  encadre={{ titre: "Plus qu'un déménagement", items: ['Le plan du nouveau logement : ce qui suit, ce qui reste', 'Déménagement coordonné, notre présence le jour J', "Débarras et nettoyage de l'ancien logement", 'Installation complète, habitable dès le premier soir', 'Les démarches administratives prises en charge', 'Un seul interlocuteur pour les deux logements, suivi à 15 jours'] }}
+  note={NOTE_OPTIONS_T}
+  encadre={{ titre: "Plus qu'un déménagement", items: ['Le plan du nouveau logement : ce qui suit, ce qui reste', "Débarras et nettoyage de l'ancien logement", 'Coordination du déménagement, notre présence le jour J', 'Installation complète, habitable dès le premier soir', 'Les démarches administratives prises en charge', 'Un seul interlocuteur pour les deux logements, suivi à 15 jours'] }}
   lien={{ texte: 'Un proche vous a quittés ?', href: '/succession', lbl: 'Voir la formule Succession →' }}
 />
 
@@ -114,8 +117,8 @@ const meta = META['/transition'];
 <section class="sec">
 <div class="w" style="max-width: 960px; display: flex; flex-direction: column; gap: 24px">
 <span class="lbl">Questions fréquentes</span>
-<h2 class="h2" style="margin-bottom: 12px">Vos questions sur la Transition</h2>
-<details class="q" open><summary>Et si l'on n'est pas prêt à tout trier d'un coup ?</summary><p class="p" style="margin-top: 12px">C'est fréquent, et c'est pour cela que ces journées se préparent. Le forfait comprend une ou plusieurs journées de tri accompagné, selon la taille du logement, et les choix peuvent se faire en plusieurs fois. Nous les planifions ensemble, à l'avance. Avant notre venue, nous vous aidons à repérer ce qui compte le plus, pour que ces journées soient sereines et efficaces. Besoin de plus de temps ? Pas de souci : nous adaptons l'offre, avec un devis complémentaire validé au préalable.</p></details>
+<h2 class="h2" style="margin-bottom: 12px">Vos questions sur la formule Nouveau départ</h2>
+<details class="q" open><summary>Et si l'on n'est pas prêt à tout trier d'un coup ?</summary><p class="p" style="margin-top: 12px">C'est fréquent, et c'est pour cela que ces journées se préparent. Le forfait comprend une ou plusieurs journées de tri accompagné, selon la taille du logement, et les choix peuvent se faire en plusieurs fois. Nous les planifions ensemble, à l'avance. Avant notre venue, nous vous aidons à repérer ce qui compte le plus, pour que ces journées soient utiles et sans précipitation. Besoin de plus de temps ? Pas de souci : nous adaptons l'offre, avec un devis complémentaire validé au préalable.</p></details>
 <details class="q"><summary>Vous vivez loin, mais votre proche habite près de Marseille : est-ce possible ?</summary><p class="p" style="margin-top: 12px">Oui, c'est fréquent. Le diagnostic peut se faire avec votre proche sur place et vous à distance. Nous coordonnons tout et vous recevez des nouvelles et des photos à chaque étape.</p></details>
 <details class="q"><summary>Et si je veux garder des meubles qui ne rentrent pas ?</summary><p class="p" style="margin-top: 12px">Nous vous trouvons un box de stockage à proximité, au meilleur prix, et organisons le transport avec le déménagement. La location du box est réglée directement par vous, sans marge de notre part.</p></details>
 <details class="q"><summary>Qui paie le déménageur ?</summary><p class="p" style="margin-top: 12px">Vous, directement, après avoir choisi parmi les devis que nous avons comparés avec vous.</p></details>
@@ -123,6 +126,7 @@ const meta = META['/transition'];
 </div>
 </section>
 
+<div class="w"><p class="pf-signature">15 ans d'immobilier à Marseille · Un interlocuteur unique · Chaque intervention supervisée</p></div>
 <section style="border-top: 1px solid #DDD4C5">
 <div class="w sec" style="display: flex; flex-direction: column; align-items: center; gap: 26px; text-align: center">
 <h2 class="h2" style="max-width: 760px">Un déménagement à préparer ?</h2>

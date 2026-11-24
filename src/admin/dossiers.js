@@ -22,7 +22,7 @@ const DEFAULTS = {
   heuresSup: { L:[3,4,5,6], T:[30,48,56,70], S:[12,16,19,24], P:[0,0,0,0] },
   rythmeM3: 1.3, rythmeM2: 0.15, baie: 0.25, objetLourd: 1, partPorteur: 0.5,
   interim: 21.64, porteur: 28, decheterie: 18, camionJour: 110, consommables: 35, kmCout: 0.30, vitesse: 50, adminH: 4,
-  m3Sup: 75, residence: 700, installation: [350,400,720,880], gardiennage: 150, box: 90, livraison: 120, urgence: 25, horsDep: 550, tva: 20,
+  m3Sup: 75, residence: 700, installation: [350,400,720,880], gardiennage: 150, box: 90, livraison: 120, installationDemi: 350, reportMax: 3000, urgence: 25, horsDep: 550, tva: 20,
   soc: { siegeVille:'Les Pennes-Mirabeau', adresse:'[adresse], 13170 Les Pennes-Mirabeau', siret:'[n°]', rcs:'[n°]', tva:'[n°]', tel:'[06 00 00 00 00]', email:'[contact@maisonfilbleu.fr]', mediateur:'[nom et site du médiateur]', signataire:'[Prénom Nom], président' }
 };
 const COORDS = {"Marseille":[43.296,5.370],"Marseille 1er":[43.300,5.384],"Marseille 2e":[43.312,5.366],"Marseille 3e":[43.311,5.380],"Marseille 4e":[43.307,5.401],"Marseille 5e":[43.293,5.398],"Marseille 6e":[43.287,5.381],"Marseille 7e":[43.283,5.362],"Marseille 8e":[43.248,5.383],"Marseille 9e":[43.233,5.433],"Marseille 10e":[43.274,5.426],"Marseille 11e":[43.290,5.481],"Marseille 12e":[43.307,5.443],"Marseille 13e":[43.350,5.432],"Marseille 14e":[43.343,5.393],"Marseille 15e":[43.360,5.362],"Marseille 16e":[43.362,5.317],
@@ -57,7 +57,7 @@ const QUICK_INV = ["lit2","lit1","arm2","arm3","commode","can3","fauteuil","tabl
 const NOUV_TYPES = {residence:'Résidence seniors', ehpad:'EHPAD', appartement:'Appartement', maison:'Maison', famille:'Chez un proche'};
 const NOUV_TAILLES = ['Chambre','Studio','2 pièces','3 pièces','4 pièces et +'];
 const SITU = { vente:"Vend son logement", residence:"Part en résidence / EHPAD", demenage:"Déménage ailleurs", deces:"Décès (succession)", vide:"Logement vide ou tout part" };
-const FORM = { L:"Libération", T:"Transition", S:"Succession", P:"Fil Bleu Pro" };
+const FORM = { L:"Clés en main", T:"Nouveau départ", S:"Succession", P:"Fil Bleu Pro" };
 const INVENTAIRE = [
   ["Chambre", [["lit1","Lit une place",1],["lit2","Lit deux places",1.8],["matelas","Matelas seul",0.6],["arm1","Armoire 1 porte",1],["arm2","Armoire 2 portes",1.8],["arm3","Armoire 3 portes",2.5],["commode","Commode",0.6],["chevet","Table de chevet",0.2],["bureau","Bureau",1],["chaise","Chaise",0.2],["penderie","Vêtements (par penderie)",0.5]]],
   ["Séjour", [["can2","Canapé 2 places",1.5],["can3","Canapé 3 places",2],["canangle","Canapé d'angle",3],["fauteuil","Fauteuil",0.8],["table","Table et 4 chaises",1.5],["tbasse","Table basse",0.4],["buffet","Buffet, bahut",1.5],["vaisselier","Vaisselier",2],["biblio","Bibliothèque",1],["meubletv","Meuble TV",0.6],["tapis","Tapis",0.2],["piano","Piano droit",2]]],
@@ -72,8 +72,8 @@ const PRO_OPTS = [["vitres","Baie vitrée ou grande fenêtre en plus","u"],["fou
 const PRO_TYPES = {finbail:"Fin de bail", vente:"Avant vente ou location", travaux:"Après travaux"};
 const FORM_DESC = {
   L:"Diagnostic et devis forfaitaire, tri accompagné (ce que vous gardez, donnez ou laissez partir ; papiers et souvenirs remis), débarras en filières agréées, dons aux associations, nettoyage complet, remise en état coordonnée avec des artisans * si besoin, démarches : résiliations, courrier, relevés de compteurs.",
-  T:"Tout le contenu de la Libération, journées dédiées au tri (ce qui suit, ce qui est donné, ce qui part), coordination du déménagement * et présence le jour J, installation complète du nouveau logement, démarches du nouveau logement, box si besoin, suivi à 15 jours.",
-  S:"Tout le contenu de la Libération, journées dédiées au tri (chaque héritier choisit ce qu'il garde, le reste est donné ou part), papiers et photos de famille classés et remis, lien avec le notaire tout au long du dossier, box si besoin.",
+  T:"Tout le contenu de la formule Clés en main, journées dédiées au tri (ce qui suit, ce qui est donné, ce qui part), coordination du déménagement * et présence le jour J, installation complète du nouveau logement, démarches du nouveau logement, box si besoin, suivi à 15 jours.",
+  S:"Tout le contenu de la formule Clés en main, journées dédiées au tri (chaque héritier choisit ce qu'il garde, le reste est donné ou part), papiers et photos de famille classés et remis, lien avec le notaire tout au long du dossier, box si besoin.",
   P:"Débarras et nettoyage du logement, évacuation en filières agréées, photos avant et après."
 };
 const SUIVI0 = { hDeb:0, hNet:0, hAutres:0, hInterim:0, hAdmin:0, m3:0, joursCamion:0, frais:0, acompte:false, solde:false, liste:false, decharge:false, objets:'', mandat:'non', mandatType:'vente', honoraires:0, vendu:false, fini:false, notes:'' };
@@ -223,7 +223,7 @@ function newDossier(){
     ville:'Marseille', km: kmEst(siegePt(), COORDS['Marseille']) || 14, typeLog:'appartement', taille:1, surface:70, etage:0, ascenseur:true, urgence:false, notes:'',
     formule:'L', formuleAuto:true,
     diag:{ volMode:'base', volume:25, evac:70, cave:0, jardin:0, baies:0, objetsLourds:0, etagesMaison:1, salete:'normal', stationnement:false, dechetsSpeciaux:false, monteMeubles:false, notes:'' },
-    options:{ residence:false, box:false, livraison:false, gardiennage:0, videMaison:0, horsDepJours:0 },
+    options:{ residence:false, box:false, livraison:false, installationDemi:false, reportSolde:false, gardiennage:0, videMaison:0, horsDepJours:0 },
     pro:{ debarras:false, type:'finbail', opts:{} },
     photos:[], suivi: structuredClone(SUIVI0) };
   return d;
@@ -245,7 +245,7 @@ function calc(d){
   const hDeb = (volEvac + extraVol) * S.rythmeM3 * (1+access);
   const hNet = d.surface * S.rythmeM2 * saleCoef * travauxCoef + (g.baies||0) * S.baie + proOptH;
   const hLourd = (g.objetsLourds||0) * S.objetLourd;
-  const hSup = (S.heuresSup[f]||[0,0,0,0])[i] + (o.livraison && f!=='T' ? 2 : 0);
+  const hSup = (S.heuresSup[f]||[0,0,0,0])[i] + (o.livraison && f!=='T' ? 2 : 0) + (o.installationDemi && f==='L' ? 4 : 0);
   const hEquipe = hDeb + hNet + hLourd + hSup;
   const jours = Math.max(1, Math.ceil(hEquipe / 14));
   const nv = d.nouveau, avecNouv = nv && f==='T' && (nv.km>0);
@@ -274,7 +274,8 @@ function calc(d){
     if(o.residence){ ttc += S.residence; lignes.push(['Recherche de résidence', S.residence]); }
     if(o.box){ const v = f==='L' ? S.box : 0; ttc += v; lignes.push([f==='L' ? 'Box de stockage : recherche, contrat et coordination avec le déménageur *' : 'Box de stockage : recherche, contrat et coordination avec le déménageur * (compris)', v]); }
     if(o.livraison && f!=='T'){ ttc += S.livraison; lignes.push([f==='S' ? "Livraison d'objets chez un héritier, organisée avec un déménageur *" : 'Livraison de quelques meubles chez un proche, organisée avec un déménageur *', S.livraison]); }
-    if(o.gardiennage>0){ const v = o.gardiennage*S.gardiennage; ttc += v; lignes.push([`Gardiennage (voir conditions), ${o.gardiennage} mois`, v]); }
+    if(o.installationDemi && f==='L'){ const v = S.installationDemi ?? DEFAULTS.installationDemi; ttc += v; lignes.push([LIB_INSTALLATION, v]); }
+    if(o.gardiennage>0){ const v = o.gardiennage*S.gardiennage; ttc += v; lignes.push([`Gardiennage, ${o.gardiennage} mois`, v]); }
     if(o.videMaison>0){ ttc += o.videMaison; lignes.push(['Vide-maison', o.videMaison]); }
     if(d.urgence){ const u = ttc*S.urgence/100; ttc += u; lignes.push([`Urgence +${S.urgence} %`, u]); }
     if(o.horsDepJours>0){ const v = o.horsDepJours*S.horsDep; ttc += v; lignes.push([`Hors département ${o.horsDepJours} j`, v]); }
@@ -432,7 +433,10 @@ function renderDossier(){
     <label class="row" style="flex-direction:row;color:var(--ink);font-size:15px"><input type="checkbox" data-f="options.residence" ${d.options.residence?'checked':''} style="width:auto"> Recherche de résidence (${eur(S.residence)})</label>
     <label class="row" style="flex-direction:row;color:var(--ink);font-size:15px"><input type="checkbox" data-f="options.box" ${d.options.box?'checked':''} style="width:auto"> Box de stockage (${d.formule==='L' ? eur(S.box) : 'compris'})</label>
     ${d.formule!=='T' ? `<label class="row" style="flex-direction:row;color:var(--ink);font-size:15px"><input type="checkbox" data-f="options.livraison" ${d.options.livraison?'checked':''} style="width:auto"> ${d.formule==='S' ? "Livraison d'objets chez un héritier" : 'Livraison de quelques meubles chez un proche'} (${eur(S.livraison)})</label>`:''}
+    ${d.formule==='L' ? `<label class="row" style="flex-direction:row;color:var(--ink);font-size:15px"><input type="checkbox" data-f="options.installationDemi" ${d.options.installationDemi?'checked':''} style="width:auto"> ${LIB_INSTALLATION} (${eur(S.installationDemi ?? DEFAULTS.installationDemi)})</label>`:''}
     ${stepper('options.gardiennage','Gardiennage (mois)',d.options.gardiennage,1)}
+    <label class="row" style="flex-direction:row;color:var(--ink);font-size:15px"><input type="checkbox" data-f="options.reportSolde" ${d.options.reportSolde?'checked':''} style="width:auto"> Report du solde (CGV, article 5 bis)</label>
+    ${d.options.reportSolde ? `<div class="suggest" style="font-size:13px">${reportPossible(d, calc(d)) ? `Solde de ${eur(calc(d).ttc*0.6)} réglé par le notaire lors de la vente ou de la succession, au plus tard 3 mois après la fin de la prestation, sans frais. Ordre de paiement irrévocable au notaire, coché par le client à la signature.` : `Solde de ${eur(calc(d).ttc*0.6)} : au-delà de ${eur(S.reportMax ?? DEFAULTS.reportMax)} TTC, le report n'est pas possible. Il ne sera pas imprimé sur le devis.`}</div>` : ''}
     <label>Vide-maison, montant TTC<input type="number" inputmode="decimal" min="0" data-f="options.videMaison" value="${d.options.videMaison}"></label>
     ${stepper('options.horsDepJours','Jours hors département',d.options.horsDepJours,1)}
   </div>`:''}
@@ -580,7 +584,7 @@ function openSignature(d){
     <p class="small muted" style="margin:0">${esc(FORM[d.formule])} · ${esc(TAILLES[d.taille])} · total ${d.formule==='P'&&d.client==='agence'?'HT':'TTC'} <b style="color:var(--ink)">${eur(c.ttc)}</b></p>
     <label>Nom du signataire<input id="sg-nom" value="${esc(d.contact.nom)}" autocomplete="name"></label>
     ${estConso(d) ? `<div class="suggest" style="font-size:13px;line-height:1.5">${esc(infoRetractation(d, {...DEFAULTS.soc, ...(S.soc||{})}, c.ttc*0.4))}</div>` : ''}
-    ${casesDevis(d).map(k => `<label class="row" style="flex-direction:row;align-items:flex-start;gap:10px;color:var(--ink);font-size:14px;line-height:1.45"><input type="checkbox" data-case="${k}" style="width:auto;margin-top:3px"> <span>${esc(CASES[k](d))}${k==='acceptation' ? ' <b>(obligatoire)</b>' : k==='photos' ? ' <span class="muted">(facultatif)</span>' : ''}</span></label>${k==='succession' ? `<label>Notaire chargé de la succession<input id="sg-notaire" value="${esc(d.notaire||'')}" placeholder="Nom, étude, commune"></label>` : ''}`).join('')}
+    ${casesDevis(d).map(k => `<label class="row" style="flex-direction:row;align-items:flex-start;gap:10px;color:var(--ink);font-size:14px;line-height:1.45"><input type="checkbox" data-case="${k}" style="width:auto;margin-top:3px"> <span>${esc(CASES[k](d))}${k==='acceptation' ? ' <b>(obligatoire)</b>' : k==='photos' ? ' <span class="muted">(facultatif)</span>' : ''}</span></label>${(k==='succession' || (k==='report' && d.formule!=='S')) ? `<label>${k==='succession' ? 'Notaire chargé de la succession' : 'Notaire chargé de la vente'}<input id="sg-notaire" value="${esc(d.notaire||'')}" placeholder="Nom, étude, commune"></label>` : ''}`).join('')}
     <canvas class="pad" id="sg-pad" aria-label="Zone de signature"></canvas>
     <div class="row"><button class="btn ghost" id="sg-clear" style="flex:1">Effacer</button><button class="btn ghost" id="sg-cancel" style="flex:1">Annuler</button><button class="btn" id="sg-save" style="flex:2">Valider la signature</button></div></div>`;
   document.body.appendChild(m);
@@ -598,6 +602,7 @@ function openSignature(d){
     if(!drawn){ showToast('Le client doit signer dans le cadre.'); return; }
     const coche = k => !!$(`[data-case="${k}"]`, m)?.checked;
     if(!coche('acceptation')){ showToast('Le client doit cocher la case d\'acceptation du devis.'); return; }
+    if(casesDevis(d).includes('report') && coche('report') && !$('#sg-notaire', m)?.value.trim()){ showToast('Indiquez le notaire chargé de la vente ou de la succession.'); return; }
     const out = document.createElement('canvas'); out.width = 480; out.height = Math.round(480*cv.height/cv.width);
     const o = out.getContext('2d'); o.fillStyle='#fff'; o.fillRect(0,0,out.width,out.height); o.drawImage(cv,0,0,out.width,out.height);
     const cases = {}; casesDevis(d).forEach(k => cases[k] = coche(k));
@@ -704,10 +709,21 @@ const CASES = {
     : "J'accepte le présent devis et les conditions générales de vente qui m'ont été remises.",
   demarrage: () => "Je demande expressément que les prestations commencent avant la fin du délai de rétractation de quatorze jours. Je reconnais que si je me rétracte ensuite, je devrai payer la part des prestations déjà réalisées, proportionnellement au prix total.",
   succession: () => "Je déclare agir avec l'accord de l'ensemble des héritiers, ou en vertu d'un mandat, et je communique les coordonnées du notaire chargé de la succession :",
+  report: () => "Je demande le report du solde selon l'article 5 bis des conditions générales et je m'engage à remettre un ordre de paiement irrévocable au notaire chargé de la vente ou de la succession :",
   photos: () => "J'accepte que des photos du logement, sans personne ni élément permettant de m'identifier, soient utilisées sur le site et les réseaux de Maison Fil Bleu. Je peux retirer cet accord à tout moment.",
 };
 /** Cases proposées au client selon le devis : Pro (professionnel) = acceptation seule ; Succession = case Succession en plus. */
-function casesDevis(d){ if(!estConso(d)) return ['acceptation']; return d.formule==='S' ? ['acceptation','demarrage','succession','photos'] : ['acceptation','demarrage','photos']; }
+function casesDevis(d){
+  if(!estConso(d)) return ['acceptation'];
+  const l = d.formule==='S' ? ['acceptation','demarrage','succession'] : ['acceptation','demarrage'];
+  if(d.formule!=='P' && reportPossible(d, calc(d))) l.push('report');
+  return [...l, 'photos'];
+}
+/** Option « Report du solde » (CGV, article 5 bis) : familles seulement, solde de 3 000 € TTC au plus. */
+function reportPossible(d, c){ return d.formule!=='P' && !!d.options?.reportSolde && c.ttc*0.6 <= (S.reportMax ?? DEFAULTS.reportMax); }
+/** Report imprimé comme accordé : option possible et, une fois le devis signé, case « report » cochée par le client. */
+function reportApplique(d, c){ return reportPossible(d, c) && (!d.signature || !!d.signature.cases?.report); }
+const LIB_INSTALLATION = 'Installation dans la nouvelle chambre ou le nouveau logement (une demi-journée)';
 function infoRetractation(d, so, montant){
   return `Vous disposez d'un délai de quatorze jours à compter du lendemain de la signature pour vous rétracter, sans motif, au moyen du formulaire joint ou de toute déclaration claire envoyée à ${so.email}, ${so.adresse}. Aucun paiement ne vous sera demandé avant l'expiration d'un délai de sept jours à compter de la signature.` + (d.formule!=='P' ? ` L'acompte de 40 %, soit ${eur(montant)}, sera ${txtAcompte(d)}.` : '');
 }
@@ -721,6 +737,7 @@ function conditionsOptions(d){
   if(o.gardiennage>0) l.push("Gardiennage : 1 visite du logement par mois (aération, relevé du courrier, contrôle visuel). Autres prestations à la demande. Pas de surveillance permanente.");
   if(o.livraison && f!=='T') l.push(`Livraison ${f==='S' ? 'chez un héritier' : 'chez un proche'} : organisation avec un déménageur indépendant et présence au chargement. Transport facturé et réglé directement par le client au déménageur. Sans installation.`);
   if(o.box) l.push("Box de stockage : recherche, aide à la souscription du contrat au nom du client, coordination avec le déménageur. Location payée par le client au loueur.");
+  if(o.installationDemi && f==='L') l.push("Installation : une demi-journée sur place le jour de l'arrivée, en lien avec le déménageur : meubles placés, lit fait, photos accrochées.");
   if(f==='S') l.push("Possibilité de règlement sur les fonds de la succession avec l'accord de tous les héritiers et du notaire.");
   l.push("* Travaux des artisans et transport par le déménageur, à la demande du client : réglés directement par le client, non compris dans le forfait. Non compris : les déchets dangereux.");
   return l;
@@ -776,7 +793,9 @@ async function devisPdf(d){
     `Déchets évacués en filières agréées, justificatifs sur demande. Non compris : déchets dangereux (amiante, produits chimiques), travaux des artisans *.`,
     conso ? infoRetractation(d, so, 0) : `Ce devis est complété par les conditions générales professionnelles jointes. Le client professionnel ne bénéficie pas du droit de rétractation des consommateurs.`
   ] : [
-    `Acompte de 40 % (${eur(c.ttc*0.4)}), ${txtAcompte(d)}. Solde (${eur(c.ttc*0.6)}) à la remise des clés. Des facilités de paiement sont possibles, à convenir par écrit.`,
+    reportApplique(d, c)
+      ? `Acompte de 40 % (${eur(c.ttc*0.4)}), ${txtAcompte(d)}. Solde (${eur(c.ttc*0.6)}) reporté selon l'article 5 bis des conditions générales : réglé par le notaire chargé de la vente ou de la succession (${d.signature?.notaire || d.notaire || '[notaire]'}), sur ordre de paiement irrévocable du client, au plus tard 3 mois après la fin de la prestation, même si la vente n'a pas eu lieu. Sans frais.`
+      : `Acompte de 40 % (${eur(c.ttc*0.4)}), ${txtAcompte(d)}. Solde (${eur(c.ttc*0.6)}) à la remise des clés. Des facilités de paiement sont possibles, à convenir par écrit.`,
     `Le déménageur éventuel est choisi avec vous sur devis comparés et réglé directement par vous.`,
     infoRetractation(d, so, c.ttc*0.4),
     `Ce devis est complété par les conditions générales de vente jointes. Médiateur de la consommation : ${so.mediateur}.`
@@ -789,7 +808,7 @@ async function devisPdf(d){
   P.text(L, y, 'VOTRE ACCORD', {size:7.5, color:blue}); y += 13;
   const cs = d.signature?.cases || {};
   casesDevis(d).forEach(k => {
-    const lib = CASES[k](d) + (k==='succession' ? ' ' + (d.signature?.notaire || d.notaire || '[notaire]') : '') + (k==='photos' ? ' (facultatif)' : '');
+    const lib = CASES[k](d) + ((k==='succession' || k==='report') ? ' ' + (d.signature?.notaire || d.notaire || '[notaire]') : '') + (k==='photos' ? ' (facultatif)' : '');
     const ls = wrap(lib, 8.5, W-22);
     if(y + ls.length*11 > 770){ P.addPage(); y = 60; }
     P.box(L, y-8, 9, 9, ink); if(cs[k]) P.text(L+1.6, y, 'X', {size:8, bold:true});
@@ -1121,9 +1140,9 @@ function renderSettings(){
   const tf = (k,l) => `<label>${esc(l)}<input data-st="${k}" value="${esc(so[k])}"></label>`;
   app.innerHTML = header('Réglages') + `<h1>Réglages</h1>
   <div class="card"><h3>Société (mentions du devis PDF)</h3><label>Commune du siège (point de départ des distances)<select data-st="siegeVille">${Object.keys(COORDS).filter(k=>COORDS[k]).map(v=>`<option ${v===so.siegeVille?'selected':''}>${esc(v)}</option>`).join('')}</select></label>${tf('adresse','Adresse du siège')}<div class="grid2">${tf('siret','SIRET')}${tf('rcs','RCS')}${tf('tva','N° de TVA')}${tf('tel','Téléphone')}</div>${tf('email','E-mail')}${tf('mediateur','Médiateur de la consommation')}${tf('signataire','Signataire pour la société')}</div>
-  <div class="card"><h3>Prix TTC (1-2 p. / 3 p. / 4 p. / 5 p.+)</h3>${grid('grids.L','Libération')}${grid('grids.T','Transition')}${grid('grids.S','Succession')}
+  <div class="card"><h3>Prix TTC (1-2 p. / 3 p. / 4 p. / 5 p.+)</h3>${grid('grids.L','Clés en main')}${grid('grids.T','Nouveau départ')}${grid('grids.S','Succession')}
   <div class="grid2">${f('m3Sup','Volume en plus, €/m³ TTC','1')}${f('residence','Recherche de résidence','1')}${f('gardiennage','Gardiennage, €/mois','1')}${f('urgence','Urgence, %','1')}</div>
-  <div class="suggest">Ces prix (Libération, Transition, Succession, volume en plus, recherche de résidence, gardiennage, urgence) sont aussi ceux du site : simulateur, page Tarifs, pages des formules. Après une modification, mettez le site à jour.</div>
+  <div class="suggest">Ces prix (Clés en main, Nouveau départ, Succession, volume en plus, recherche de résidence, gardiennage, urgence) sont aussi ceux du site : simulateur, page Tarifs, pages des formules. Après une modification, mettez le site à jour.</div>
   <button class="btn" id="b-prix-site" type="button">Mettre à jour les prix du site</button></div>
   <div class="card"><h3>Fil Bleu Pro (HT)</h3>${grid('proNettoyage','Nettoyage seul (jusqu\'à 30 m² / 55 m² / 75 m² / 100 m²)')}<div class="grid2">${PRO_OPTS.map(([k,l,u])=>`<label>${esc(l)}, € HT/${u}<input type="number" inputmode="decimal" step="0.5" data-s="proOpts.${k}.0" value="${(S.proOpts?.[k]||DEFAULTS.proOpts[k])[0]}"></label>`).join('')}</div><div class="grid2">${f('proForfait','Forfait d\'intervention','1')}${f('proM3','Débarras au-delà du forfait, €/m³','1')}${f('proM3Inclus','m³ compris dans le forfait','1')}</div></div>
   <div class="card"><h3>Coûts</h3><div class="grid2">${f('interim','Intérim, €/h')}${f('porteur','Vos heures, €/h chargé')}${f('decheterie','Déchèterie, €/m³')}${f('camionJour','Camion, €/jour','1')}${f('kmCout','Trajet, €/km')}${f('consommables','Consommables par chantier','1')}</div></div>

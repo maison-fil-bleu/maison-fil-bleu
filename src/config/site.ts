@@ -17,6 +17,7 @@ export const SITE = {
   codePostal: '13170',
   ville: 'Les Pennes-Mirabeau',
   siret: '[n°]',
+  rcs: '[ville] [n°]',
   tva: '[n°]',
   rcPro: '[assureur, contrat]',
   recepisseDechets: '[...]',
@@ -32,8 +33,8 @@ export const lienTel = (num: string) =>
 
 /** Les trois formules (menu, pied de page, données structurées). */
 export const FORMULES = [
-  { slug: 'liberation', nom: 'Libération', ligne: 'Vous quittez un logement' },
-  { slug: 'transition', nom: 'Transition', ligne: 'Vous ou un proche déménagez' },
+  { slug: 'cles-en-main', nom: 'Clés en main', ligne: 'Vous quittez un logement' },
+  { slug: 'nouveau-depart', nom: 'Nouveau départ', ligne: 'Vous ou un proche déménagez' },
   { slug: 'succession', nom: 'Succession', ligne: 'Un proche vous a quittés' },
 ] as const;
 

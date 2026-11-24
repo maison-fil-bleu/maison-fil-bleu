@@ -6,39 +6,64 @@ const meta = META['/notaires'];
 ---
 <PagePartenaire cle="notaires" title={meta.title} description={meta.description}
   surtitre="Pour les études notariales"
-  titre="Accompagner les familles," titreItalique="le logement et l'esprit libres."
+  titre="Accompagnement des familles," titreItalique="du premier tri à la remise des clés."
   sousTitre="Vente de la maison de famille, départ en résidence, succession : nous prenons en charge le logement et ses occupants, en lien avec votre étude."
   structure="Votre étude" echeance="Date de l'acte, de l'état des lieux…" pdf="Maison-Fil-Bleu-plaquette-notaires.pdf"
-  docs={['plaquetteNotaires', 'ficheLNotaires', 'ficheTNotaires', 'ficheSNotaires']}>
+  docs={['plaquetteNotaires', 'ficheLNotaires', 'ficheTNotaires', 'ficheSNotaires']}
+  pictos={['Discrétion', 'Traçabilité', 'Vos clients décident']}
+  cartes={[
+    { ligne: 'Ils vendent ou quittent une location', texte: "Tri, débarras, dons et nettoyage : le logement est libéré dans les délais, prêt pour la vente ou l'état des lieux." },
+    { ligne: 'Ils partent en résidence', texte: 'Tri accompagné, coordination du déménagement, installation : la personne retrouve ses repères dès le premier soir.' },
+    { ligne: "Ils héritent d'un logement", texte: 'Un interlocuteur pour tous les héritiers : tri, papiers, débarras et nettoyage, réglable sur les fonds de la succession.' },
+  ]}
+  quiSommesNous="Nous connaissons vos contraintes et vos délais : nous travaillons à votre rythme, dans votre cadre, et vos clients restent les décideurs."
+  engagements={[
+    ['Discrétion', "Aucune information transmise sans l'accord du client."],
+    ['Traçabilité', 'Listes écrites et justificatifs.'],
+    ['Libre choix', "Négociation par l'étude, agence de leur choix ou vente seuls."],
+    ['Un planning clair', 'Date fixée ensemble au devis, selon vos échéances.'],
+  ]}
+  confierTexte="Avec l'accord de votre client, transmettez-nous ses coordonnées : nous rappelons la famille sous 24 h et organisons le diagnostic offert, à son rythme.">
 
   <section class="sec pt-sec">
     <div class="w">
       <span class="lbl">Le cadre de travail</span>
       <h2 class="h2">Ce que votre étude y gagne.</h2>
       <div class="pt-cadre">
-        <div><h3>Un logement libéré à temps</h3><p class="p">Planning calé sur la date de l'acte.</p></div>
+        <div><h3>Un logement libéré à temps</h3><p class="p">Planning organisé selon la date de l'acte.</p></div>
         <div><h3>Un seul interlocuteur</h3><p class="p">Pour vos clients et leurs proches, même éloignés.</p></div>
         <div><h3>Un suivi en ligne</h3><p class="p">Accessible à l'étude si le client le souhaite.</p></div>
-        <div><h3>Une mise en vente facilitée</h3><p class="p">Bien vidé, nettoyé et prêt, confié à l'agence ou à l'étude choisie par vos clients. S'ils le souhaitent, nous les accompagnons au choix de l'agence ou de l'étude, en toute neutralité.</p></div>
+        <div><h3>Une mise en vente facilitée</h3><p class="p">Bien vidé, nettoyé et prêt, confié à l'agence ou à l'étude choisie par vos clients.</p></div>
       </div>
 
       <h2 class="h2" style="margin-top:72px">En cas de succession.</h2>
       <div class="pt-cadre">
-        <div><h3>Votre accord d'abord</h3><p class="p">Rien ne démarre sans votre accord. Un e-mail suffit.</p></div>
+        <div><h3>Votre accord</h3><p class="p">Le chantier ne démarre qu'après votre accord. Un e-mail suffit.</p></div>
         <div><h3>Tous les héritiers signent</h3><p class="p">Ou l'un d'eux, muni d'un mandat écrit des autres.</p></div>
-        <div><h3>Les choix consignés par écrit</h3><p class="p">Ce que chacun souhaite garder est noté ; en cas de désaccord, rien n'est donné ni évacué.</p></div>
-        <div><h3>Un règlement simplifié</h3><p class="p">Avec l'accord de tous les héritiers.</p></div>
+        <div><h3>Les choix de chacun, par écrit</h3><p class="p">Chacun indique ce qu'il garde ; en cas de désaccord, rien n'est donné ni évacué.</p></div>
+        <div><h3>Un règlement simplifié</h3><p class="p">Avec l'accord de tous les héritiers, l'étude règle sur les fonds de la succession, en deux temps.</p></div>
       </div>
       <div class="pt-encart">
         <h3>Modalités de paiement</h3>
-        <p class="p"><strong>Acompte</strong> au lancement, réglé par les héritiers ou, avec l'accord de tous, par l'étude sur la succession. <strong>Solde</strong> à la vente du bien ou à la clôture de la succession, selon ce qui est convenu. <strong>Facilités de paiement possibles.</strong></p>
+        <p class="p"><strong>Acompte</strong> au lancement, réglé par les héritiers ou, avec l'accord de tous, par l'étude sur la succession. <strong>Solde</strong> à la vente du bien ou à la clôture de la succession, selon ce qui est convenu avec vous. <strong>Facilités de paiement possibles</strong>, à voir ensemble lors du diagnostic offert.</p>
       </div>
       <p class="p pt-note">Les héritiers sont informés que donner ou vendre des biens peut valoir acceptation de la succession : en cas de doute, ils vous consultent avant.</p>
+
+      <div class="pt-encart">
+        <h3>Ce que nous remettons</h3>
+        <ul class="pt-liste">
+          <li>Les choix de chacun consignés par écrit</li>
+          <li>Liste écrite de ce qui est conservé, donné ou évacué</li>
+          <li>Papiers et photos de famille triés et remis</li>
+          <li>Justificatifs de traitement des déchets</li>
+          <li>Compte rendu photo à la remise des clés</li>
+        </ul>
+      </div>
 
       <div class="pt-encart blanc" id="suivre">
         <span class="lbl">Suivre un dossier</span>
         <h3>Le suivi en ligne de vos clients.</h3>
-        <p class="p">Étapes, photos et documents du dossier, dans l'espace client Maison Fil Bleu. Accessible à l'étude lorsque le client en a donné l'accord.</p>
+        <p class="p">Étapes, photos et documents du dossier, dans l'espace client de la famille. Accessible à l'étude lorsque le client en a donné l'accord.</p>
         <a class="tl" href="/espace-client" style="align-self:flex-start">Accéder à l'espace de suivi →</a>
       </div>
     </div>

@@ -23,14 +23,19 @@ interface Props {
   echeance: string;           // exemple pour le champ « Échéance »
   pdf: string;                // nom du fichier de la plaquette dans /docs/ (bouton du haut)
   docs: CleDoc[];             // documents proposés (plaquette + fiches de la bonne version)
+  pictos: [string, string, string];               // trois mots-clés sous l'accroche (plaquette, page 1)
+  cartes?: { ligne?: string; texte: string }[];     // textes des trois formules propres au partenaire
+  quiSommesNous: string;                           // second paragraphe du bloc « Quinze ans d'immobilier marseillais »
+  engagements: [string, string][];                 // « Nos engagements » (plaquette, page 4)
+  confierTexte?: string;                           // texte d'introduction du formulaire
 }
-const { cle, title, description, surtitre, titre, titreItalique, sousTitre, structure, echeance, pdf, docs } = Astro.props;
+const { cle, title, description, surtitre, titre, titreItalique, sousTitre, structure, echeance, pdf, docs, pictos, cartes, quiSommesNous, engagements, confierTexte } = Astro.props;
 const tel = lienTel(SITE.telephone);
 const formules = [
-  { slug: 'liberation', nom: 'Libération', ligne: 'Vous quittez un logement', texte: 'Tri accompagné, débarras, dons et nettoyage : le logement est rendu vide, propre, clés en main.', prix: FP.L.prix[0] },
-  { slug: 'transition', nom: 'Transition', ligne: 'Vous ou un proche déménagez', texte: "Tout ce que comprend la Libération, plus le déménagement coordonné et l'installation du nouveau logement.", prix: FP.T.prix[0] },
-  { slug: 'succession', nom: 'Succession', ligne: 'Un proche vous a quittés', texte: 'Un seul interlocuteur pour tous les héritiers : tri, papiers, débarras et nettoyage, en lien avec le notaire.', prix: FP.S.prix[0] },
-];
+  { slug: 'cles-en-main', nom: 'Clés en main', ligne: 'Vous quittez un logement', texte: 'Tri avec la famille, débarras, dons, nettoyage, remise des clés.', prix: FP.L.prix[0] },
+  { slug: 'nouveau-depart', nom: 'Nouveau départ', ligne: 'Vous ou un proche déménagez', texte: "La formule Clés en main, plus la coordination du déménagement et l'installation du nouveau logement.", prix: FP.T.prix[0] },
+  { slug: 'succession', nom: 'Succession', ligne: 'Un proche vous a quittés', texte: 'La formule Clés en main, plus un interlocuteur pour tous les héritiers, les papiers et le lien avec le notaire.', prix: FP.S.prix[0] },
+].map((f, i) => (cartes?.[i] ? { ...f, ...cartes[i] } : f));
 const etapes = [
   ['Diagnostic offert', 'Sur place, avec la personne et ses proches.'],
   ['Un devis clair', 'Forfaitaire, signé directement avec le client.'],
@@ -44,6 +49,7 @@ const etapes = [
       <span class="lbl lbl-laiton">{surtitre}</span>
       <h1 class="h1">{titre} <em>{titreItalique}</em></h1>
       <p class="lead">{sousTitre}</p>
+      <ul class="pt-pictos">{pictos.map((t) => <li>{t}</li>)}</ul>
       <div class="pt-cta">
         <a class="btn" href="#confier">Confier un dossier</a>
         <a class="btn2" href={`/docs/${pdf}`} download>La plaquette en PDF</a>
@@ -85,12 +91,31 @@ const etapes = [
 
   <slot />
 
+  <section class="sec pt-sec pt-sable">
+    <div class="w pt-qui">
+      <div>
+        <span class="lbl">Qui sommes-nous</span>
+        <h2 class="h2">Quinze ans d'immobilier marseillais.</h2>
+      </div>
+      <div class="pt-qui-txt">
+        <p class="p">Après quinze ans d'immobilier à Marseille, nous avons créé Maison Fil Bleu pour accompagner chaque changement de logement : une vente, un départ en résidence, une succession. Un interlocuteur unique suit chaque dossier, du diagnostic à la remise des clés, et chaque intervention est supervisée sur place.</p>
+        <p class="p">{quiSommesNous}</p>
+      </div>
+    </div>
+    <div class="w">
+      <span class="lbl" style="display:block;margin-top:64px">Nos engagements</span>
+      <div class="pt-engagements">
+        {engagements.map(([t, d]) => <div><h3>{t}</h3><p class="p">{d}</p></div>)}
+      </div>
+    </div>
+  </section>
+
   <section class="sec pt-sec" id="confier">
     <div class="w pt-form-w">
       <div class="pt-form-intro">
         <span class="lbl">Confier un dossier</span>
         <h2 class="h2">Un appel suffit, ou ce formulaire.</h2>
-        <p class="p">Avec l'accord de la personne concernée, transmettez-nous ses coordonnées : nous rappelons la famille sous 24 h, organisons le diagnostic offert à son rythme et vous tenons informé.</p>
+        <p class="p">{confierTexte ?? "Avec l'accord de la personne concernée, transmettez-nous ses coordonnées : nous rappelons la famille sous 24 h, organisons le diagnostic offert à son rythme et vous tenons informé."}</p>
         <div class="pt-contact">
           <span class="lbl">Contact direct</span>
           {tel ? <a class="pt-tel" href={tel}>{SITE.telephone}</a> : <span class="pt-tel">{SITE.telephone}</span>}
@@ -148,6 +173,14 @@ const etapes = [
   .lbl-laiton{color:var(--laiton-texte)}
   .pt-cta{display:flex;flex-wrap:wrap;gap:14px;margin-top:6px}
   .pt-zone{font-size:14px;color:var(--gris)}
+  .pt-pictos{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:10px 28px}
+  .pt-pictos li{position:relative;padding-left:22px;font-size:13px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--nuit)}
+  .pt-pictos li::before{content:'';position:absolute;left:0;top:50%;width:12px;height:1px;background:var(--laiton)}
+  .pt-qui{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:56px;align-items:start}
+  .pt-qui-txt{display:flex;flex-direction:column;gap:16px}
+  .pt-engagements{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:22px 32px;margin-top:20px}
+  .pt-engagements > div{border-top:1px solid var(--filet);padding-top:18px;display:flex;flex-direction:column;gap:8px}
+  .pt-engagements h3{font-family:var(--serif);font-weight:500;font-size:24px;color:var(--nuit);margin:0}
   .pt-sec .h2{margin:12px 0 0}
   .pt-sable{background:var(--sable)}
   .pt-formules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:40px}
@@ -200,7 +233,9 @@ const etapes = [
   .chip:has(input:focus-visible){outline:2px solid var(--bleu);outline-offset:2px}
   @media (max-width:960px){
     .pt-hero-w{padding-top:56px;padding-bottom:56px}
-    .pt-formules,.pt-cadre,.pt-form-w{grid-template-columns:minmax(0,1fr)}
+    .pt-formules,.pt-cadre,.pt-form-w,.pt-qui{grid-template-columns:minmax(0,1fr)}
+    .pt-qui{gap:24px}
+    .pt-engagements{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
     .pt-frise{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px 0}
     .pt-frise li:nth-child(3){border-left:0}
     .pt-form{grid-template-columns:minmax(0,1fr);padding:28px 22px;gap:24px}

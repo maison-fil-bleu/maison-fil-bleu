@@ -1,6 +1,7 @@
 ---
-import { FORMULES_PRIX as FP, OPTIONS as OP, montant, VENTE_NEUTRE, VENTE_COMPRIS } from '../config/tarifs';
+import { FORMULES_PRIX as FP, OPTIONS as OP, montant, VENTE_NEUTRE, VENTE_COMPRIS, TEXTES_FORMULE, NOTE_OPTIONS_S } from '../config/tarifs';
 import OptionsFormule from '../components/OptionsFormule.astro';
+import PrixFormule from '../components/PrixFormule.astro';
 import { doc } from '../config/documents';
 /** Maquette : Formule-Succession.dc.html · adresse : /succession */
 import Famille from '../layouts/Famille.astro';
@@ -17,10 +18,11 @@ const meta = META['/succession'];
 <div class="w" style="position: relative; padding-top: 140px; padding-bottom: 128px">
 <div style="max-width: 760px; display: flex; flex-direction: column; gap: 28px">
 <span class="lbl">Accompagnement · Succession</span>
-<span style="font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-size: 26px; color: #3D5A80; margin-top: -12px">Quand un proche vous a quittés.</span>
+<span style="font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-size: 26px; color: #3D5A80; margin-top: -12px">Un proche vous a quittés</span>
 <h1 class="h1" style="color: #15233A">Le logement d'un proche, pris en charge avec délicatesse.</h1>
-<p class="lead" style="color: #4A4F58">Le logement d'un proche, c'est une maison pleine de souvenirs, des papiers, des décisions à prendre, souvent à plusieurs et à distance. Nous prenons le relais sur tout ce qui pèse, en lien avec le notaire. Chaque héritier garde sa place, et rien ne démarre sans votre accord.</p>
-<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 28px"><a class="btn" href="/contact">Demander un diagnostic offert</a><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 30px; color: #3D5A80">dès {montant(FP.S.prix[0])} TTC</span></div>
+<p class="lead" style="color: #4A4F58">Le logement d'un proche, ce sont des souvenirs, des papiers, des décisions à prendre, souvent à plusieurs et à distance. Nous coordonnons chaque étape, en lien avec le notaire. Chaque héritier garde sa place, et rien ne part sans votre accord écrit.</p>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 28px"><a class="btn" href="/contact">Demander un diagnostic offert</a><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 30px; color: #3D5A80">à partir de {montant(FP.S.prix[0])} TTC</span></div>
+<span class="p" style="font-size: 15px; color: #4A4F58; margin-top: -12px">{TEXTES_FORMULE.S.compris}</span>
 </div>
 </div>
 </Hero>
@@ -63,7 +65,7 @@ const meta = META['/succession'];
 <p class="p">Un seul interlocuteur pour tous les héritiers. Chacun reçoit les mêmes informations, au même moment, ce qui évite bien des malentendus. Besoin de plus de temps ? Nous adaptons l'offre, avec un devis complémentaire validé au préalable.</p>
 </div>
 <div style="display: flex; flex-direction: column; border-top: 1px solid #CFC5B4">
-<div class="row"><span>Tout le contenu de la formule Libération (débarras, dons, nettoyage, remise en état, démarches, etc., voir la formule Libération)</span></div>
+<div class="row"><span>Tout le contenu de la formule Clés en main (débarras, dons, nettoyage, remise en état, démarches, etc., voir la formule Clés en main)</span></div>
 <div class="row"><span>Une ou plusieurs journées dédiées au tri, selon la taille du logement : chaque héritier choisit ce qu'il garde, le reste est donné ou part</span></div>
 <div class="row"><span>Papiers et photos de famille classés et remis</span></div>
 <div class="row"><span>Lien avec le notaire tout au long du dossier</span></div>
@@ -78,7 +80,8 @@ const meta = META['/succession'];
 <div style="display: flex; flex-direction: column; gap: 22px">
 <span class="lbl">Tarifs</span>
 <h2 class="h2">Un forfait selon la taille du logement</h2>
-<p class="p">Le forfait comprend tout l'accompagnement décrit sur cette page. Prix de départ pour un logement meublé standard : c'est une estimation. Le prix exact, parfois plus bas, parfois plus haut, est fixé après le diagnostic offert, selon le volume et l'accès. Le contrat est signé par tous les héritiers, ou par l'un d'eux avec leur accord écrit. Avec l'accord de tous les héritiers et du notaire, la prestation peut être réglée sur les fonds de la succession. Facilités de paiement possibles.</p>
+<p class="p">Le forfait comprend tout l'accompagnement décrit sur cette page. Prix de départ pour un logement meublé standard. Le prix exact est fixé après le diagnostic, selon le volume et l'accès. Le devis est signé par tous les héritiers, ou par l'un d'eux avec leur accord écrit.</p>
+<PrixFormule cle="S" />
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 26px; margin-top: 6px"><a class="btn" href="/estimation?formule=succession">Estimer mon accompagnement</a><a class="tl" href="/tarifs">Tous les tarifs et options</a><a class="tl" href={doc('ficheS').href} download>Télécharger la fiche ({doc('ficheS').info})</a><a class="tl" href={doc('fsm').href} download>Faire soi-même ou nous confier ?</a></div>
 </div>
 <div style="display: flex; flex-direction: column; border-top: 1px solid #15233A">
@@ -93,14 +96,14 @@ const meta = META['/succession'];
 
 <OptionsFormule
   options={[
-    ['Gardiennage', `${montant(OP.gardiennageParMois)} / mois`, 'voir conditions'],
-    [`${OP.installationProche.S!.libelle}, organisée avec un déménageur *`, montant(OP.installationProche.S!.prix), 'voir conditions'],
+    ['Gardiennage', `${montant(OP.gardiennageParMois)} / mois`],
+    [`${OP.installationProche.S!.libelle}, organisée avec un déménageur *`, montant(OP.installationProche.S!.prix)],
     ['Caves, garages, greniers', `${montant(OP.cavesParM3)} / m³`],
     ['Travaux de remise en état par des artisans *', 'sur devis'],
     ['Hors Bouches-du-Rhône', 'sur devis'],
   ]}
-  note="* Travaux des artisans et transport par le déménageur, à la demande du client : réglés directement par le client, non compris dans le forfait. Non compris : les frais de notaire, les déchets dangereux. Conditions détaillées au devis."
-  encadre={{ titre: "Plus qu'un débarras", items: ['Un interlocuteur pour tous les héritiers, suivi en ligne', 'Les choix de chacun consignés par écrit', 'Papiers et souvenirs préservés, dons aux associations', 'En lien avec le notaire, tout au long du dossier', 'Nettoyage complet, logement prêt pour la suite', 'Remise en état coordonnée avec des artisans *'] }}
+  note={NOTE_OPTIONS_S}
+  encadre={{ titre: 'Pour tous les héritiers', items: ['Un seul interlocuteur, suivi en ligne', 'Les choix de chacun consignés par écrit', 'Papiers et souvenirs préservés, dons aux associations', 'En lien avec le notaire, tout au long du dossier', 'Nettoyage complet, logement prêt pour la suite', 'Remise en état coordonnée avec des artisans *'] }}
   lien={{ texte: 'Vous avez des questions ?', href: '/contact', lbl: 'Parlons-en →' }}
 />
 
@@ -114,17 +117,18 @@ const meta = META['/succession'];
 <section class="sec">
 <div class="w" style="max-width: 960px; display: flex; flex-direction: column; gap: 24px">
 <span class="lbl">Questions fréquentes</span>
-<h2 class="h2" style="margin-bottom: 12px">Vos questions sur la Succession</h2>
+<h2 class="h2" style="margin-bottom: 12px">Vos questions sur la formule Succession</h2>
 <details class="q" open><summary>Les héritiers vivent loin, est-ce un problème ?</summary><p class="p" style="margin-top: 12px">Non, c'est même fréquent. Le suivi en ligne et les comptes rendus permettent à chacun de suivre et de décider à distance.</p></details>
 <details class="q"><summary>Qui signe le contrat ?</summary><p class="p" style="margin-top: 12px">Tous les héritiers, ou l'un d'eux muni de leur accord écrit. Nous ne commençons rien sans cet accord.</p></details>
 <details class="q"><summary>Faut-il attendre la fin de la succession ?</summary><p class="p" style="margin-top: 12px">Pas forcément. Les choix de chacun peuvent souvent commencer avant, avec l'accord des héritiers. Nous travaillons en lien avec le notaire pour respecter chaque étape.</p></details>
 </div>
 </section>
 
+<div class="w"><p class="pf-signature">15 ans d'immobilier à Marseille · Un interlocuteur unique · Chaque intervention supervisée</p></div>
 <section style="border-top: 1px solid #DDD4C5">
 <div class="w sec" style="display: flex; flex-direction: column; align-items: center; gap: 26px; text-align: center">
 <h2 class="h2" style="max-width: 760px">Le logement d'un proche à libérer ?</h2>
-<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 14px"><a class="btn" href="/contact">Demander un diagnostic</a><a class="btn2" href="/liberation">Voir la formule Libération</a></div>
+<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 14px"><a class="btn" href="/contact">Demander un diagnostic</a><a class="btn2" href="/cles-en-main">Voir la formule Clés en main</a></div>
 </div>
 </section>
 </Famille>

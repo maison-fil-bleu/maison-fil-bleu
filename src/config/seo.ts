@@ -49,7 +49,6 @@ export const localBusinessFamille = () => ({
   address: ADRESSE,
   areaServed: ZONE,
   priceRange: '€€',
-  parentOrganization: { '@type': 'Organization', name: SITE.societe },
 });
 
 /** Fil Bleu Pro (pages professionnelles). */
@@ -67,17 +66,16 @@ export const localBusinessPro = () => ({
   email: connu(SITE.emailPro),
   address: ADRESSE,
   areaServed: ZONE,
-  parentOrganization: { '@type': 'Organization', name: SITE.societe },
 });
 
-const SLUGS: Record<CleFormule, string> = { L: '/liberation', T: '/transition', S: '/succession' };
+const SLUGS: Record<CleFormule, string> = { L: '/cles-en-main', T: '/nouveau-depart', S: '/succession' };
 const DESCRIPTIONS: Record<CleFormule, string> = {
   L: 'Vider, nettoyer et rendre un logement : tri accompagné, débarras en filières agréées, dons, nettoyage complet, compte rendu photo et remise des clés.',
-  T: "Libérer l'ancien logement et installer le nouveau : tri, déménagement coordonné, installation complète, démarches et suivi.",
+  T: "Libérer l'ancien logement et installer le nouveau : tri, coordination du déménagement, installation complète, démarches et suivi.",
   S: "Libérer le logement d'un proche qui nous a quittés : choix de chacun des héritiers, papiers de famille, lien avec le notaire, débarras, dons, nettoyage.",
 };
 
-/** Une formule (pages Libération, Transition, Succession). */
+/** Une formule (pages Clés en main, Nouveau départ, Succession). */
 export const service = (k: CleFormule) => {
   const F = FORMULES_PRIX[k];
   return {

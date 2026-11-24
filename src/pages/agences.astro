@@ -10,7 +10,20 @@ const meta = META['/agences'];
   titre="Le bien est prêt," titreItalique="votre vendeur aussi."
   sousTitre="Déménagement, tri, débarras, nettoyage : dès la prise de mandat, le bien de votre vendeur est vidé et nettoyé pour les photos et les visites. Vous gardez le mandat, nous nous occupons du reste."
   structure="Votre agence" echeance="Date du compromis, de l'acte…" pdf="Maison-Fil-Bleu-plaquette-agences.pdf"
-  docs={['plaquetteAgences', 'plaquetteFamillesAgences', 'ficheLAgences', 'ficheTAgences', 'ficheSAgences', 'plaquettePro']}>
+  docs={['plaquetteAgences', 'plaquetteFamillesAgences', 'ficheLAgences', 'ficheTAgences', 'ficheSAgences', 'plaquettePro']}
+  pictos={['Planning clair', "Photos pour l'annonce", "Aucun frais pour l'agence"]}
+  cartes={[
+    { ligne: 'Le logement est meublé, à vider', texte: 'Tri avec la famille, débarras, dons, nettoyage. Le bien est prêt à être photographié.' },
+    { ligne: 'Le vendeur déménage', texte: 'Vers plus petit, une résidence ou un EHPAD : coordination du déménagement, nouveau logement installé.' },
+    { ligne: "Le bien vient d'une succession", texte: 'Un interlocuteur pour tous les héritiers : tri, papiers, débarras, nettoyage, en lien avec le notaire.' },
+  ]}
+  quiSommesNous="Nous connaissons vos contraintes : nous nous adaptons à vos délais, à vos vendeurs et à vos mandats."
+  engagements={[
+    ['Vous êtes tenu informé', 'Suivi en ligne et compte rendu photo à la remise des clés.'],
+    ['Un planning clair', "Dès la prise de mandat et jusqu'à l'acte, urgence possible."],
+    ['Un cadre clair', 'Devis écrit, déchets traités en filières agréées.'],
+    ['Des prix clairs', 'Une grille publique, un devis forfaitaire.'],
+  ]}>
 
   <section class="sec pt-sec">
     <div class="w">
@@ -31,12 +44,16 @@ const meta = META['/agences'];
       </div>
       <p class="p" style="margin-top:28px">Devis forfaitaire après diagnostic offert, signé directement avec le client. Rien à gérer pour l'agence. <span style="font-size:14px;color:#5B606A">* Travaux des artisans, à la demande du client : réglés directement par le client.</span></p>
       <div class="pt-encart">
+        <h3>Un argument de plus pour vos mandats : offrez la formule Clés en main.</h3>
+        <p class="p">Offrez à votre vendeur tout ou partie de notre prestation. Il nous la règle ; à la vente, vous la déduisez de vos honoraires. Un cadeau qui marque et impacte plus qu'une simple remise.</p>
+      </div>
+      <div class="pt-encart">
         <h3>Et ensuite ?</h3>
         <p class="p">{VENTE_AGENCES}</p>
       </div>
       <div class="pt-encart">
         <h3>Un bien déjà vide ?</h3>
-        <p class="p">Pour les biens vacants à débarrasser et nettoyer avant les photos ou l'état des lieux, Fil Bleu Pro intervient avec un devis sous 24 h.</p>
+        <p class="p">Pour les biens vacants à débarrasser et nettoyer avant les photos ou l'état des lieux, Fil Bleu Pro intervient : devis sous 24 h, urgence sous 72 h selon disponibilités, facture à trente jours.</p>
         <a class="tl" href="/pro" style="align-self:flex-start">Découvrir Fil Bleu Pro →</a>
       </div>
     </div>

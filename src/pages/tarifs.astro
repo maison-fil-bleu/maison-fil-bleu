@@ -1,5 +1,5 @@
 ---
-import { FORMULES_PRIX as FP, OPTIONS as OP, montant, NOTE_OPTIONS } from '../config/tarifs';
+import { FORMULES_PRIX as FP, OPTIONS as OP, montant, NOTE_OPTIONS, PAIEMENT_GENERAL } from '../config/tarifs';
 /** Maquette : Tarifs.dc.html · adresse : /tarifs */
 import Famille from '../layouts/Famille.astro';
 import { SITE } from '../config/site';
@@ -27,13 +27,13 @@ const meta = META['/tarifs'];
 <table style="width: 100%; min-width: 760px; border-collapse: collapse; font-variant-numeric: lining-nums">
 <thead><tr><td></td><th scope="colgroup" colspan="4" class="th th-groupe">TTC · à partir de</th></tr><tr><th scope="col" class="th" style="text-align: left"><span class="sr-only">Formule</span></th><th scope="col" class="th">1-2 pièces</th><th scope="col" class="th">3 pièces</th><th scope="col" class="th">4 pièces</th><th scope="col" class="th">5 pièces et +</th></tr></thead>
 <tbody>
-<tr><th scope="row" style="text-align: left; padding: 28px 0; border-top: 1px solid #15233A; font-weight: 300"><span style="display: block; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 600">Libération</span><span style="font-size: 14px; color: #5B606A">Libérer et rendre un logement propre</span></th><td class="td" style="border-top: 1px solid #15233A">{montant(FP.L.prix[0])}</td><td class="td" style="border-top: 1px solid #15233A">{montant(FP.L.prix[1])}</td><td class="td" style="border-top: 1px solid #15233A">{montant(FP.L.prix[2])}</td><td class="td" style="border-top: 1px solid #15233A">{montant(FP.L.prix[3])}</td></tr>
-<tr><th scope="row" style="text-align: left; padding: 28px 0; border-top: 1px solid #DDD4C5; font-weight: 300"><span style="display: block; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 600">Transition</span><span style="font-size: 14px; color: #5B606A">Passer d'un logement à l'autre</span></th><td class="td">{montant(FP.T.prix[0])}</td><td class="td">{montant(FP.T.prix[1])}</td><td class="td">{montant(FP.T.prix[2])}</td><td class="td">{montant(FP.T.prix[3])}</td></tr>
+<tr><th scope="row" style="text-align: left; padding: 28px 0; border-top: 1px solid #15233A; font-weight: 300"><span style="display: block; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 600">Clés en main</span><span style="font-size: 14px; color: #5B606A">Libérer et rendre un logement propre</span></th><td class="td" style="border-top: 1px solid #15233A">{montant(FP.L.prix[0])}</td><td class="td" style="border-top: 1px solid #15233A">{montant(FP.L.prix[1])}</td><td class="td" style="border-top: 1px solid #15233A">{montant(FP.L.prix[2])}</td><td class="td" style="border-top: 1px solid #15233A">{montant(FP.L.prix[3])}</td></tr>
+<tr><th scope="row" style="text-align: left; padding: 28px 0; border-top: 1px solid #DDD4C5; font-weight: 300"><span style="display: block; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 600">Nouveau départ</span><span style="font-size: 14px; color: #5B606A">Passer d'un logement à l'autre</span></th><td class="td">{montant(FP.T.prix[0])}</td><td class="td">{montant(FP.T.prix[1])}</td><td class="td">{montant(FP.T.prix[2])}</td><td class="td">{montant(FP.T.prix[3])}</td></tr>
 <tr><th scope="row" style="text-align: left; padding: 28px 0; border-top: 1px solid #DDD4C5; border-bottom: 1px solid #DDD4C5; font-weight: 300"><span style="display: block; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 600">Succession</span><span style="font-size: 14px; color: #5B606A">Le logement d'un proche</span></th><td class="td" style="border-bottom: 1px solid #DDD4C5">{montant(FP.S.prix[0])}</td><td class="td" style="border-bottom: 1px solid #DDD4C5">{montant(FP.S.prix[1])}</td><td class="td" style="border-bottom: 1px solid #DDD4C5">{montant(FP.S.prix[2])}</td><td class="td" style="border-bottom: 1px solid #DDD4C5">{montant(FP.S.prix[3])}</td></tr>
 </tbody>
 </table>
 </div>
-<p class="p" style="font-size: 14px; max-width: 900px">Prix pour un logement meublé standard. Transition : selon la taille du logement de départ ; le déménageur est réglé directement par vous. Succession : contrat signé par tous les héritiers, ou par l'un d'eux muni de leur accord écrit.</p>
+<p class="p" style="font-size: 14px; max-width: 900px">Prix pour un logement meublé standard. Le prix exact est fixé après le diagnostic offert. Nouveau départ : selon la taille du logement de départ. Succession : devis signé par tous les héritiers, ou par l'un d'eux muni de leur accord écrit. Travaux effectués par des artisans à la demande du client et déménagement : réglés directement par le client, non compris dans le forfait. {PAIEMENT_GENERAL}</p>
 </div>
 </section>
 
@@ -43,21 +43,21 @@ const meta = META['/tarifs'];
 <span class="lbl">Options</span>
 <h2 class="h2">Seulement si c'est utile.</h2>
 <div style="display: flex; flex-direction: column; border-top: 1px solid #CFC5B4; margin-top: 10px">
-<div class="row"><span>Recherche de résidence (Transition)</span><span style="font-weight: 400">{montant(OP.rechercheResidence.prix)}</span></div>
+<div class="row"><span>Recherche de résidence (Nouveau départ)</span><span style="font-weight: 400">{montant(OP.rechercheResidence.prix)}</span></div>
 <div class="row"><span>Caves, garages, greniers</span><span style="font-weight: 400">{montant(OP.cavesParM3)} / m³</span></div>
-<div class="row"><span>Gardiennage (voir conditions)</span><span style="font-weight: 400">{montant(OP.gardiennageParMois)} / mois</span></div>
-<div class="row"><span>Box de stockage : recherche, contrat et coordination avec le déménageur *</span><span style="font-weight: 400">compris en Transition et Succession · {montant(OP.rechercheBox.L)} en Libération</span></div>
-<div class="row"><span>Livraison de quelques meubles chez un proche (Libération) ou d'objets chez un héritier (Succession), organisée avec un déménageur *</span><span style="font-weight: 400">{montant(OP.installationProche.L!.prix)}</span></div>
-<div class="row"><span>Vide-maison, deux matinées au plus</span><span style="font-weight: 400">sur devis</span></div>
+<div class="row"><span>Box de stockage : recherche, contrat et coordination avec le déménageur *</span><span style="font-weight: 400">compris en Nouveau départ et Succession · {montant(OP.rechercheBox.L)} en Clés en main</span></div>
+<div class="row"><span>Livraison de quelques meubles chez un proche (Clés en main) ou d'objets chez un héritier (Succession), organisée avec un déménageur *</span><span style="font-weight: 400">{montant(OP.installationProche.L!.prix)}</span></div>
+<div class="row"><span>{OP.installation.libelle}</span><span style="font-weight: 400">{montant(OP.installation.prix)}</span></div>
+<div class="row"><span>Gardiennage</span><span style="font-weight: 400">{montant(OP.gardiennageParMois)} / mois</span></div>
 <div class="row"><span>Travaux de remise en état ou d'aménagement par des artisans *</span><span style="font-weight: 400">sur devis</span></div>
-<div class="row"><span>Urgence, sous sept jours</span><span style="font-weight: 400">+ 25 %</span></div>
+<div class="row"><span>Intervention en urgence, sous 7 jours, selon disponibilités</span><span style="font-weight: 400">+ 25 %</span></div>
 <div class="row"><span>Hors Bouches-du-Rhône</span><span style="font-weight: 400">sur devis</span></div>
 
 </div>
 </div>
-<p class="p" style="font-size: 14px; color: #5B606A; margin-top: 14px">{NOTE_OPTIONS} Conditions des options marquées « voir conditions » sur les fiches : précisées au devis.</p>
+<p class="p" style="font-size: 14px; color: #5B606A; margin-top: 14px">{NOTE_OPTIONS}</p>
 <div style="display: flex; flex-direction: column; gap: 44px; padding-top: 8px">
-<div style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #15233A; padding-top: 26px"><h3 class="h3">Paiement</h3><span class="p">Des facilités de paiement sont possibles : nous en parlons ensemble lors du diagnostic.</span></div>
+<div style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #15233A; padding-top: 26px"><h3 class="h3">Paiement</h3><span class="p">{PAIEMENT_GENERAL}</span></div>
 <div style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #15233A; padding-top: 26px"><h3 class="h3">Ce qui n'est pas compris</h3><span class="p">La prestation du déménageur, réglée directement à lui ; les travaux des artisans * ; l'estimation officielle des objets ; les frais de notaire ; les déchets dangereux, traités sur devis spécialisé.</span></div>
 </div>
 </div>

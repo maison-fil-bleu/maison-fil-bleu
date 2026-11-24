@@ -1,26 +1,28 @@
 ---
-import { FORMULES_PRIX as FP, OPTIONS as OP, montant, NOTE_OPTIONS, VENTE_NEUTRE_SUITE, VENTE_COMPRIS } from '../config/tarifs';
+import { FORMULES_PRIX as FP, OPTIONS as OP, montant, NOTE_OPTIONS, VENTE_NEUTRE_SUITE, VENTE_COMPRIS, TEXTES_FORMULE } from '../config/tarifs';
 import OptionsFormule from '../components/OptionsFormule.astro';
+import PrixFormule from '../components/PrixFormule.astro';
 import { doc } from '../config/documents';
-/** Maquette : Formule-Liberation.dc.html · adresse : /liberation */
+/** Maquette : Formule-Liberation.dc.html · adresse : /cles-en-main */
 import Famille from '../layouts/Famille.astro';
 import { SITE } from '../config/site';
 import Hero from '../components/Hero.astro';
 import Photo from '../components/Photo.astro';
 import { META } from '../config/meta';
 import { service, filAriane } from '../config/seo';
-const meta = META['/liberation'];
+const meta = META['/cles-en-main'];
 ---
-<Famille title={meta.title} description={meta.description} onglet="prestations" jsonld={[service('L'), filAriane([{ nom: 'Accueil', chemin: '/' }, { nom: 'Libération', chemin: '/liberation' }])]}>
-<!-- Photo en fond : src/assets/photos/liberation-haut.jpg · pièce vide et lumineuse, parquet propre -->
+<Famille title={meta.title} description={meta.description} onglet="prestations" jsonld={[service('L'), filAriane([{ nom: 'Accueil', chemin: '/' }, { nom: 'Clés en main', chemin: '/cles-en-main' }])]}>
+<!-- Photo en fond : src/assets/photos/cles-en-main-haut.jpg · pièce vide et lumineuse, parquet propre -->
 <Hero photo="liberation-haut" desc="pièce vide et lumineuse, parquet propre">
 <div class="w" style="position: relative; padding-top: 140px; padding-bottom: 128px">
 <div style="max-width: 700px; display: flex; flex-direction: column; gap: 28px">
-<span class="lbl">Accompagnement · Libération</span>
-<span style="font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-size: 26px; color: #3D5A80; margin-top: -12px">La base de tous nos accompagnements.</span>
-<h1 class="h1" style="color: #15233A">Votre logement vidé, nettoyé et prêt, sans rien avoir à gérer.</h1>
-<p class="lead" style="color: #4A4F58">Une vente, une fin de bail, un proche qui part en résidence, une maison secondaire : un logement chargé de souvenirs pèse lourd. Nous prenons le relais sur tout : l'organisation, le débarras, les dons, le nettoyage et les démarches. Vous gardez l'esprit libre et restez seul décideur.</p>
-<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 28px"><a class="btn" href="/contact">Demander un diagnostic offert</a><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 30px; color: #3D5A80">dès {montant(FP.L.prix[0])} TTC</span></div>
+<span class="lbl">Accompagnement · Clés en main</span>
+<span style="font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-size: 26px; color: #3D5A80; margin-top: -12px">Vous quittez un logement</span>
+<h1 class="h1" style="color: #15233A">Vos souvenirs préservés, votre logement vidé et nettoyé.</h1>
+<p class="lead" style="color: #4A4F58">Une vente, une fin de bail, un proche qui part en résidence, une maison secondaire : vider un logement est souvent plus lourd qu'on ne l'imagine. Nous organisons tout : le tri, le débarras, les dons, le nettoyage et les démarches. Vous restez seul décideur : rien ne part sans votre accord écrit.</p>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 28px"><a class="btn" href="/contact">Demander un diagnostic offert</a><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 30px; color: #3D5A80">à partir de {montant(FP.L.prix[0])} TTC</span></div>
+<span class="p" style="font-size: 15px; color: #4A4F58; margin-top: -12px">{TEXTES_FORMULE.L.compris}</span>
 </div>
 </div>
 </Hero>
@@ -32,24 +34,24 @@ const meta = META['/liberation'];
 <p class="lead">Derrière chaque logement à libérer, il y a une échéance, et souvent une famille fatiguée. Nous prenons le relais pour que vous n'ayez plus à y penser.</p>
 </div>
 <div class="g4">
-<div class="card"><h3 class="h3">Une fin de bail</h3><span class="p">Votre parent était locataire ? Le logement doit être rendu vide et propre au propriétaire ou au bailleur, souvent dans un délai court.</span></div>
-<div class="card"><h3 class="h3">Après un départ en résidence</h3><span class="p">L'entrée en résidence est faite, mais l'ancien logement est encore plein. Nous terminons le travail.</span></div>
-<div class="card"><h3 class="h3">Avant une vente ou une location</h3><span class="p">Un logement vide et propre se visite mieux, se photographie mieux et trouve preneur plus sereinement.</span></div>
-<div class="card"><h3 class="h3">Une maison de famille</h3><span class="p">Des années de souvenirs à trier, sans conflit et sans précipitation, avec chacun des proches.</span></div>
+<div class="card"><h3 class="h3">Vous vendez ou louez</h3><span class="p">Le logement est prêt pour les photos et les visites.</span></div>
+<div class="card"><h3 class="h3">Une fin de bail</h3><span class="p">État des lieux et remise des clés, même par procuration.</span></div>
+<div class="card"><h3 class="h3">Un proche est parti en résidence</h3><span class="p">Son ancien logement est libéré sans que vous ayez à tout gérer.</span></div>
+<div class="card"><h3 class="h3">Vous-même ou vos proches vivez loin ?</h3><span class="p">Nous sommes vos yeux et vos mains sur place.</span></div>
 </div>
 </div>
 </section>
 
-<!-- Photo : src/assets/photos/liberation-01.jpg · cartons de dons étiquetés pour une association -->
+<!-- Photo : src/assets/photos/cles-en-main-01.jpg · cartons de dons étiquetés pour une association -->
 <Photo nom="liberation-01" alt="Cartons de dons étiquetés pour une association" tag="Photo pleine largeur · cartons de dons étiquetés pour une association" style="height: 500px" />
 
 <section class="sec">
 <div class="w" style="display: flex; flex-direction: column; gap: 64px">
-<div style="display: flex; flex-direction: column; gap: 18px; max-width: 760px"><span class="lbl">Le déroulé</span><h2 class="h2">Comment se déroule une Libération</h2></div>
+<div style="display: flex; flex-direction: column; gap: 18px; max-width: 760px"><span class="lbl">Le déroulé</span><h2 class="h2">Comment se déroule la formule Clés en main</h2></div>
 <div class="g4">
 <div class="card"><span class="num">01</span><h3 class="h3">Diagnostic offert</h3><span class="p">Nous visitons le logement avec vous, écoutons vos priorités et vos délais, puis vous remettons un devis forfaitaire et clair.</span></div>
 <div class="card"><span class="num">02</span><h3 class="h3">Le tri, avec vous</h3><span class="p">Ce que vous gardez, ce qui revient à vos proches, ce qui part aux associations. Le forfait prévoit une ou plusieurs journées de tri avec vous selon la taille du logement. Une liste signée avant toute évacuation.</span></div>
-<div class="card"><span class="num">03</span><h3 class="h3">Débarras et nettoyage</h3><span class="p">Une équipe encadrée évacue le reste en filières agréées, puis nettoie le logement de fond en comble. Des travaux sont nécessaires avant une vente ou une location ? Nous coordonnons la remise en état avec des artisans *.</span></div>
+<div class="card"><span class="num">03</span><h3 class="h3">Le jour J</h3><span class="p">Une intervention supervisée, un seul interlocuteur. Papiers et souvenirs sont mis de côté pour vous, puis le reste part en filières agréées ou en dons aux associations, et le logement est nettoyé de fond en comble. Des travaux sont nécessaires avant une vente ou une location ? Nous coordonnons la remise en état avec des artisans *.</span></div>
 <div class="card"><span class="num">04</span><h3 class="h3">La remise des clés</h3><span class="p">Un compte rendu photo du logement vide, puis les clés remises à qui de droit : propriétaire, bailleur, agence ou vous-même.</span></div>
 </div>
 </div>
@@ -79,8 +81,9 @@ const meta = META['/liberation'];
 <div style="display: flex; flex-direction: column; gap: 22px">
 <span class="lbl">Tarifs</span>
 <h2 class="h2">Un forfait selon la taille du logement</h2>
-<p class="p">Le forfait comprend tout l'accompagnement décrit sur cette page. Prix de départ pour un logement meublé standard : c'est une estimation. Le prix exact, parfois plus bas, parfois plus haut, est fixé après le diagnostic offert, selon le volume et l'accès. Facilités de paiement possibles.</p>
-<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 26px; margin-top: 6px"><a class="btn" href="/estimation?formule=liberation">Estimer mon accompagnement</a><a class="tl" href="/tarifs">Tous les tarifs et options</a><a class="tl" href={doc('ficheL').href} download>Télécharger la fiche ({doc('ficheL').info})</a><a class="tl" href={doc('fsm').href} download>Faire soi-même ou nous confier ?</a></div>
+<p class="p">Le forfait comprend tout l'accompagnement décrit sur cette page. Prix de départ pour un logement meublé standard. Le prix exact est fixé après le diagnostic, selon le volume et l'accès.</p>
+<PrixFormule cle="L" />
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 26px; margin-top: 6px"><a class="btn" href="/estimation?formule=cles-en-main">Estimer mon accompagnement</a><a class="tl" href="/tarifs">Tous les tarifs et options</a><a class="tl" href={doc('ficheL').href} download>Télécharger la fiche ({doc('ficheL').info})</a><a class="tl" href={doc('fsm').href} download>Faire soi-même ou nous confier ?</a></div>
 </div>
 <div style="display: flex; flex-direction: column; border-top: 1px solid #15233A">
 <span class="lbl" style="padding: 16px 0 2px">TTC · à partir de</span>
@@ -96,14 +99,15 @@ const meta = META['/liberation'];
   options={[
     ['Box de stockage : recherche, contrat et coordination avec le déménageur *', montant(OP.rechercheBox.L)],
     ['Caves, garages, greniers', `${montant(OP.cavesParM3)} / m³`],
-    [`${OP.installationProche.L!.libelle}, organisée avec un déménageur *`, montant(OP.installationProche.L!.prix), 'voir conditions'],
-    ['Gardiennage', `${montant(OP.gardiennageParMois)} / mois`, 'voir conditions'],
+    [`${OP.installationProche.L!.libelle}, organisée avec un déménageur *`, montant(OP.installationProche.L!.prix)],
+    [OP.installation.libelle, montant(OP.installation.prix)],
+    ['Gardiennage', `${montant(OP.gardiennageParMois)} / mois`],
     ['Travaux de remise en état par des artisans *', 'sur devis'],
     ['Hors Bouches-du-Rhône', 'sur devis'],
   ]}
   note={NOTE_OPTIONS}
   encadre={{ titre: "Plus qu'un débarras", items: ['Du temps avec vous pour faire vos choix', 'Papiers et souvenirs préservés, dons aux associations', 'Nettoyage complet, logement prêt à visiter ou à être rendu', 'Remise en état coordonnée avec des artisans *', 'Un seul interlocuteur, suivi en ligne pour les proches', 'Compte rendu photo à la remise des clés'] }}
-  lien={{ texte: 'Vous emménagez ailleurs ?', href: '/transition', lbl: 'Voir la formule Transition →' }}
+  lien={{ texte: 'Vous emménagez ailleurs ?', href: '/nouveau-depart', lbl: 'Voir la formule Nouveau départ →' }}
 />
 
 <section style="padding: 0 0 120px">
@@ -118,20 +122,21 @@ const meta = META['/liberation'];
 <section class="sec">
 <div class="w" style="max-width: 960px; display: flex; flex-direction: column; gap: 24px">
 <span class="lbl">Questions fréquentes</span>
-<h2 class="h2" style="margin-bottom: 12px">Vos questions sur la Libération</h2>
+<h2 class="h2" style="margin-bottom: 12px">Vos questions sur la formule Clés en main</h2>
 <details class="q" open><summary>Que deviennent les meubles et les objets ?</summary><p class="p" style="margin-top: 12px">Vous décidez de tout : ce que vous gardez, ce qui revient à vos proches, ce qui est donné aux associations, ce qui part. Une liste est signée avant chaque évacuation.</p></details>
 <details class="q"><summary>Vous vivez loin, mais le logement se trouve près de Marseille : est-ce possible ?</summary><p class="p" style="margin-top: 12px">Oui. Nous organisons le diagnostic avec vous à distance, ou avec un proche sur place, puis nous nous occupons de tout. Vous recevez des nouvelles et des photos à chaque étape.</p></details>
 <details class="q"><summary>Dois-je être présent pendant l'intervention ?</summary><p class="p" style="margin-top: 12px">Seulement pour faire vos choix, si vous le souhaitez. Ensuite, nous intervenons seuls et vous recevons des photos à chaque étape.</p></details>
-<details class="q"><summary>En combien de temps le logement est-il libéré ?</summary><p class="p" style="margin-top: 12px">L'intervention est généralement planifiée sous [2 à 3 semaines] après le diagnostic, ou sous 7 jours en urgence.</p></details>
+<details class="q"><summary>En combien de temps le logement est-il libéré ?</summary><p class="p" style="margin-top: 12px">L'intervention est généralement planifiée sous [2 à 3 semaines] après le diagnostic, ou sous 7 jours en urgence, selon disponibilités.</p></details>
 <details class="q"><summary>Mon parent était locataire, pouvez-vous gérer la fin du bail ?</summary><p class="p" style="margin-top: 12px">Oui. Nous rendons le logement vide et propre avant la date de sortie, et pouvons assister à l'état des lieux et remettre les clés à votre place, avec votre procuration.</p></details>
 <details class="q"><summary>Et s'il y a une cave, un garage ou un grenier ?</summary><p class="p" style="margin-top: 12px">Nous nous en occupons aussi, en option, au volume. Le prix est indiqué dans le devis, avant toute intervention.</p></details>
 </div>
 </section>
 
+<div class="w"><p class="pf-signature">15 ans d'immobilier à Marseille · Un interlocuteur unique · Chaque intervention supervisée</p></div>
 <section style="border-top: 1px solid #DDD4C5">
 <div class="w sec" style="display: flex; flex-direction: column; align-items: center; gap: 26px; text-align: center">
 <h2 class="h2" style="max-width: 760px">Un logement à libérer ?</h2>
-<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 14px"><a class="btn" href="/contact">Demander un diagnostic</a><a class="btn2" href="/transition">Voir la formule Transition</a></div>
+<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 14px"><a class="btn" href="/contact">Demander un diagnostic</a><a class="btn2" href="/nouveau-depart">Voir la formule Nouveau départ</a></div>
 </div>
 </section>
 </Famille>

@@ -32,3 +32,55 @@
     X-Frame-Options = "DENY"
     Referrer-Policy = "same-origin"
     Cache-Control = "no-cache"
+
+# Formules renommées le 24/11/2026 : Libération → Clés en main, Transition → Nouveau départ.
+# Netlify applique ces règles avec ou sans barre finale. Anciennes fiches PDF redirigées vers les nouvelles.
+[[redirects]]
+  from = "/liberation"
+  to = "/cles-en-main"
+  status = 301
+
+[[redirects]]
+  from = "/liberation.html"
+  to = "/cles-en-main"
+  status = 301
+
+[[redirects]]
+  from = "/transition"
+  to = "/nouveau-depart"
+  status = 301
+
+[[redirects]]
+  from = "/transition.html"
+  to = "/nouveau-depart"
+  status = 301
+
+[[redirects]]
+  from = "/docs/Fiche-Liberation.pdf"
+  to = "/docs/Fiche-Cles-en-main.pdf"
+  status = 301
+
+[[redirects]]
+  from = "/docs/Fiche-Liberation-notaires.pdf"
+  to = "/docs/Fiche-Cles-en-main-notaires.pdf"
+  status = 301
+
+[[redirects]]
+  from = "/docs/Fiche-Liberation-agences.pdf"
+  to = "/docs/Fiche-Cles-en-main-agences.pdf"
+  status = 301
+
+[[redirects]]
+  from = "/docs/Fiche-Transition.pdf"
+  to = "/docs/Fiche-Nouveau-depart.pdf"
+  status = 301
+
+[[redirects]]
+  from = "/docs/Fiche-Transition-notaires.pdf"
+  to = "/docs/Fiche-Nouveau-depart-notaires.pdf"
+  status = 301
+
+[[redirects]]
+  from = "/docs/Fiche-Transition-agences.pdf"
+  to = "/docs/Fiche-Nouveau-depart-agences.pdf"
+  status = 301

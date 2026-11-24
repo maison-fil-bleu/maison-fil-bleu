@@ -78,8 +78,8 @@ const meta = META['/contact'];
   const form = document.getElementById('formulaire') as HTMLFormElement | null;
   if (form && p.get('formule') && p.get('depart')) {
     const situations: Record<string, string> = {
-      'Libération': 'Un logement à libérer',
-      'Transition': 'Un déménagement suit (résidence, logement plus petit…)',
+      'Clés en main': 'Un logement à libérer',
+      'Nouveau départ': 'Un déménagement suit (résidence, logement plus petit…)',
       'Succession': 'Un proche nous a quittés',
     };
     const formule = p.get('formule') ?? '';

@@ -22,7 +22,7 @@ export const CGV_PARTICULIERS: Article[] = [
     "titre": "2. Prestations",
     "blocs": [
       {
-        "p": "Nous proposons trois formules, décrites sur notre site et détaillées dans le devis : Libération, Transition et Succession, ainsi que des options (gardiennage, recherche de résidence, box de stockage, livraison de quelques meubles chez un proche organisée avec un déménageur, caves et volumes supplémentaires)."
+        "p": "Nous proposons trois formules, décrites sur notre site et détaillées dans le devis : Clés en main, Nouveau départ et Succession, ainsi que des options (gardiennage, recherche de résidence, box de stockage, livraison de quelques meubles chez un proche organisée avec un déménageur, caves et volumes supplémentaires)."
       },
       {
         "ul": [
@@ -34,7 +34,8 @@ export const CGV_PARTICULIERS: Article[] = [
           "La recherche de résidence comprend jusqu'à trois visites accompagnées d'établissements situés dans les Bouches-du-Rhône et la constitution du dossier d'admission. Les visites supplémentaires ou hors du département font l'objet d'un devis complémentaire.",
           "La livraison de quelques meubles chez un proche comprend l'organisation avec un déménageur indépendant et notre présence au chargement. Le transport est facturé et réglé directement par le client au déménageur ; il ne comprend pas l'installation.",
           "La recherche d'un box de stockage comprend la recherche, l'aide à la souscription du contrat (au nom du client) et la coordination avec le déménageur.",
-          "L'aide au choix de l'agence, lorsque le client vend ou loue, est un conseil neutre et gratuit : nous organisons la prise de rendez-vous avec les agences et comparons avec lui les honoraires et les mandats. Nous ne prenons aucun mandat et ne percevons aucune commission ; le client choisit librement."
+          "L'installation dans la nouvelle chambre ou le nouveau logement comprend une demi-journée sur place le jour de l'arrivée, en lien avec le déménageur : meubles placés, lit fait, photos accrochées.",
+          "Lorsque le client vend ou loue, nous l'aidons gratuitement à préparer ses rendez-vous avec les agences de son choix (questions à poser, documents à réunir). Nous ne prenons aucun mandat et ne percevons aucune commission ; le client choisit librement."
         ]
       }
     ]
@@ -60,6 +61,25 @@ export const CGV_PARTICULIERS: Article[] = [
     "blocs": [
       {
         "p": "Un acompte de 40 % est demandé avant le début des interventions, le solde à la remise des clés. Lorsque le contrat est signé au domicile du client ou hors de nos locaux, aucun paiement n'est demandé avant l'expiration d'un délai de sept jours à compter de la signature. Des facilités de paiement peuvent être accordées ; elles sont précisées au devis. En cas de retard de paiement, des pénalités au taux de l'intérêt légal peuvent être appliquées après mise en demeure."
+      }
+    ]
+  },
+  {
+    "titre": "5 bis. Report du solde",
+    "blocs": [
+      {
+        "p": "Lorsque le devis prévoit l'option « Report du solde », le solde peut être réglé lors de la vente du logement ou sur les fonds de la succession, aux conditions suivantes :"
+      },
+      {
+        "ul": [
+          "le solde reporté ne dépasse pas 3 000 € TTC ;",
+          "le client remet un ordre de paiement irrévocable adressé au notaire chargé de la vente ou de la succession, qui nous règle le solde lors de la vente ou sur les fonds de la succession ;",
+          "le solde est dû au plus tard trois mois après la fin de la prestation, même si la vente n'a pas eu lieu ;",
+          "ce report est accordé sans frais."
+        ]
+      },
+      {
+        "p": "L'acompte reste dû dans les conditions de l'article 5."
       }
     ]
   },

@@ -67,9 +67,9 @@ npm run preview  # sert dist/ en local
 ## Simulateur d'estimation
 
 - **Prix : réglés dans l'appli** (back-office › Réglages › Prix TTC, puis « Mettre à jour les prix du site »). À chaque construction, `scripts/prix-publics.mjs` les recopie dans `src/config/prix-publics.json`, lu par `src/config/tarifs.ts` (coefficients et options propres au site).
-- Affichage choisi par le fondateur : la **formule adaptée** et son **prix de départ « à partir de … TTC »** selon la taille du logement (logement actuel en Transition). Les besoins cochés (caves, garage, grenier, futur logement, recherche de résidence, box, installation chez un proche, gardiennage, urgence, maison, étage sans ascenseur) sont listés **sans aucun montant** : ils sont chiffrés après le diagnostic offert.
+- Affichage choisi par le fondateur : la **formule adaptée** et son **prix de départ « à partir de … TTC »** selon la taille du logement (logement actuel en Nouveau départ). Les besoins cochés (caves, garage, grenier, futur logement, recherche de résidence, box, installation chez un proche, gardiennage, urgence, maison, étage sans ascenseur) sont listés **sans aucun montant** : ils sont chiffrés après le diagnostic offert.
 - Le bouton « Être rappelé pour un prix exact » ouvre `/contact` prérempli (situation, taille) avec un encadré « Votre sélection en ligne » et deux champs cachés `estimation` et `besoins` qui partiront avec le formulaire.
-- `/estimation?formule=liberation|transition|succession` présélectionne la formule.
+- `/estimation?formule=cles-en-main|transition|succession` présélectionne la formule.
 - Le calcul complet de la fourchette (§ 7 de la passation : options, coefficients maison / sans ascenseur, urgence + 25 %) reste disponible dans `fourchette()` de `src/lib/estimation.ts`, non affiché pour le moment.
 - Attention : les prix « dès … € » écrits dans les textes des pages (accueil, formules, tarifs) reprennent les maquettes ; en cas de changement de prix, les mettre à jour aussi.
 
@@ -112,7 +112,7 @@ Liste complète des 34 photos avec leur description : `src/assets/photos/LISTE.m
 - [ ] Récépissé de transport de déchets (n°)
 - [ ] Médiateur de la consommation (nom)
 - [ ] Délais de réponse des pages de remerciement (rappel « le jour même ou le lendemain », devis et grille « sous 24 heures ») à confirmer
-- [ ] Délais (ex. `[2 à 3 semaines]` sur la page Libération)
+- [ ] Délais (ex. `[2 à 3 semaines]` sur la page Clés en main)
 - [ ] Exemple de compte rendu (page Notre méthode) : `[Nom]`, `[date]`
 - [ ] Textes : mentions légales, CGV ; politique de confidentialité rédigée en projet (durées de conservation et prestataire d'e-mails entre crochets) : à faire valider
 - [ ] Nom de domaine définitif (`astro.config.mjs` et `public/robots.txt`, actuellement `https://www.maisonfilbleu.fr`)

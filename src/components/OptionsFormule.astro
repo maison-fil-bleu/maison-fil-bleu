@@ -1,11 +1,11 @@
 ---
 /**
- * Bloc « En option » des pages formules (Libération, Transition, Succession) :
+ * Bloc « En option » des pages formules (Clés en main, Nouveau départ, Succession) :
  * options et prix, note sur les travaux et le déménagement, encadré « Plus qu'un… » facultatif.
  * Textes repris des fiches PDF (public/docs/Fiche-*.pdf).
  */
 interface Props {
-  /** [libellé, prix, mention facultative (« voir conditions »)] */
+  /** [libellé, prix, mention facultative sous le libellé] */
   options: [string, string, string?][];
   note: string;
   encadre?: { titre: string; items: string[] };
