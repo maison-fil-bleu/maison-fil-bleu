@@ -1,0 +1,23 @@
+# En-têtes (Cloudflare Pages). Back-office et espace client : jamais indexés, jamais affichés dans un autre site.
+/admin
+  X-Robots-Tag: noindex, nofollow
+  X-Frame-Options: DENY
+  Referrer-Policy: same-origin
+  Cache-Control: no-cache
+/admin.html
+  X-Robots-Tag: noindex, nofollow
+  X-Frame-Options: DENY
+  Referrer-Policy: same-origin
+  Cache-Control: no-cache
+/admin-sw.js
+  Cache-Control: no-cache
+/espace-client
+  X-Robots-Tag: noindex, nofollow
+  X-Frame-Options: DENY
+  Referrer-Policy: same-origin
+  Cache-Control: no-cache
+/espace-client.html
+  X-Robots-Tag: noindex, nofollow
+  X-Frame-Options: DENY
+  Referrer-Policy: same-origin
+  Cache-Control: no-cache

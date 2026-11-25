@@ -42,6 +42,7 @@ const etapes = [
   ['Nous coordonnons', 'Un seul interlocuteur, chaque étape suivie en ligne.'],
   ['Logement prêt', 'Vidé, nettoyé, clés et compte rendu photo.'],
 ];
+import Turnstile from './Turnstile.astro';
 ---
 <Famille title={title} description={description}>
   <section class="pt-hero">
@@ -126,7 +127,7 @@ const etapes = [
           <Telechargements cles={docs} compact />
         </div>
       </div>
-      <form class="pt-form" name="partenaire" method="POST" action="/merci-partenaire" data-netlify="true" netlify-honeypot="bot-field">
+      <form class="pt-form" name="partenaire" method="POST" action="/api/formulaire">
         <input type="hidden" name="form-name" value="partenaire">
         <input type="hidden" name="source" value={cle}>
         <input type="hidden" name="reference" data-reference><input type="hidden" name="lien_dossier" data-lien-dossier>
@@ -150,7 +151,8 @@ const etapes = [
         <label class="f">Échéance éventuelle<input name="echeance" placeholder={echeance}></label>
         <label class="f pt-full">Message<textarea name="message" rows="3" placeholder="Contexte, contraintes, proches à prévenir…"></textarea></label>
         <label class="pt-full pt-accord"><input type="checkbox" name="accord" value="Oui" required>Je confirme que la personne concernée a donné son accord pour être contactée par Maison Fil Bleu.</label>
-        <button type="submit" class="pt-full pt-envoyer">Confier le dossier</button>
+        <Turnstile />
+<button type="submit" class="pt-full pt-envoyer">Confier le dossier</button>
         <p class="p pt-full pt-rgpd">Ces coordonnées servent uniquement à traiter ce dossier. Elles ne sont ni vendues ni transmises. <a href="/confidentialite">Politique de confidentialité</a> · <a href="/cgv">CGV</a> · <a href="/mentions-legales">Mentions légales</a></p>
       </form>
     </div>

@@ -1,0 +1,15 @@
+---
+/**
+ * Vérification anti-robots Cloudflare Turnstile, à placer dans un formulaire.
+ * N'affiche rien tant que la clé publique (SITE.turnstile) n'est pas renseignée.
+ * Le jeton est vérifié par functions/api/formulaire.js (clé secrète TURNSTILE_SECRET).
+ */
+import { SITE } from '../config/site';
+const cle = SITE.turnstile;
+---
+{cle && (
+  <>
+    <div class="cf-turnstile" data-sitekey={cle} data-language="fr" data-theme="light" style="grid-column: 1 / -1"></div>
+    <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  </>
+)}

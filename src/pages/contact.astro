@@ -5,6 +5,7 @@ import { SITE } from '../config/site';
 import Hero from '../components/Hero.astro';
 import { META } from '../config/meta';
 const meta = META['/contact'];
+import Turnstile from '../components/Turnstile.astro';
 ---
 <Famille title={meta.title} description={meta.description}>
 <!-- Photo en fond : src/assets/photos/contact-haut.jpg · porte d'entrée entrouverte sur un intérieur lumineux -->
@@ -33,7 +34,7 @@ const meta = META['/contact'];
 <div id="espace-client" style="background: #EFE9DE; padding: 30px; display: flex; flex-direction: column; gap: 12px; margin-top: 6px"><span class="lbl">Espace client</span><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 26px; font-weight: 500; line-height: 1.2">Vous êtes déjà accompagné ?</span><span class="p">Votre espace client vous permet, à vous et à vos proches, de suivre chaque étape, photos et documents à l'appui. Il est ouvert par votre interlocuteur après le diagnostic.</span><a class="tl" href="/espace-client" style="align-self: flex-start">Accéder à mon espace →</a></div>
 <div style="display: flex; flex-direction: column; gap: 6px; padding-top: 8px"><span class="p" style="font-size: 14px">Vous êtes un professionnel (agence, bailleur, syndic, notaire) ?</span><a class="tl" href="/pro" style="align-self: flex-start">Fil Bleu Pro →</a></div>
 </div>
-<form class="g2f" id="formulaire" name="rappel" method="POST" action="/merci" data-netlify="true" netlify-honeypot="bot-field" style="background: #FFFFFF; border: 1px solid #E3DCCF; padding: 56px">
+<form class="g2f" id="formulaire" name="rappel" method="POST" action="/api/formulaire" style="background: #FFFFFF; border: 1px solid #E3DCCF; padding: 56px">
 <span style="grid-column: 1 / -1; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 36px; font-weight: 500">Être rappelé</span>
 <input type="hidden" name="form-name" value="rappel"><input type="hidden" name="reference" data-reference><input type="hidden" name="lien_dossier" data-lien-dossier>
 <p class="hp" aria-hidden="true"><label>Ne pas remplir ce champ <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
@@ -66,6 +67,7 @@ const meta = META['/contact'];
 <label style="grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; font-size: 15px; color: #3E434C; font-weight: 300"><input type="checkbox" name="distance" value="Oui" style="width: 18px; height: 18px; accent-color: #15233A">J'habite loin du logement</label>
 <label class="f" style="grid-column: 1 / -1">Quand vous rappeler ?<select name="rappel"><option>Dès que possible</option><option>Le matin</option><option>L'après-midi</option><option>En fin de journée</option></select></label>
 <p class="p" style="grid-column: 1 / -1; font-size: 13px">Vos coordonnées servent uniquement à vous recontacter au sujet de votre demande. Elles ne sont ni vendues ni transmises. <a href="/confidentialite">Politique de confidentialité</a> · <a href="/cgv">CGV</a> · <a href="/mentions-legales">Mentions légales</a></p>
+<Turnstile />
 <button type="submit" style="grid-column: 1 / -1; font-family: 'Nunito Sans', sans-serif; font-size: 12.5px; font-weight: 500; letter-spacing: 2.2px; text-transform: uppercase; padding: 20px; border: 1px solid #15233A; background: #15233A; color: #F8F5EF; cursor: pointer">Être rappelé</button>
 </form>
 </div>

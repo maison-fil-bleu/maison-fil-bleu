@@ -1,0 +1,11 @@
+# Redirections permanentes (Cloudflare Pages). Anciennes formules renommées le 24/11/2026.
+/liberation /cles-en-main 301
+/liberation.html /cles-en-main 301
+/transition /nouveau-depart 301
+/transition.html /nouveau-depart 301
+/docs/Fiche-Liberation.pdf /docs/Fiche-Cles-en-main.pdf 301
+/docs/Fiche-Liberation-notaires.pdf /docs/Fiche-Cles-en-main-notaires.pdf 301
+/docs/Fiche-Liberation-agences.pdf /docs/Fiche-Cles-en-main-agences.pdf 301
+/docs/Fiche-Transition.pdf /docs/Fiche-Nouveau-depart.pdf 301
+/docs/Fiche-Transition-notaires.pdf /docs/Fiche-Nouveau-depart-notaires.pdf 301
+/docs/Fiche-Transition-agences.pdf /docs/Fiche-Nouveau-depart-agences.pdf 301

@@ -18,6 +18,8 @@ export const SITE = {
   ville: 'Les Pennes-Mirabeau',
   siret: '[n°]',
   rcs: '[ville] [n°]',
+  // Clé publique Cloudflare Turnstile (anti-robots des formulaires). Vide : pas de vérification affichée.
+  turnstile: '',
   tva: '[n°]',
   rcPro: '[assureur, contrat]',
   recepisseDechets: '[...]',

@@ -1,0 +1,11 @@
+# Cloudflare Pages : site statique (dist) + fonctions (dossier functions/, servies sous /api/…).
+# Les clés secrètes ne sont jamais ici : elles se saisissent dans Cloudflare
+# (Workers & Pages › maison-fil-bleu › Settings › Variables and Secrets) :
+#   SUPABASE_SERVICE_ROLE_KEY  clé secrète Supabase (obligatoire)
+#   CF_DEPLOY_HOOK             crochet de déploiement, pour « Mettre à jour les prix du site »
+#   TURNSTILE_SECRET           clé secrète Turnstile (anti-robots des formulaires)
+#   RESEND_API_KEY, NOTIF_EMAIL, NOTIF_FROM   e-mail à chaque demande (plus tard, avec le domaine)
+name = "maison-fil-bleu"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-11-01"
+compatibility_flags = ["nodejs_compat"]

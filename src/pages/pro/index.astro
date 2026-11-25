@@ -6,6 +6,7 @@ import Hero from '../../components/Hero.astro';
 import Telechargements from '../../components/Telechargements.astro';
 import { META } from '../../config/meta';
 const meta = META['/pro'];
+import Turnstile from '../../components/Turnstile.astro';
 ---
 <Pro title={meta.title} description={meta.description} onglet="services">
 <!-- Photo en fond : src/assets/photos/pro-haut.jpg · appartement vide et lumineux, sol propre, prêt pour la visite -->
@@ -86,7 +87,7 @@ const meta = META['/pro'];
 <section id="devis" class="sec">
 <div class="w g2" style="grid-template-columns: 5fr 7fr; align-items: start">
 <div style="display: flex; flex-direction: column; gap: 22px"><span class="lbl">Demandez votre devis</span><h2 class="h2">Réponse sous 24 heures.</h2><p class="p">Décrivez le bien en quelques mots. Quelques photos du bien (facultatif), par e-mail, accélèrent le devis.</p><span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 40px; font-weight: 500">{SITE.telephonePro}</span><span>{SITE.emailPro}</span></div>
-<form name="devis-pro" method="POST" action="/pro/merci-devis" data-netlify="true" netlify-honeypot="bot-field" style="background: #FFFFFF; border: 1px solid #E3DCCF; padding: 52px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px 34px" class="g2">
+<form name="devis-pro" method="POST" action="/api/formulaire" style="background: #FFFFFF; border: 1px solid #E3DCCF; padding: 52px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px 34px" class="g2">
 <input type="hidden" name="form-name" value="devis-pro"><input type="hidden" name="reference" data-reference><input type="hidden" name="lien_dossier" data-lien-dossier>
 <p class="hp" aria-hidden="true"><label>Ne pas remplir ce champ <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
 <label class="f">Nom<input name="nom" autocomplete="name" required></label>
@@ -97,6 +98,7 @@ const meta = META['/pro'];
 <label class="f">Commune et surface<input name="bien" placeholder="Ex. : Marseille 5e, T3 65 m²"></label>
 <label class="f" style="grid-column: 1 / -1">Date souhaitée et précisions<textarea name="message" rows="3" placeholder="État des lieux le…, étage, ascenseur, accès…"></textarea></label>
 <p class="p" style="grid-column: 1 / -1; font-size: 13px">Vos coordonnées servent uniquement à répondre à votre demande. Elles ne sont ni vendues ni transmises. <a href="/confidentialite">Politique de confidentialité</a> · <a href="/cgv">CGV</a> · <a href="/mentions-legales">Mentions légales</a></p>
+<Turnstile />
 <button type="submit" style="grid-column: 1 / -1; font-family: 'Nunito Sans', sans-serif; font-size: 12.5px; font-weight: 500; letter-spacing: 2.2px; text-transform: uppercase; padding: 20px; border: 1px solid #15233A; background: #15233A; color: #F8F5EF; cursor: pointer">Demander un devis</button>
 </form>
 </div>

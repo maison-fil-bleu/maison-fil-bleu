@@ -43,12 +43,13 @@ npm run preview  # sert dist/ en local
 | Back-office (appli « Fil Bleu Dossiers », installable sur téléphone) | `/admin` · `src/pages/admin.astro`, `src/admin/` |
 | Espace client des familles | `/espace-client` · `src/pages/espace-client.astro`, `src/espace/espace.js` |
 | Base de données, règles d'accès, tests | `supabase/migrations/`, `supabase/tests/regles-acces.sql` |
-| Invitation à l'espace client | `netlify/functions/inviter.mjs` (`/api/inviter`) |
-| Formulaires du site → dossiers | `netlify/functions/submission-created.mjs` (déclenchée par Netlify Forms) |
-| Mise à jour des prix du site | `netlify/functions/republier.mjs` (`/api/republier`) + `scripts/prix-publics.mjs` |
+| Invitation à l'espace client | `functions/api/inviter.js` (`/api/inviter`) |
+| Formulaires du site → dossiers | `functions/api/formulaire.js` (`/api/formulaire`) + `functions/_lib/demandes.js` |
+| Mise à jour des prix du site | `functions/api/republier.js` (`/api/republier`) + `scripts/prix-publics.mjs` |
 
 - **Supabase** : projet `maison-fil-bleu` (région Paris), compte distinct de celui d'Hexalia. Clé publique dans `src/config/supabase.ts` ; la clé secrète n'est jamais dans le code.
-- **Variables Netlify** (secrètes) : `SUPABASE_SERVICE_ROLE_KEY` (clé secrète Supabase « netlify ») et `NETLIFY_BUILD_HOOK` (crochet de construction « Prix depuis l'appli »).
+- **Hébergement : Cloudflare Pages** (depuis le 25/11/2026, à la place de Netlify). Configuration dans `wrangler.toml`, redirections dans `public/_redirects`, en-têtes dans `public/_headers`, fonctions dans `functions/`. Essai local : `npm run build` puis `npx wrangler pages dev dist`.
+- **Variables secrètes Cloudflare** (Workers & Pages › maison-fil-bleu › Settings › Variables and Secrets) : `SUPABASE_SERVICE_ROLE_KEY` (obligatoire), `CF_DEPLOY_HOOK` (crochet de déploiement pour « Mettre à jour les prix du site »), `TURNSTILE_SECRET` (anti-robots ; clé publique dans `src/config/site.ts`, champ `turnstile`), plus tard `RESEND_API_KEY`, `NOTIF_EMAIL`, `NOTIF_FROM` (e-mail à chaque demande). Sans ces trois dernières, les demandes arrivent seulement dans le back-office.
 - **Accès** : administrateurs listés dans la table `admins` (l'e-mail n'est pas dans le code), double authentification obligatoire ; inscriptions publiques fermées ; une famille ne lit que ses étapes, ses photos partagées et ses documents.
 - **Commandes** : `npm run test:acces` (règles d'accès), `npm run db:push` (nouvelles migrations).
 - **Bons d'intervention** (25/11/2026) : onglet « 6 · Intervention » du dossier et page « Registre » (`src/admin/bons.js`, migration `20261125120000_bons_intervention.sql`). Bon rempli sur la tablette, hors connexion possible, signé au doigt par Fil Bleu puis par le client (sur place, ou depuis son espace client via `bon_a_signer()` / `signer_bon()`). La base refuse toute modification après la signature de Fil Bleu (sauf la signature du client) ; une correction passe par un bon rectificatif. PDF au format de `Bon-intervention-Fil-Bleu-Pro.pdf`, photos en annexe, classé dans `documents` (type `bon_intervention`). Le registre des déchets et l'export CSV sont tirés des bons signés. **La migration doit être appliquée (`npm run db:push`) avant la mise en ligne du code.**
@@ -56,13 +57,13 @@ npm run preview  # sert dist/ en local
 
 **À faire avant d'ouvrir l'espace client aux familles** : nom de domaine + service d'envoi d'e-mails (Resend ou Brevo) branché en SMTP dans Supabase. Sans lui, Supabase n'envoie les e-mails qu'aux membres de l'équipe, en anglais et au plus 2 par heure. Le modèle d'e-mail en français est prêt : `supabase/templates/code-connexion.html` (à activer dans `supabase/config.toml`). Notifications aux familles lors d'un changement d'étape : à ajouter avec ce même service.
 
-**Quota Netlify (offre gratuite)** : chaque mise en ligne, y compris un clic sur « Mettre à jour les prix du site », consomme des crédits (environ 20 par mois). Regrouper les envois sur `main`.
+**Mises en ligne** : Cloudflare Pages gratuit autorise 500 constructions par mois (Netlify en autorisait une vingtaine).
 
 ## Pages partenaires (BRIEF-pages-partenaires.md)
 
 - **`/notaires`, `/agences`, `/residences`** : adresses imprimées dans les QR codes des plaquettes, **à ne jamais changer** (`/notaires/` redirige automatiquement vers `/notaires`). Mise en page commune : `src/components/PagePartenaire.astro`.
 - **`/partenaires`** : page d'accès aux trois (lien « Espace partenaires » du pied de page).
-- **Formulaire `partenaire`** (Netlify Forms, champ caché `source`) → `/merci-partenaire`, et dossier créé dans l'appli pour la famille à rappeler (coordonnées du partenaire dans les notes).
+- **Formulaire `partenaire`** (`/api/formulaire`, champ caché `source`) → `/merci-partenaire`, et dossier créé dans l'appli pour la famille à rappeler (coordonnées du partenaire dans les notes).
 - **Plaquettes PDF** : `public/docs/` (à remplacer par les versions définitives, mêmes noms de fichiers).
 
 ## Simulateur d'estimation
@@ -118,7 +119,7 @@ Liste complète des 34 photos avec leur description : `src/assets/photos/LISTE.m
 - [ ] Textes : mentions légales, CGV ; politique de confidentialité rédigée en projet (durées de conservation et prestataire d'e-mails entre crochets) : à faire valider
 - [ ] Nom de domaine définitif (`astro.config.mjs` et `public/robots.txt`, actuellement `https://www.maisonfilbleu.fr`)
 - [ ] Photos (voir `src/assets/photos/LISEZMOI.md`)
-- [ ] Après achat du domaine : le brancher dans Netlify (Domain management), puis Google Search Console et fiche Google Business Profile
+- [ ] Après achat du domaine : le brancher dans Cloudflare Pages (Custom domains), puis Google Search Console et fiche Google Business Profile
 - [ ] Date de publication des articles (`DATE_PUBLICATION_ARTICLES` dans `src/config/seo.ts`)
 
 ## Écarts volontaires par rapport aux maquettes

@@ -1,20 +1,17 @@
 /**
- * Déclenchée automatiquement par Netlify à chaque demande envoyée par un formulaire du site
- * (événement « submission-created », après le filtre anti-spam de Netlify Forms).
+ * Demandes envoyées par les formulaires du site → dossiers du back-office.
+ * Utilisé par functions/api/formulaire.js (Cloudflare Pages Functions).
  *
  *   - « rappel » (page Contact)  → dossier au statut « Appel », formule conseillée selon la situation ;
- *   - « devis-pro » (Fil Bleu Pro) → dossier « Fil Bleu Pro » (client agence ou pro).
+ *   - « devis-pro » (Fil Bleu Pro) → dossier « Fil Bleu Pro » (client agence ou pro) ;
  *   - « partenaire » (/notaires, /agences, /residences) → dossier au statut « Appel » pour la famille
- *     à rappeler, avec les coordonnées du partenaire dans les notes.
- *   - « grille-pro » (demande de grille tarifaire) : pas de dossier, l'e-mail de Netlify suffit.
+ *     à rappeler, avec les coordonnées du partenaire dans les notes ;
+ *   - « grille-pro » (demande de grille tarifaire) → dossier « Fil Bleu Pro » au statut « Appel ».
  *
  * Le dossier reprend la forme de newDossier() de l'appli (src/admin/dossiers.js), pour s'ouvrir
  * tel quel dans le back-office. Son identifiant est la « référence » générée sur la page
  * (champ caché), ce qui permet au lien de l'e-mail de notification d'ouvrir directement le dossier.
  */
-import { createClient } from '@supabase/supabase-js';
-import { SUPABASE_URL } from '../../src/config/supabase.ts';
-
 // Valeurs par défaut identiques à celles de l'appli (DEFAULTS).
 const VOL = [14, 25, 32, 50], SURF = [35, 70, 90, 110], EVAC = { L: 70, T: 50, S: 75, P: 100 };
 const TAILLES = { '1-2 pièces': 0, '3 pièces': 1, '4 pièces': 2, '5 pièces et plus': 3 };
@@ -53,12 +50,22 @@ export function villeAppli(commune) {
   return commune;
 }
 
+export const FORMULAIRES = ['rappel', 'devis-pro', 'partenaire', 'grille-pro'];
+
 export function dossierDepuisDemande(form, data, id, maintenant) {
   const d = dossierVide(id, maintenant);
   const date = new Date(maintenant).toLocaleString('fr-FR', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Europe/Paris' });
   d.contact.nom = nettoyer(data.nom, 120);
   d.contact.tel = nettoyer(data.telephone, 40);
   d.contact.email = nettoyer(data.email, 160).toLowerCase();
+  if (form === 'grille-pro') {
+    Object.assign(d, { situation: 'vide', formule: 'P', client: 'agence', formuleAuto: false });
+    d.contact.lien = nettoyer(data.societe, 120) || 'Professionnel';
+    d.diag.volume = 0; d.diag.evac = 100;
+    d.notes = [`Demande de grille tarifaire Fil Bleu Pro reçue sur le site le ${date}.`,
+      data.societe && `Société : ${nettoyer(data.societe, 120)}`, 'À envoyer : la grille tarifaire Pro.'].filter(Boolean).join('\n');
+    return d;
+  }
   if (form === 'devis-pro') {
     Object.assign(d, { situation: 'vide', formule: 'P', client: 'agence', formuleAuto: false });
     d.contact.lien = nettoyer(data.societe, 120) || 'Professionnel';
@@ -114,33 +121,3 @@ export function dossierDepuisDemande(form, data, id, maintenant) {
   return d;
 }
 
-export const handler = async (event) => {
-  let corps;
-  try { corps = JSON.parse(event.body || '{}'); } catch { return { statusCode: 400, body: 'invalide' }; }
-  const p = corps.payload || {};
-  const form = p.form_name || p.data?.['form-name'];
-  if (!['rappel', 'devis-pro', 'partenaire'].includes(form)) return { statusCode: 200, body: 'ignoré' };
-  // Garde-fou : un événement Netlify comporte toujours l'identifiant de la demande.
-  if (!p.id) return { statusCode: 400, body: 'refusé' };
-  const cle = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!cle) return { statusCode: 500, body: 'clé absente' };
-  const data = p.data || {};
-  const maintenant = p.created_at || new Date().toISOString();
-  const ref = String(data.reference || '');
-  let id = /^d[a-z0-9]{6,24}$/.test(ref) ? ref : 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-  const sb = createClient(SUPABASE_URL, cle, { auth: { persistSession: false, autoRefreshToken: false } });
-
-  // Une même demande Netlify ne crée qu'un dossier (en cas de nouvel envoi de l'événement).
-  const { data: deja } = await sb.from('dossiers').select('id').eq('data->>demandeNetlify', String(p.id)).maybeSingle();
-  if (deja) return { statusCode: 200, body: 'déjà créé' };
-
-  for (let essai = 0; essai < 2; essai++) {
-    const d = dossierDepuisDemande(form, data, id, maintenant);
-    d.demandeNetlify = String(p.id);
-    const { error } = await sb.from('dossiers').insert({ id, created_at: maintenant, statut: 'Appel', formule: d.formule, data: d });
-    if (!error) return { statusCode: 200, body: 'dossier créé' };
-    if (error.code !== '23505') return { statusCode: 500, body: error.message };
-    id = 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);   // référence déjà prise
-  }
-  return { statusCode: 500, body: 'identifiant indisponible' };
-};

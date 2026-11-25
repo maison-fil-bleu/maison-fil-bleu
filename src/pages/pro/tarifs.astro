@@ -4,6 +4,7 @@ import Pro from '../../layouts/Pro.astro';
 import { SITE } from '../../config/site';
 import { META } from '../../config/meta';
 const meta = META['/pro/tarifs'];
+import Turnstile from '../../components/Turnstile.astro';
 ---
 <Pro title={meta.title} description={meta.description} onglet="tarifs">
 <section style="background: #FFFFFF; border-bottom: 1px solid #E3DCCF">
@@ -29,7 +30,7 @@ const meta = META['/pro/tarifs'];
 <section style="background: #EFE9DE">
 <div class="w sec g2" style="gap: 64px; align-items: start">
 <div style="display: flex; flex-direction: column; gap: 18px"><span class="lbl">Ce qui est compris</span><h2 class="h2">Un logement rendu prêt à visiter.</h2><p class="p">Nettoyage des sols, de la cuisine, des sanitaires, des vitres et des menuiseries accessibles. Débarras en filières agréées, justificatifs sur demande. Remise en état coordonnée avec des artisans *, si besoin. Main-d'œuvre, matériel et transport compris. Photos avant et après, facture à 30 jours.</p><p class="p" style="font-size: 14px">* Travaux des artisans : réglés directement par le client, non compris dans nos tarifs. Non compris : le tri avec une famille (c'est le métier de <a href="/">Maison Fil Bleu</a>), les déchets dangereux. Particuliers : sur devis.</p></div>
-<form name="grille-pro" method="POST" action="/pro/merci-grille" data-netlify="true" netlify-honeypot="bot-field" style="background: #FFFFFF; border: 1px solid #E3DCCF; padding: 44px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 30px" class="g2">
+<form name="grille-pro" method="POST" action="/api/formulaire" style="background: #FFFFFF; border: 1px solid #E3DCCF; padding: 44px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 30px" class="g2">
 <input type="hidden" name="form-name" value="grille-pro">
 <p class="hp" aria-hidden="true"><label>Ne pas remplir ce champ <input name="bot-field" tabindex="-1" autocomplete="off"></label></p>
 <span style="grid-column: 1 / -1; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; font-weight: 500">Recevoir la grille complète</span>
@@ -38,6 +39,7 @@ const meta = META['/pro/tarifs'];
 <label class="f" style="display: flex; flex-direction: column; gap: 9px; font-family: 'Nunito Sans', sans-serif; font-size: 11.5px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: #5B606A">E-mail professionnel<input name="email" type="email" autocomplete="email" required style="font-family: 'Nunito Sans', sans-serif; font-size: 16px; font-weight: 300; letter-spacing: 0; text-transform: none; border: none; border-bottom: 1px solid #BDB2A0; padding: 10px 0; background: transparent"></label>
 <label class="f" style="display: flex; flex-direction: column; gap: 9px; font-family: 'Nunito Sans', sans-serif; font-size: 11.5px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: #5B606A">Téléphone<input name="telephone" type="tel" autocomplete="tel" style="font-family: 'Nunito Sans', sans-serif; font-size: 16px; font-weight: 300; letter-spacing: 0; text-transform: none; border: none; border-bottom: 1px solid #BDB2A0; padding: 10px 0; background: transparent"></label>
 <p class="p" style="grid-column: 1 / -1; font-size: 13px">Vos coordonnées servent uniquement à répondre à votre demande. Elles ne sont ni vendues ni transmises. <a href="/confidentialite">Politique de confidentialité</a> · <a href="/cgv">CGV</a> · <a href="/mentions-legales">Mentions légales</a></p>
+<Turnstile />
 <button type="submit" style="grid-column: 1 / -1; font-family: 'Nunito Sans', sans-serif; font-size: 12.5px; font-weight: 500; letter-spacing: 2.2px; text-transform: uppercase; padding: 20px; border: 1px solid #15233A; background: #15233A; color: #F8F5EF; cursor: pointer">Recevoir la grille</button>
 <p style="grid-column: 1 / -1; margin: 0; font-size: 13px; color: #5B606A">Bientôt : consultez la grille et suivez vos chantiers dans votre espace professionnel.</p>
 </form>
