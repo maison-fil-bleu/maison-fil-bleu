@@ -92,6 +92,42 @@ pre.quote{white-space:pre-wrap;font-family:var(--body);font-size:14px;background
 label.row{flex-wrap:nowrap;align-items:flex-start}label.row input[type=checkbox]{margin-top:3px;flex:none}
 @media (max-width:420px){.grid2{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* Bon d'intervention : écran tablette (gros boutons, lisible en plein jour) */
+body.bi-large main{max-width:960px}
+.bi{display:flex;flex-direction:column;gap:18px}
+.bi h4{font-family:var(--body);font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);margin:6px 0 0}
+.bi input,.bi select,.bi textarea{min-height:50px;font-size:17px}
+.bi .btn{min-height:52px;font-size:16px}
+.bi .seg button{min-height:46px;font-size:15px;padding:10px 16px}
+.bi .step button{width:48px;height:48px}
+.bi-qte{width:96px!important;text-align:center;font-variant-numeric:tabular-nums}
+.bi-ecart{margin-top:-8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.bi-cases{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+.bi-case{flex-direction:row!important;align-items:center;gap:12px!important;color:var(--ink)!important;font-size:16px!important;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-height:54px;cursor:pointer}
+.bi-case input{width:26px!important;height:26px;min-height:0!important;flex:none;accent-color:var(--blue)}
+.bi-etapes{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.bi-etapes::-webkit-scrollbar{display:none}
+.bi-etapes button{flex:1 0 auto;display:flex;align-items:center;gap:8px;font:inherit;font-size:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:8px 14px 8px 8px;cursor:pointer;min-height:46px}
+.bi-etapes button b{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--tint);font-weight:600}
+.bi-etapes button[aria-current="step"]{border-color:var(--blue);font-weight:600}
+.bi-etapes button[aria-current="step"] b{background:var(--blue);color:var(--paper)}
+.bi-badge{font-size:13px;font-weight:600;padding:6px 12px;border-radius:999px;border:1px solid currentColor}
+.bi-badge.good{color:var(--good)}.bi-badge.warn{color:var(--warn)}
+.bi-photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.bi-photos:empty{display:none}
+.bi-photos figure{margin:0;position:relative;aspect-ratio:4/3;background:var(--tint);border-radius:10px;overflow:hidden}
+.bi-photos img{width:100%;height:100%;object-fit:cover;display:block}
+.bi-photos button{position:absolute;top:6px;right:6px;width:36px;height:36px;border-radius:50%;border:none;background:rgba(15,18,24,.7);color:#fff;font-size:20px;cursor:pointer}
+.bi-prendre{display:flex;align-items:center;justify-content:center;cursor:pointer}
+.bi-heure{display:flex;gap:8px;align-items:flex-end}.bi-heure label{flex:1}.bi-heure .btn{flex:none}
+.bi .pad{height:220px}
+.bi-sig{max-width:320px;width:100%;background:#fff;border-radius:10px;border:1px solid var(--line)}
+.bi-suite{position:sticky;bottom:calc(76px + env(safe-area-inset-bottom,0px));background:var(--paper);padding:8px 0;z-index:3}
+.bi-registre{overflow-x:auto;padding:8px}
+.bi-registre table{min-width:1100px;font-size:13px}
+.bi-registre th{text-align:left;font-weight:600;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.bi-registre td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top;white-space:nowrap}
+.suggest.good{border-left-color:var(--good)}
 [hidden]{display:none!important}
 #etat-reseau{position:sticky;top:0;z-index:6}
 .suggest.bad{border-left-color:var(--bad)}.suggest.warn{border-left-color:var(--warn)}
@@ -103,6 +139,7 @@ label.row{flex-wrap:nowrap;align-items:flex-start}label.row input[type=checkbox]
 <nav class="bottom" aria-label="Navigation" hidden>
 <button id="nav-list" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Dossiers</button>
 <button id="nav-new"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>Nouvel appel</button>
+<button id="nav-registre"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 3h10l3 3v15H4V3h3z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>Registre</button>
 <button id="nav-bilan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Bilan</button>
 <button id="nav-set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14 3h-4l-.6 2.7a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2L10 21h4l.6-2.7a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z"/></svg>Réglages</button>
 </nav>

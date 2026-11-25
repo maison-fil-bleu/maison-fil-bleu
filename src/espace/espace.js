@@ -16,7 +16,65 @@ export function creerClient() {
 const FORMULES = { L: 'Clés en main', T: 'Nouveau départ', S: 'Succession', P: 'Fil Bleu Pro' };
 const ETAPES = [['diagnostic', 'Diagnostic'], ['devis', 'Devis signé'], ['preparation', 'Préparation'], ['interventions', 'Interventions'], ['cles', 'Remise des clés']];
 const ETATS = { a_venir: 'À venir', en_cours: 'En cours', termine: 'Terminé' };
-const TYPES_DOC = { devis: 'Devis', facture: 'Facture', etat_des_lieux: 'État des lieux', autre: 'Document' };
+const TYPES_DOC = { devis: 'Devis', facture: 'Facture', etat_des_lieux: 'État des lieux', bon_intervention: "Bon d'intervention", autre: 'Document' };
+// Bon d'intervention à signer à distance (le porteur a signé sur place, le client n'y était pas).
+const BI_OPTS = [['vitres', 'Baie vitrée ou grande fenêtre en plus', 'u'], ['pack', 'Pack cuisine (four, réfrigérateur, hotte)', ''], ['placards', 'Intérieur des placards, par pièce', 'pièces'], ['murs', 'Lessivage des murs', 'm²'], ['moquette', 'Shampoing moquette', 'm²'], ['balcon', 'Balcon ou terrasse', ''], ['cave', 'Cave ou garage (nettoyage)', '']];
+const BI_DEST = { decheterie: 'Déchèterie', ecomaison: 'Ecomaison', association: 'Association', ressourcerie: 'Ressourcerie', ferrailleur: 'Ferrailleur' };
+const BI_NAT = { tout_venant: 'Tout-venant', mobilier: 'Mobilier', bois: 'Bois', metaux: 'Métaux', electromenager: 'Électroménager', gravats: 'Gravats', cartons: 'Cartons et papiers', textiles: 'Textiles', verts: 'Déchets verts' };
+const BI_TRAIT = { reemploi: 'Réemploi', recyclage: 'Recyclage', energie: 'Valorisation énergétique', enfouissement: 'Enfouissement' };
+const nombre = (v) => (Math.round((Number(v) || 0) * 10) / 10).toLocaleString('fr-FR');
+function bonHtml(b) {
+  const r = b.resume || {}, R = r.realise || {}, Lg = r.logement || {}, D = r.deroulement || {}, sp = r.signatures?.porteur || {};
+  const marque = b.marque === 'pro' ? 'Fil Bleu Pro' : 'Maison Fil Bleu';
+  const prest = [
+    Number(R.volume) > 0 ? `Débarras : ${nombre(R.volume)} m³ évacués` : null,
+    Number(R.cave) > 0 ? `Cave ou garage : ${nombre(R.cave)} m³` : null,
+    R.complet ? 'Nettoyage complet du logement' : null, R.travaux ? 'Après travaux (+ 30 %)' : null, R.urgence ? 'Urgence sous 72 h (+ 25 %)' : null,
+    ...(b.marque === 'pro' ? BI_OPTS.filter(([k]) => Number(R.opts?.[k]) > 0).map(([k, l, u]) => u ? `${l} : ${nombre(R.opts[k])} ${u}` : l) : []),
+  ].filter(Boolean);
+  const heure = (x) => x ? new Date(x).toLocaleString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+  return `<div class="ec-carte ec-bon" data-bon="${esc(b.id)}">
+    <h2>Bon d'intervention à signer</h2>
+    <p class="p" style="margin:0">${esc(marque)} · n° ${esc(b.numero)} · ${esc(dateFr(r.date))}${r.rectifie_numero ? ` · rectifie le bon n° ${esc(r.rectifie_numero)}` : ''}${Lg.adresse ? ` · ${esc(Lg.adresse)}` : ''}</p>
+    <div class="ec-bon-bloc"><b>Prestations réalisées</b><ul>${prest.map((x) => `<li>${esc(x)}</li>`).join('') || '<li>—</li>'}</ul></div>
+    ${b.marque !== 'pro' && (r.famille?.objets || r.famille?.papiers) ? `<div class="ec-bon-bloc">${r.famille.objets ? `<b>Objets mis de côté pour la famille</b><p>${esc(r.famille.objets)}</p>` : ''}${r.famille.papiers ? `<b>Papiers remis</b><p>${esc(r.famille.papiers)}</p>` : ''}</div>` : ''}
+    ${(r.dechets || []).length ? `<div class="ec-bon-bloc"><b>Déchets et filières</b><ul>${r.dechets.map((l) => `<li>${esc(BI_NAT[l.nature] || '')}${l.volume ? ` · ${esc(nombre(l.volume))} m³` : ''} · ${esc(BI_DEST[l.destination] || '')}${l.installation ? ` (${esc(l.installation)})` : ''} · ${esc(BI_TRAIT[l.traitement] || '')}</li>`).join('')}</ul></div>` : ''}
+    <div class="ec-bon-bloc"><b>Déroulement</b><p>${esc([D.arrivee ? `Arrivée ${D.arrivee}` : '', D.depart ? `départ ${D.depart}` : '', D.intervenants ? `${D.intervenants} intervenant${D.intervenants > 1 ? 's' : ''}` : ''].filter(Boolean).join(' · ') || '—')}</p></div>
+    <div class="ec-bon-bloc"><b>Observations et réserves</b><p>${esc(r.observations || 'Aucune.')}</p></div>
+    <div class="ec-bon-bloc"><b>Fin d'intervention</b><p>${r.fin?.conformite === 'reserves' ? 'Conforme avec réserves' : 'Prestation conforme au devis'}${r.fin?.clesA ? ` · clés rendues à ${esc(r.fin.clesA)}` : ''}<br>Signé pour ${esc(marque)} par ${esc(sp.nom || '')} le ${esc(heure(sp.date))}.</p></div>
+    <label for="bi-nom-${esc(b.id)}">Votre nom</label><input id="bi-nom-${esc(b.id)}" data-bi-nom autocomplete="name">
+    <label for="bi-qual-${esc(b.id)}">Qualité <span style="font-weight:400">(propriétaire, gestionnaire, héritier…)</span></label><input id="bi-qual-${esc(b.id)}" data-bi-qualite>
+    <span class="ec-bon-lbl">Votre signature, au doigt ou à la souris</span>
+    <canvas class="ec-pad" aria-label="Zone de signature"></canvas>
+    <div class="ec-contact"><button type="button" class="btn2" data-bi-effacer>Effacer</button><button type="button" class="btn" data-bi-signer>Signer le bon</button></div>
+    <div class="ec-msg" role="status" hidden></div>
+  </div>`;
+}
+function lierBon(sb, carte, apres) {
+  const cv = carte.querySelector('canvas'), g = cv.getContext('2d'); let trace = false, dernier = null;
+  const taille = () => { const r = cv.getBoundingClientRect(), k = window.devicePixelRatio || 1; cv.width = r.width * k; cv.height = r.height * k; g.setTransform(k, 0, 0, k, 0, 0); g.fillStyle = '#fff'; g.fillRect(0, 0, r.width, r.height); g.lineWidth = 2.4; g.lineCap = 'round'; g.lineJoin = 'round'; g.strokeStyle = '#18202C'; trace = false; };
+  taille();
+  const pt = (e) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  cv.onpointerdown = (e) => { cv.setPointerCapture(e.pointerId); dernier = pt(e); g.beginPath(); g.arc(dernier[0], dernier[1], 1.2, 0, 7); g.fillStyle = '#18202C'; g.fill(); trace = true; };
+  cv.onpointermove = (e) => { if (!dernier) return; const p = pt(e); g.beginPath(); g.moveTo(...dernier); g.lineTo(...p); g.stroke(); dernier = p; };
+  cv.onpointerup = cv.onpointercancel = () => { dernier = null; };
+  const msg = (t, alerte) => { const el = carte.querySelector('.ec-msg'); el.hidden = !t; el.className = 'ec-msg' + (alerte ? ' alerte' : ''); el.textContent = t; };
+  carte.querySelector('[data-bi-effacer]').onclick = taille;
+  carte.querySelector('[data-bi-signer]').onclick = async (e) => {
+    const nom = carte.querySelector('[data-bi-nom]').value.trim();
+    if (!nom) { msg('Indiquez votre nom.', true); return; }
+    if (!trace) { msg('Signez dans le cadre.', true); return; }
+    const o = document.createElement('canvas'); o.width = 480; o.height = Math.round(480 * cv.height / cv.width);
+    const og = o.getContext('2d'); og.fillStyle = '#fff'; og.fillRect(0, 0, o.width, o.height); og.drawImage(cv, 0, 0, o.width, o.height);
+    e.target.disabled = true; msg('Signature en cours…');
+    const { error } = await sb.rpc('signer_bon', { p_id: carte.dataset.bon, p_nom: nom, p_qualite: carte.querySelector('[data-bi-qualite]').value.trim(), p_img: o.toDataURL('image/jpeg', 0.75) });
+    e.target.disabled = false;
+    if (error) { msg("La signature n'a pas pu être enregistrée. Vérifiez votre connexion internet et réessayez.", true); return; }
+    msg('Merci, le bon est signé. Sa copie en PDF apparaîtra dans vos documents dès que votre interlocuteur l\'aura classée.');
+    carte.querySelectorAll('input, button, canvas').forEach((x) => { x.disabled = true; x.style.pointerEvents = 'none'; });
+    setTimeout(apres, 2500);
+  };
+}
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const dateFr = (d) => { if (!d) return ''; const x = new Date(d.length === 10 ? d + 'T12:00:00' : d); return isNaN(x) ? '' : x.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }); };
 const telLien = (t) => { const n = String(t || '').replace(/[^\d+]/g, ''); return n.length >= 10 && !/\[/.test(t) ? `tel:${n.startsWith('0') ? '+33' + n.slice(1) : n}` : null; };
@@ -79,10 +137,12 @@ export function demarrerEspace(sb, racine, contact = {}) {
 
   async function afficherDossier() {
     const d = dossiers.find((x) => x.dossier_id === courant);
-    const [{ data: photos }, { data: docs }] = await Promise.all([
+    const [{ data: photos }, { data: docs }, { data: aSigner }] = await Promise.all([
       sb.from('photos_partagees').select('chemin, legende, ordre').eq('dossier_id', courant).order('ordre'),
       sb.from('documents').select('id, chemin, type, nom, date').eq('dossier_id', courant).order('date', { ascending: false }),
+      sb.rpc('bon_a_signer').then((r) => r, () => ({ data: [] })),
     ]);
+    const bonsASigner = (Array.isArray(aSigner) ? aSigner : []).filter((b) => b.dossier_id === courant);
     const etapes = ETAPES.map(([cle, nom]) => ({ nom, ...((d.etapes || []).find((e) => e.cle === cle) || { cle, etat: 'a_venir' }) }));
     const enCours = etapes.find((e) => e.etat === 'en_cours') || etapes.find((e) => e.etat === 'a_venir');
     afficher(`
@@ -98,12 +158,14 @@ export function demarrerEspace(sb, racine, contact = {}) {
           ${e.message ? `<p class="ec-texte">${esc(e.message)}</p>` : ''}</li>`).join('')}</ol>
       </div>
       ${(photos || []).length ? `<div class="ec-carte"><h2>Photos</h2><div class="ec-galerie" id="ec-galerie">${photos.map((p, i) => `<a href="#" data-photo="${esc(p.chemin)}" aria-label="Agrandir la photo ${i + 1}${p.legende ? ' : ' + esc(p.legende) : ''}"><img alt="${esc(p.legende || 'Photo du logement ' + (i + 1))}" loading="lazy"></a>`).join('')}</div></div>` : ''}
+      ${bonsASigner.map(bonHtml).join('')}
       <div class="ec-carte"><h2>Documents</h2>
         ${(docs || []).length ? `<ul class="ec-docs">${docs.map((x) => `<li><div>${esc(x.nom)}<br><span>${esc(TYPES_DOC[x.type] || 'Document')} · ${esc(dateFr(x.date))}</span></div><button type="button" class="ec-lien" data-doc="${esc(x.chemin)}">Ouvrir</button></li>`).join('')}</ul>` : `<p class="p" style="margin:0">Les documents de votre dossier (devis signé, factures, état des lieux) apparaîtront ici.</p>`}
       </div>
       <div class="ec-carte sable"><h2>Votre interlocuteur</h2>${contactHtml(d.interlocuteur)}</div>
       ${basHtml()}`);
     racine.querySelectorAll('[data-dossier]').forEach((b) => b.onclick = () => { courant = b.dataset.dossier; afficherDossier(); });
+    racine.querySelectorAll('.ec-bon').forEach((c) => lierBon(sb, c, () => afficherDossier()));
     // Photos : liens signés temporaires, seulement pour les photos partagées de ce dossier.
     const chemins = (photos || []).map((p) => p.chemin);
     if (chemins.length) {

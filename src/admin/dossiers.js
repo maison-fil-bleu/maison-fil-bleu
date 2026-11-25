@@ -5,6 +5,7 @@
  * les photos, le téléchargement et le mode hors ligne ont changé.
  */
 import { CGV_PARTICULIERS, CGV_PRO, texte as texteCgv } from '../config/cgv';
+import { creerBons } from './bons.js';
 
 export function demarrerAppli({ sb, utilisateur, actions }) {
 const $ = (s, el=document) => el.querySelector(s);
@@ -86,6 +87,7 @@ let view = {name:'list'};   // list | dossier | settings
 let tab = 'appel';
 let store = 'db';
 let saveTimers = {};
+let bonsApi = null;   // bons d'intervention (src/admin/bons.js)
 
 /* ---------- Stockage : Supabase, avec file d'attente hors ligne ---------- */
 // Les modifications partent 500 ms après la dernière saisie. Sans réseau, elles sont gardées
@@ -96,7 +98,7 @@ function localSet(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(
 function loadLocal(){ dossiers = localGet(K_CACHE) || {}; const s = localGet(K_REGL); if(s) S = {...structuredClone(DEFAULTS), ...s}; }
 function fileAttente(){ return localGet(K_FILE) || {}; }
 function suppressions(){ return localGet(K_SUPPR) || []; }
-function nbEnAttente(){ return Object.keys(fileAttente()).length + suppressions().length + (photosEnAttente||0); }
+function nbEnAttente(){ return Object.keys(fileAttente()).length + suppressions().length + (photosEnAttente||0) + (bonsApi?.nbEnAttente()||0); }
 const ligne = d => ({ id: d.id, created_at: d.created || new Date().toISOString(), statut: d.statut, formule: d.formule, data: d });
 async function envoyer(d){
   const { error } = await sb.from('dossiers').upsert(ligne(d));
@@ -121,6 +123,7 @@ async function viderFile(){
   for(const id of sup){ const { error } = await sb.from('dossiers').delete().eq('id', id); if(error) reste.push(id); else await supprimerFichiers(id); }
   localSet(K_SUPPR, reste);
   await envoyerPhotosEnAttente();
+  await bonsApi?.synchroniser();
   if(ok) showToast('Modifications hors ligne envoyées.');
   majBandeau();
 }
@@ -138,6 +141,7 @@ async function chargerDistant(){
   dossiers = next; localSet(K_CACHE, dossiers);
   if(reg?.data){ S = {...structuredClone(DEFAULTS), ...reg.data}; localSet(K_REGL, S); }
   else { await sb.from('reglages').upsert({ id: 1, data: S }); }
+  try{ await bonsApi?.charger(); }catch(e){}
 }
 async function persistSettings(){
   localSet(K_REGL, S);
@@ -295,8 +299,8 @@ function calc(d){
 
 /* ---------- Rendu ---------- */
 const app = $('#app');
-function setNav(){ $('#nav-list').setAttribute('aria-current', view.name==='list'?'page':'false'); $('#nav-set').setAttribute('aria-current', view.name==='settings'?'page':'false'); $('#nav-bilan').setAttribute('aria-current', view.name==='bilan'?'page':'false'); }
-function render(){ setNav(); if(view.name==='list') renderList(); else if(view.name==='dossier') renderDossier(); else if(view.name==='bilan') renderBilan(); else renderSettings(); }
+function setNav(){ $('#nav-registre')?.setAttribute('aria-current', view.name==='registre'?'page':'false'); $('#nav-list').setAttribute('aria-current', ['list','dossier','bon'].includes(view.name)?'page':'false'); $('#nav-set').setAttribute('aria-current', view.name==='settings'?'page':'false'); $('#nav-bilan').setAttribute('aria-current', view.name==='bilan'?'page':'false'); }
+function render(){ setNav(); if(view.name!=='bon') bonsApi?.quitter(); if(view.name==='list') renderList(); else if(view.name==='dossier') renderDossier(); else if(view.name==='bon') bonsApi.ecran(view.id); else if(view.name==='registre') bonsApi.registre(); else if(view.name==='bilan') renderBilan(); else renderSettings(); }
 
 function header(sub){
   return `<div class="top"><div class="brand"><svg width="46" height="22" viewBox="0 0 164 80" aria-hidden="true"><path d="M8 74 V44 L34 22 L60 44 V74" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><path d="M104 74 V44 L130 22 L156 44 V74" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><path d="M34 60 C52 76, 64 40, 82 54 S112 70, 130 60" fill="none" stroke="var(--blue)" stroke-width="5.5" stroke-linecap="round"/></svg><div><div style="font-family:var(--display);font-size:20px;line-height:1">Fil Bleu</div><small>${esc(sub)}</small></div></div></div>`;
@@ -370,7 +374,7 @@ function renderDossier(){
   d.suivi = {...structuredClone(SUIVI0), ...(d.suivi||{})};
   if(!d.kmSource){ d.kmSource = 'estime'; setTimeout(()=>updateDistances(d,true),0); }
   if(showNouveau(d) && !d.nouveau) d.nouveau = { type: d.situation==='residence' ? 'residence' : 'appartement', nom:'', adr:null, ville:'', taille: d.situation==='residence' ? 0 : 2, etage:0, ascenseur:true, date:'', contact:'', km:null, kmAN:null };
-  const tabs = `<div class="tabs" role="tablist">${[['appel','1 · Appel'],['diag','2 · Sur place'],['devis','3 · Devis'],['suivi','4 · Suivi'],['espace','5 · Espace client']].map(([k,l])=>`<button role="tab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join('')}</div>`;
+  const tabs = `<div class="tabs" role="tablist">${[['appel','1 · Appel'],['diag','2 · Sur place'],['devis','3 · Devis'],['suivi','4 · Suivi'],['espace','5 · Espace client'],['bons','6 · Intervention']].map(([k,l])=>`<button role="tab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join('')}</div>`;
   const resume = `<div class="kpis"><div class="kpi"><b>${eur(c.ttc)}</b><span>${f_label(d)} · estimation</span></div><div class="kpi"><b class="${c.marge<0?'bad':c.pct<0.15?'warn':'good'}">${eur(c.marge)}</b><span>Marge société (${Math.round(c.pct*100)} %) après vos heures</span></div><div class="kpi"><b>${num(c.hEquipe,0)} h</b><span>Équipe · ${c.jours} jour${c.jours>1?'s':''}</span></div><div class="kpi"><b>${num(c.hPorteur,0)} h</b><span>Vos heures (${eur(c.cPorteur)})</span></div></div>`;
   let body = '';
   if(tab==='appel') body = `
@@ -512,11 +516,13 @@ function renderDossier(){
     ${ck('fini','Chantier terminé : compter ce dossier dans le bilan')}
     <label>Ce que j'ai appris sur ce chantier<textarea data-f="suivi.notes" placeholder="Ce qui a pris plus de temps que prévu, ce qu'il faudra demander au prochain diagnostic…">${esc(s.notes)}</textarea></label>
   </div>`; }
+  if(tab==='bons') body = `<div id="bons-onglet" style="display:flex;flex-direction:column;gap:18px"></div>`;
   if(tab==='espace') body = `<div id="espace" style="display:flex;flex-direction:column;gap:18px"><div class="card"><p class="muted" style="margin:0">Chargement de l'espace client…</p></div></div>`;
   app.innerHTML = header(FORM[d.formule]) + `<div><h2>${esc(d.contact.nom||'Nouveau dossier')}</h2><p class="small muted" style="margin:4px 0 0">${esc(SITU[d.situation])} · ${esc(d.ville)}</p></div>` + tabs + resume + body
     + `<button class="btn danger" id="b-del" style="margin-top:8px">Supprimer ce dossier</button>`;
   bind(d);
   if(tab==='espace') chargerEspace(d);
+  if(tab==='bons') bonsApi.onglet(d, $('#bons-onglet'));
 }
 function f_label(d){ return FORM[d.formule]; }
 function quoteText(d,c){
@@ -660,8 +666,8 @@ function makePdf(){
   const pages = []; let ops = []; const images = [];
   const H = 842;
   const api = {
-    text(x,y,s,o={}){ const size=o.size||10, bold=!!o.bold; let xx = x; if(o.align==='right') xx = x - tw(s,size,bold); else if(o.align==='center') xx = x - tw(s,size,bold)/2;
-      ops.push(`BT /${bold?'F2':'F1'} ${size} Tf ${hexRGB(o.color||'#1E2430')} rg ${xx.toFixed(2)} ${(H-y).toFixed(2)} Td (${pdfStr(s)}) Tj ET`); },
+    text(x,y,s,o={}){ const size=o.size||10, bold=!!o.bold, wd = tw(s,size,bold)*(o.serif?0.9:1); let xx = x; if(o.align==='right') xx = x - wd; else if(o.align==='center') xx = x - wd/2;
+      ops.push(`BT /${o.serif?'F3':bold?'F2':'F1'} ${size} Tf ${hexRGB(o.color||'#1E2430')} rg ${xx.toFixed(2)} ${(H-y).toFixed(2)} Td (${pdfStr(s)}) Tj ET`); },
     line(x1,y1,x2,y2,color='#E2DDD4',w=0.8){ ops.push(`${hexRGB(color)} RG ${w} w ${x1} ${H-y1} m ${x2} ${H-y2} l S`); },
     rect(x,y,w,h,fill){ ops.push(`${hexRGB(fill)} rg ${x} ${H-y-h} ${w} ${h} re f`); },
     box(x,y,w,h,color='#E2DDD4'){ ops.push(`${hexRGB(color)} RG 0.8 w ${x} ${H-y-h} ${w} ${h} re S`); },
@@ -679,12 +685,13 @@ function makePdf(){
       obj(2, `<< /Type /Pages /Kids [${pageIds.map(i=>i+' 0 R').join(' ')}] /Count ${pages.length} >>`);
       obj(3, `<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>`);
       obj(4, `<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>`);
+      obj(firstPage + pages.length*2, `<< /Type /Font /Subtype /Type1 /BaseFont /Times-Roman /Encoding /WinAnsiEncoding >>`);
       images.forEach((im,i) => obj(firstImg+i, [`<< /Type /XObject /Subtype /Image /Width ${im.iw} /Height ${im.ih} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${im.bytes.length} >>\nstream\n`, im.bytes, `\nendstream`]));
       const xo = images.map((_,i)=>`/Im${i} ${firstImg+i} 0 R`).join(' ');
       pages.forEach((p,i) => { const id = pageIds[i]; const body = Uint8Array.from(p, ch => ch.charCodeAt(0) & 255);
-        obj(id, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> ${xo?`/XObject << ${xo} >>`:''} >> /Contents ${id+1} 0 R >>`);
+        obj(id, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 ${firstPage + pages.length*2} 0 R >> ${xo?`/XObject << ${xo} >>`:''} >> /Contents ${id+1} 0 R >>`);
         obj(id+1, [`<< /Length ${body.length} >>\nstream\n`, body, `\nendstream`]); });
-      const total = firstPage + pages.length*2; const xref = len;
+      const total = firstPage + pages.length*2 + 1; const xref = len;
       push(`xref\n0 ${total}\n0000000000 65535 f \n`);
       for(let i=1;i<total;i++) push(String(offs[i]).padStart(10,'0') + ' 00000 n \n');
       push(`trailer\n<< /Size ${total} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`);
@@ -877,7 +884,7 @@ const ETAPES = [
   ['interventions', 'Interventions'], ['cles', 'Remise des clés']
 ];
 const ETATS = [['a_venir','À venir'], ['en_cours','En cours'], ['termine','Terminé']];
-const TYPES_DOC = { devis:'Devis', facture:'Facture', etat_des_lieux:'État des lieux', autre:'Autre document' };
+const TYPES_DOC = { devis:'Devis', facture:'Facture', etat_des_lieux:'État des lieux', bon_intervention:"Bon d'intervention", autre:'Autre document' };
 const espaces = {};   // dossier_id -> { ligne, acces, photos, docs }
 let espaceTimer = null;
 function etapesParDefaut(d){
@@ -951,7 +958,7 @@ function renderEspace(d){
   <div class="card"><h3>Documents</h3>
     ${e.docs.length ? `<table>${e.docs.map(x => `<tr><td>${esc(x.nom)}<br><span class="small muted">${esc(TYPES_DOC[x.type]||'Document')} · ${new Date(x.date).toLocaleDateString('fr-FR')}</span></td><td class="n" style="white-space:nowrap"><button type="button" class="btn ghost" data-voir="${esc(x.chemin)}" style="padding:8px 10px">Voir</button> <button type="button" class="btn danger" data-retdoc="${esc(x.id)}" style="padding:8px 10px">Retirer</button></td></tr>`).join('')}</table>` : `<p class="small" style="margin:0">Aucun document publié.</p>`}
     <button type="button" class="btn ghost" id="doc-devis">Publier le devis${d.signature?' signé':''} (PDF)</button>
-    <label>Type du document à ajouter${seg('doc-type', Object.entries(TYPES_DOC).filter(([k])=>k!=='devis'), espaces._type||'facture')}</label>
+    <label>Type du document à ajouter${seg('doc-type', Object.entries(TYPES_DOC).filter(([k])=>k!=='devis' && k!=='bon_intervention'), espaces._type||'facture')}</label>
     <label class="btn ghost" style="text-align:center;cursor:pointer">Ajouter un document (PDF ou photo)<input id="doc-fichier" type="file" accept="application/pdf,image/jpeg,image/png" hidden></label>
   </div>`;
   bindEspace(d);
@@ -1194,6 +1201,11 @@ $('#nav-list').onclick = () => { view={name:'list'}; render(); };
 $('#nav-new').onclick = startNew;
 $('#nav-set').onclick = () => { view={name:'settings'}; render(); };
 $('#nav-bilan').onclick = () => { view={name:'bilan'}; render(); window.scrollTo(0,0); };
+// Bons d'intervention et registre des déchets : module à part, qui réutilise le générateur PDF et les calculs du devis.
+bonsApi = creerBons({ sb, $, esc, eur, num, showToast, makePdf, wrap, tw, dataUrlBytes, imgSize, calc, devisNo, persist, header, majBandeau, rerender,
+  soc: () => ({...DEFAULTS.soc, ...(S.soc||{})}), dossiers: () => dossiers,
+  setView: (v, t) => { view = v; if(t) tab = t; render(); } });
+const navReg = $('#nav-registre'); if(navReg) navReg.onclick = () => { view={name:'registre'}; render(); window.scrollTo(0,0); };
 document.querySelector('nav.bottom').hidden = false;
 // Lien direct vers un dossier (ex. depuis l'e-mail d'une demande du site : /admin#dossier=<référence>).
 const cible = new URLSearchParams(location.hash.slice(1)).get('dossier');
@@ -1211,5 +1223,5 @@ document.addEventListener('visibilitychange', async () => {
   if(document.visibilityState !== 'visible' || !navigator.onLine || Object.keys(saveTimers).length) return;
   try{ await viderFile(); await chargerDistant(); rerender(); }catch(e){}
 });
-return { viderCache(){ [K_CACHE, K_FILE, K_SUPPR, K_REGL].forEach(k => { try{ localStorage.removeItem(k); }catch(e){} }); } };
+return { viderCache(){ [K_CACHE, K_FILE, K_SUPPR, K_REGL].forEach(k => { try{ localStorage.removeItem(k); }catch(e){} }); bonsApi?.viderCache(); } };
 }

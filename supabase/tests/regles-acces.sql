@@ -144,6 +144,57 @@ do $$ begin
 end $$;
 reset role;
 
+-- ---------- 8. Bons d'intervention : verrou après signature, signature du client à distance ----------
+insert into public.bons (id, dossier_id, numero, marque, data) values
+  ('bA', 'dA', 'BI-2099-0001', 'famille', '{"observations":"brouillon","dechets":[{"nature":"mobilier","cout":40}],"signatures":{}}');
+set local role authenticated;
+set local request.jwt.claims = '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000a","email":"famille.a@essai.test","aal":"aal1"}';
+do $$ begin
+  if exists (select 1 from public.bons) then raise exception 'ÉCHEC 8a : une famille lit la table bons'; end if;
+  if jsonb_array_length(public.bon_a_signer()) <> 0 then raise exception 'ÉCHEC 8b : bon non signé par Fil Bleu proposé au client'; end if;
+end $$;
+reset role;
+set local role authenticated;
+set local request.jwt.claims = '{"role":"authenticated","sub":"00000000-0000-0000-0000-000000000001","email":"admin@essai.test","aal":"aal2"}';
+do $$ begin
+  update public.bons set data = data || '{"observations":"modifié avant signature"}' where id = 'bA';
+  update public.bons set data = jsonb_set(data, '{signatures}', '{"porteur":{"nom":"Essai","img":"x","date":"2099-01-01T10:00:00Z"},"distance":{"email":"famille.a@essai.test"}}') where id = 'bA';
+  begin
+    update public.bons set data = data || '{"observations":"modifié après signature"}' where id = 'bA';
+    raise exception 'ÉCHEC 8c : bon modifié après la signature de Fil Bleu';
+  exception when raise_exception then if sqlerrm like 'ÉCHEC%' then raise; end if; end;
+end $$;
+reset role;
+set local role authenticated;
+set local request.jwt.claims = '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000b","email":"famille.b@essai.test","aal":"aal1"}';
+do $$ begin
+  if jsonb_array_length(public.bon_a_signer()) <> 0 then raise exception 'ÉCHEC 8d : la famille B voit le bon de dA'; end if;
+  begin perform public.signer_bon('bA', 'Intrus', '', 'data:image/png;base64,AAAA'); raise exception 'ÉCHEC 8e : la famille B signe le bon de dA';
+  exception when insufficient_privilege then null; end;
+end $$;
+reset role;
+set local role authenticated;
+set local request.jwt.claims = '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000a","email":"famille.a@essai.test","aal":"aal1"}';
+do $$ declare r jsonb; begin
+  r := public.bon_a_signer();
+  if jsonb_array_length(r) <> 1 then raise exception 'ÉCHEC 8f : le bon à signer n''est pas proposé à la famille A'; end if;
+  if (r -> 0 -> 'resume' -> 'dechets' -> 0) ? 'cout' then raise exception 'ÉCHEC 8g : le coût des déchets est visible du client'; end if;
+  perform public.signer_bon('bA', 'Famille A', 'Héritière', 'data:image/png;base64,AAAA');
+end $$;
+reset role;
+set local role authenticated;
+set local request.jwt.claims = '{"role":"authenticated","sub":"00000000-0000-0000-0000-000000000001","email":"admin@essai.test","aal":"aal2"}';
+do $$ begin
+  if (select signe_client_le from public.bons where id = 'bA') is null then raise exception 'ÉCHEC 8h : signature du client non enregistrée'; end if;
+  begin
+    update public.bons set data = jsonb_set(data, '{signatures,client,nom}', '"Autre"') where id = 'bA';
+    raise exception 'ÉCHEC 8i : bon modifié après la signature du client';
+  exception when raise_exception then if sqlerrm like 'ÉCHEC%' then raise; end if; end;
+  perform public.noter_pdf_bon('bA', '{"chemin":"dA/bon-BI-2099-0001.pdf"}');
+  if (select data #>> '{pdf,chemin}' from public.bons where id = 'bA') is null then raise exception 'ÉCHEC 8j : emplacement du PDF non noté'; end if;
+end $$;
+reset role;
+
 rollback;
 
 select 'TOUS LES TESTS D''ACCÈS SONT PASSÉS' as resultat;
