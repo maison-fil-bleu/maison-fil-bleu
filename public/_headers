@@ -1,4 +1,9 @@
-# En-têtes (Cloudflare Pages). Back-office et espace client : jamais indexés, jamais affichés dans un autre site.
+# En-têtes (Cloudflare Pages).
+# Site en préparation : tout le site est exclu des moteurs de recherche (à retirer à l'ouverture, voir ouverture/LISEZ-MOI.md).
+/*
+  X-Robots-Tag: noindex, nofollow
+
+# Back-office et espace client : jamais indexés, jamais affichés dans un autre site.
 /admin
   X-Robots-Tag: noindex, nofollow
   X-Frame-Options: DENY

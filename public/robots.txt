@@ -1,10 +1,5 @@
+# Site en préparation : aucun moteur de recherche ne doit l'explorer.
+# À l'ouverture au public : remplacer ce fichier par ouverture/robots.txt
+# et retirer le bloc « /* » en tête de public/_headers (voir ouverture/LISEZ-MOI.md).
 User-agent: *
-Allow: /
-Disallow: /admin
-Disallow: /espace-client
-Disallow: /merci
-Disallow: /merci-partenaire
-Disallow: /pro/merci-devis
-Disallow: /pro/merci-grille
-
-Sitemap: https://www.maisonfilbleu.fr/sitemap-index.xml
+Disallow: /
