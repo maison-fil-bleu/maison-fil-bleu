@@ -42,7 +42,7 @@ export const FORMULES = [
 
 /** Les cinq articles de conseils (pied de page). */
 export const ARTICLES = [
-  { href: '/conseils/logement-parent-decede', titre: "Le logement d'un proche disparu" },
+  { href: '/conseils/logement-d-un-proche', titre: "Le logement d'un proche disparu" },
   { href: '/conseils/preparer-entree-ehpad', titre: 'Préparer une entrée en EHPAD' },
   { href: '/conseils/vider-maison-avant-vente', titre: 'Vider une maison avant la vente' },
   { href: '/conseils/meubles-dont-personne-ne-veut', titre: 'Les meubles dont personne ne veut' },

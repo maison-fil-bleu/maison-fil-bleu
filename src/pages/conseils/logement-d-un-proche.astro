@@ -1,14 +1,14 @@
 ---
-/** Maquette : Article-Logement-Proche.dc.html · adresse : /conseils/logement-parent-decede */
+/** Maquette : Article-Logement-Proche.dc.html · adresse : /conseils/logement-d-un-proche */
 import Famille from '../../layouts/Famille.astro';
 import { SITE } from '../../config/site';
 import Hero from '../../components/Hero.astro';
 import Photo from '../../components/Photo.astro';
 import { META } from '../../config/meta';
 import { article, filAriane } from '../../config/seo';
-const meta = META['/conseils/logement-parent-decede'];
+const meta = META['/conseils/logement-d-un-proche'];
 ---
-<Famille title={meta.title} description={meta.description} onglet="conseils" type="article" jsonld={[article({ titre: 'Que faire du logement d\'un proche qui nous a quittés ?', description: meta.description, chemin: '/conseils/logement-parent-decede' }), filAriane([{ nom: 'Accueil', chemin: '/' }, { nom: 'Conseils', chemin: '/conseils' }, { nom: 'Que faire du logement d\'un proche qui nous a quittés ?', chemin: '/conseils/logement-parent-decede' }])]}>
+<Famille title={meta.title} description={meta.description} onglet="conseils" type="article" jsonld={[article({ titre: 'Que faire du logement d\'un proche qui nous a quittés ?', description: meta.description, chemin: '/conseils/logement-d-un-proche' }), filAriane([{ nom: 'Accueil', chemin: '/' }, { nom: 'Conseils', chemin: '/conseils' }, { nom: 'Que faire du logement d\'un proche qui nous a quittés ?', chemin: '/conseils/logement-d-un-proche' }])]}>
 <!-- Photo en fond : src/assets/photos/article-logement-proche-haut.jpg · clés posées sur une commode ancienne -->
 <Hero photo="article-logement-proche-haut" desc="clés posées sur une commode ancienne">
 <div class="w" style="position: relative; padding-top: 96px; padding-bottom: 104px">

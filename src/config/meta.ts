@@ -41,7 +41,7 @@ export const META: Record<string, { title: string; description: string }> = {
     title: 'Conseils : succession, EHPAD, vider une maison | Maison Fil Bleu',
     description: "Préparer une entrée en EHPAD, vider une maison avant la vente, le logement d'un proche qui nous a quittés, gérer à distance : nos conseils à Marseille et en PACA.",
   },
-  '/conseils/logement-parent-decede': {
+  '/conseils/logement-d-un-proche': {
     title: "Le logement d'un proche qui nous a quittés : que faire ? | Maison Fil Bleu",
     description: "Bail, assurance, succession, tri, débarras : les étapes pour gérer le logement d'un proche qui nous a quittés à Marseille et en région PACA.",
   },
