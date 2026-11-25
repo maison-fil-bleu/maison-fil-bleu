@@ -30,11 +30,11 @@ npm run preview  # sert dist/ en local
 - [x] Étape 1 : projet, styles communs, polices locales, en-têtes et pieds de page
 - [x] Étape 2 : accueil, trois formules, autres pages (textes repris mot pour mot des maquettes, contrôle automatique)
 - [x] Étape 3 : simulateur `/estimation`
-- [x] Étape 4 : formulaires Netlify et pages de remerciement
+- [x] Étape 4 : formulaires et pages de remerciement (Netlify Forms, remplacé par `/api/formulaire` sur Cloudflare le 25/11/2026)
 - [x] Étape 5 : référencement (title/meta, données structurées, sitemap, robots, Open Graph)
 - [x] Étape 6 : vérifications (téléphone, tablette, ordinateur, clavier, contrastes, Lighthouse ≥ 95)
 - [x] Back-office : étapes 1 à 6 de PASSATION-APPLI.md (base et règles d'accès, appli /admin, onglet Espace client, page /espace-client et invitations, formulaires → dossiers, prix partagés) ; étape 7 sans objet (aucun dossier existant) ; étape 8 (vérifications) préparée le 17/11/2026
-- [x] Étape 7 : mise en ligne Netlify — https://maison-fil-bleu.netlify.app (dépôt GitHub `maison-fil-bleu/maison-fil-bleu`, public ; chaque envoi sur `main` republie le site). Formulaires `rappel`, `devis-pro`, `grille-pro` détectés, notification e-mail active, envoi d'essai reçu.
+- [x] Étape 7 : mise en ligne — https://maison-fil-bleu.pages.dev (Cloudflare Pages depuis le 25/11/2026 ; dépôt GitHub `maison-fil-bleu/maison-fil-bleu`, public ; chaque envoi sur `main` republie le site). L'ancien site Netlify est désactivé (à supprimer définitivement après quelques semaines), sa clé Supabase supprimée et son accès GitHub retiré.
 
 ## Back-office et espace client (PASSATION-APPLI.md)
 
