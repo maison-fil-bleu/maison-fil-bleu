@@ -247,7 +247,7 @@ otp_expiry = 3600
 # Modèle d'e-mail en français (code de connexion) : à activer quand un fournisseur SMTP
 # (Resend ou Brevo, avec le nom de domaine) sera configuré ; Supabase le refuse sinon en offre gratuite.
 # [auth.email.template.magic_link]
-# subject = "Votre code de connexion Maison Fil Bleu"
+# subject = "Votre lien de connexion Maison Fil Bleu"
 # content_path = "./supabase/templates/code-connexion.html"
 
 # Uncomment to customize email template
