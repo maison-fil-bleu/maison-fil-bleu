@@ -84,7 +84,7 @@ const meta = META['/notre-methode'];
 <div style="display: flex; flex-direction: column; gap: 22px">
 <span class="lbl">Prochainement · espace client</span>
 <h2 class="h2">Suivre chaque étape, même de loin.</h2>
-<p class="p" style="font-size: 17px">Chaque famille disposera de son espace en ligne : les étapes, les photos avant et après, les documents signés. Les proches et les héritiers pourront le consulter ensemble.</p>
+<p class="p" style="font-size: 17px">Chaque famille disposera de son espace en ligne : les étapes, la liste des objets conservés avec leurs photos, les photos avant et après, les documents signés. Les proches et les héritiers pourront le consulter ensemble.</p>
 </div>
 <figure class="ecm" aria-label="Aperçu de l'espace client">
 <div class="ecm-barre" aria-hidden="true"><span></span><span></span><span></span><em>maisonfilbleu.fr/espace-client</em></div>
@@ -97,12 +97,16 @@ const meta = META['/notre-methode'];
 <li class="cours"><b>Interventions</b><span>En cours · tri accompagné avec la famille</span></li>
 <li><b>Remise des clés</b><span>À venir</span></li>
 </ol>
-<div class="ecm-photos"><!-- Photos : src/assets/photos/methode-02.jpg, methode-03.jpg, methode-04.jpg · photos d'illustration -->
-<div><Photo nom="methode-02" alt="" style="height: 74px; padding: 0" /><span>Avant</span></div>
-<div><Photo nom="methode-03" alt="" style="height: 74px; padding: 0" /><span>Pendant</span></div>
-<div><Photo nom="methode-04" alt="" style="height: 74px; padding: 0" /><span>Après</span></div>
-</div>
-<ul class="ecm-docs"><li><span>Devis signé</span><em>PDF</em></li><li><span>Bon d'intervention</span><em>PDF</em></li></ul>
+<div class="ecm-objets">
+<div class="ecm-obj-tete"><span class="ecm-obj-titre">Objets conservés</span><span class="ecm-chip">Validés avec la famille</span></div>
+<ul>
+<li><Photo nom="methode-01" alt="" style="height: 46px; width: 46px; padding: 0" /><div><b>Photos et albums de famille</b><span>Conservés · remis à Paul</span></div></li>
+<li><Photo nom="methode-03" alt="" style="height: 46px; width: 46px; padding: 0" /><div><b>Cadres et tableaux du salon</b><span>Conservés · pour Claire</span></div></li>
+<li><Photo nom="methode-04" alt="" style="height: 46px; width: 46px; padding: 0" /><div><b>Service de vaisselle</b><span>Conservé · pour la famille</span></div></li>
+</ul>
+<a class="ecm-pdf" href="#" tabindex="-1" aria-hidden="true"><span>Liste complète des objets conservés, avec photos</span><em>PDF</em></a>
+</div><!-- Photos : src/assets/photos/methode-01.jpg, methode-03.jpg, methode-04.jpg · photos d'illustration -->
+<ul class="ecm-docs"><li><span>Devis signé</span><em>PDF</em></li><li><span>Photos avant et après</span><em>24 photos</em></li></ul>
 </div>
 </figure>
 </div>
@@ -152,10 +156,19 @@ const meta = META['/notre-methode'];
 .ecm-frise b{font-weight:500;font-size:15px;color:#15233A}
 .ecm-frise span{font-size:12.5px;color:#5B606A}
 .ecm-frise li.cours span{color:#735A33}
-.ecm-photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.ecm-photos div{display:flex;flex-direction:column;gap:4px}
-.ecm-photos span{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#5B606A}
 .ecm-docs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
 .ecm-docs li{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-top:1px solid #E3DCCF;font-size:14px;color:#18202C}
 .ecm-docs em{font-style:normal;font-size:10px;letter-spacing:.14em;color:#3D5A80;border:1px solid #CFC5B4;padding:2px 7px}
+.ecm-objets{display:flex;flex-direction:column;gap:10px;background:#F7F3EC;padding:14px 14px 12px;border:1px solid #E3DCCF}
+.ecm-obj-tete{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.ecm-obj-titre{font-family:'Cormorant Garamond',Georgia,serif;font-size:19px;font-weight:600;color:#15233A}
+.ecm-chip{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#2F6B4F;border:1px solid #9CC2AE;background:#EEF6F1;padding:3px 8px;border-radius:999px}
+.ecm-objets ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.ecm-objets li{display:flex;align-items:center;gap:12px}
+.ecm-objets li .ph{flex:none;overflow:hidden}
+.ecm-objets li div{display:flex;flex-direction:column;gap:1px;min-width:0}
+.ecm-objets li b{font-weight:500;font-size:14px;color:#18202C}
+.ecm-objets li span{font-size:12px;color:#2F6B4F}
+.ecm-pdf{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:2px;padding-top:10px;border-top:1px solid #E3DCCF;text-decoration:none;font-size:13px;color:#3D5A80;pointer-events:none}
+.ecm-pdf em{font-style:normal;font-size:10px;letter-spacing:.14em;color:#FFFFFF;background:#3D5A80;padding:3px 8px}
 </style>
