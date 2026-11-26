@@ -876,6 +876,52 @@ async function deposerDevis(d, blob){
   return chemin;
 }
 
+/* ---------- PDF : liste des objets conservés (publiée dans l'espace client) ---------- */
+async function jpegDepuis(blob, max){
+  const url = URL.createObjectURL(blob);
+  try{
+    const im = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+    const k = Math.min(1, max / Math.max(im.naturalWidth, im.naturalHeight));
+    const cv = document.createElement('canvas'); cv.width = Math.round(im.naturalWidth*k); cv.height = Math.round(im.naturalHeight*k);
+    const g = cv.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, cv.width, cv.height); g.drawImage(im, 0, 0, cv.width, cv.height);
+    return { bytes: dataUrlBytes(cv.toDataURL('image/jpeg', 0.75)), w: cv.width, h: cv.height };
+  } finally { URL.revokeObjectURL(url); }
+}
+async function objetsPdf(d, objets){
+  const P = makePdf(), so = {...DEFAULTS.soc, ...(S.soc||{})}, pro = d.formule==='P';
+  const ink = '#1E2430', blue = '#3D5A80', muted = '#5A5F68', line = '#E2DDD4', good = '#2F6B4F';
+  const L = 50, R = 545, W = R-L; let y = 56;
+  const pied = () => { P.line(L, 800, R, 800, line); P.text(L, 812, `${pro ? 'Fil Bleu Pro' : 'Maison Fil Bleu'}, une marque de la SAS Groupe Fil Bleu · ${so.adresse} · SIRET ${so.siret}`, {size:7, color:muted}); };
+  const entete = () => {
+    P.text(L, y, pro ? 'Fil Bleu Pro' : 'Maison Fil Bleu', {size:15, bold:true}); P.text(R, y, 'OBJETS CONSERVÉS', {size:13, bold:true, align:'right'});
+    y += 14; P.text(L, y, d.contact.nom ? `Dossier de ${d.contact.nom}` : 'Dossier', {size:9, color:muted});
+    P.text(R, y, `Liste établie le ${new Date().toLocaleDateString('fr-FR')}`, {size:9, color:muted, align:'right'});
+    y += 10; P.line(L, y, R, y, ink, 0.8); y += 18;
+  };
+  entete();
+  const nv = objets.filter(x => x.valide_le).length;
+  wrap(`Objets mis de côté pour la famille, avec leur destinataire. ${nv === objets.length ? 'Liste entièrement validée par la famille.' : nv ? `${nv} objet${nv>1?'s':''} validé${nv>1?'s':''} par la famille sur ${objets.length}.` : 'Liste en attente de validation par la famille.'}`, 9.5, W).forEach(t => { P.text(L, y, t, {size:9.5}); y += 13; });
+  y += 8;
+  for(const [i, x] of objets.entries()){
+    if(y > 740){ pied(); P.addPage(); y = 56; entete(); }
+    const h = 62;
+    if(x.photo){
+      try{
+        const { data } = await sb.storage.from('photos').download(x.photo);
+        if(data){ const im = await jpegDepuis(data, 400); const s = Math.min(80/im.w, h/im.h); P.image(im.bytes, im.w, im.h, L, y, im.w*s, im.h*s); }
+      }catch(err){ P.box(L, y, 80, h); }
+    } else { P.box(L, y, 80, h); P.text(L+40, y+h/2+3, 'Sans photo', {size:7, color:muted, align:'center'}); }
+    const x0 = L + 96;
+    P.text(x0, y+14, `${i+1}. ${x.nom}`, {size:11, bold:true});
+    P.text(x0, y+29, x.destinataire ? `Pour : ${x.destinataire}` : 'Pour la famille', {size:9.5, color:blue});
+    if(x.note) P.text(x0, y+42, wrap(x.note, 8.5, W-96)[0], {size:8.5, color:muted});
+    P.text(x0, y+h-4, x.valide_le ? `Validé par la famille le ${new Date(x.valide_le).toLocaleDateString('fr-FR')}` : 'En attente de validation par la famille', {size:8, color: x.valide_le ? good : muted});
+    y += h + 10; P.line(L, y-5, R, y-5, line);
+  }
+  pied();
+  return P.build();
+}
+
 /* ---------- Onglet « 5 · Espace client » : ce que voit la famille ---------- */
 // Données séparées du dossier (tables espace_client, dossier_acces, photos_partagees, documents) :
 // la famille ne lit jamais l'objet dossier, qui contient coûts, marges et notes internes.
@@ -896,18 +942,19 @@ async function chargerEspace(d){
   if(!navigator.onLine){ box.innerHTML = `<div class="card"><p style="margin:0">L'espace client se gère avec du réseau. Vos autres onglets restent utilisables hors ligne.</p></div>`; return; }
   const enAttente = fileAttente()[d.id] || saveTimers[d.id];
   if(enAttente){ try{ await envoyer(d); }catch(e){} }
-  const [l, a, p, k] = await Promise.all([
+  const [l, a, p, k, o] = await Promise.all([
     sb.from('espace_client').select('*').eq('dossier_id', d.id).maybeSingle(),
     sb.from('dossier_acces').select('*').eq('dossier_id', d.id).order('created_at'),
     sb.from('photos_partagees').select('*').eq('dossier_id', d.id).order('ordre'),
-    sb.from('documents').select('*').eq('dossier_id', d.id).order('date')
+    sb.from('documents').select('*').eq('dossier_id', d.id).order('date'),
+    sb.from('objets_conserves').select('*').eq('dossier_id', d.id).order('ordre').order('created_at')
   ]);
-  const err = l.error || a.error || p.error || k.error;
+  const err = l.error || a.error || p.error || k.error || o.error;
   if(err){ box.innerHTML = `<div class="card"><p style="margin:0">Impossible de charger l'espace client : ${esc(err.message)}</p></div>`; return; }
   const so = {...DEFAULTS.soc, ...(S.soc||{})};
   espaces[d.id] = {
     ligne: l.data || { dossier_id: d.id, formule: d.formule, ville: d.ville, interlocuteur: { nom: so.signataire && !/\[/.test(so.signataire) ? so.signataire.replace(/,.*$/, '') : '', tel: so.tel && !/\[/.test(so.tel) ? so.tel : '' }, etapes: etapesParDefaut(d), _nouveau: true },
-    acces: a.data || [], photos: p.data || [], docs: k.data || []
+    acces: a.data || [], photos: p.data || [], docs: k.data || [], objets: o.data || []
   };
   if(tab==='espace' && view.id===d.id) renderEspace(d);
 }
@@ -954,6 +1001,20 @@ function renderEspace(d){
   <div class="card"><h3>Photos visibles par la famille</h3>
     <p class="small muted" style="margin:0">Cochez les photos que la famille peut voir. Par défaut, aucune n'est visible.</p>
     ${photos.length ? `<div class="thumbs">${photos.map(x => `<label style="position:relative;cursor:pointer;gap:4px"><img data-chemin="${esc(x.chemin)}" alt="Photo du logement" style="outline:${partagees.has(x.chemin)?'3px solid var(--blue)':'none'};outline-offset:-3px"><span class="small" style="display:flex;gap:6px;align-items:center;color:var(--ink)"><input type="checkbox" data-partage="${esc(x.chemin)}" ${partagees.has(x.chemin)?'checked':''} style="width:auto"> Visible</span></label>`).join('')}</div>` : `<p class="small" style="margin:0">Aucune photo dans ce dossier (ajoutez-en dans « 2 · Sur place »).</p>`}
+  </div>
+  <div class="card"><h3>Objets conservés</h3>
+    <p class="small muted" style="margin:0">Ce qui est mis de côté pour la famille, avec une photo et le destinataire. La famille voit cette liste dans son espace et la valide. Un objet modifié ensuite doit être validé à nouveau.</p>
+    ${(e.objets||[]).length ? `<div class="oc-liste">${e.objets.map(x => `<div class="oc-ligne">
+      ${x.photo ? `<img data-chemin="${esc(x.photo)}" alt="Photo : ${esc(x.nom)}">` : `<span class="oc-sans">Sans photo</span>`}
+      <div class="oc-champs"><input data-oc="${esc(x.id)}" data-oc-champ="nom" value="${esc(x.nom)}" aria-label="Objet"><input data-oc="${esc(x.id)}" data-oc-champ="destinataire" value="${esc(x.destinataire)}" placeholder="Pour qui ?" aria-label="Destinataire">
+      <span class="small ${x.valide_le ? 'oc-ok' : 'muted'}">${x.valide_le ? `Validé par la famille le ${new Date(x.valide_le).toLocaleDateString('fr-FR')}` : 'En attente de validation par la famille'}</span></div>
+      <button type="button" class="btn danger" data-oc-retirer="${esc(x.id)}" style="padding:8px 12px">Retirer</button>
+    </div>`).join('')}</div>
+    <p class="small" style="margin:0">${(() => { const n = e.objets.filter(x => x.valide_le).length; return n === e.objets.length ? 'Liste entièrement validée par la famille. Republiez le PDF pour qu\'il l\'indique.' : n ? `${n} objet${n>1?'s':''} validé${n>1?'s':''} par la famille sur ${e.objets.length}.` : 'Aucun objet validé par la famille pour l\'instant.'; })()}</p>` : `<p class="small muted" style="margin:0">Aucun objet pour l'instant.</p>`}
+    <div class="grid2"><label>Objet<input id="oc-nom" placeholder="Ex. : Album de photos de famille"></label><label>Pour qui<input id="oc-dest" placeholder="Paul, Claire, la famille…"></label></div>
+    <div class="row"><label class="btn ghost" style="flex:1;text-align:center;cursor:pointer">Photographier l'objet<input id="oc-photo" type="file" accept="image/*" capture="environment" hidden></label><button type="button" class="btn" id="oc-ajout" style="flex:1">Ajouter l'objet</button></div>
+    <span class="small muted" id="oc-photo-etat">Photo facultative, mais conseillée.</span>
+    ${(e.objets||[]).length ? `<button type="button" class="btn ghost" id="oc-pdf">Publier la liste en PDF dans l'espace client</button>` : ''}
   </div>
   <div class="card"><h3>Documents</h3>
     ${e.docs.length ? `<table>${e.docs.map(x => `<tr><td>${esc(x.nom)}<br><span class="small muted">${esc(TYPES_DOC[x.type]||'Document')} · ${new Date(x.date).toLocaleDateString('fr-FR')}</span></td><td class="n" style="white-space:nowrap"><button type="button" class="btn ghost" data-voir="${esc(x.chemin)}" style="padding:8px 10px">Voir</button> <button type="button" class="btn danger" data-retdoc="${esc(x.id)}" style="padding:8px 10px">Retirer</button></td></tr>`).join('')}</table>` : `<p class="small" style="margin:0">Aucun document publié.</p>`}
@@ -1068,7 +1129,57 @@ function bindEspace(d){
     // Le PDF du devis reste dans le dossier ; les autres fichiers ajoutés ici sont supprimés.
     if(doc && doc.type !== 'devis') await sb.storage.from('documents').remove([doc.chemin]);
     e.docs = e.docs.filter(x => x !== doc); renderEspace(d); showToast('Document retiré de l\'espace client.');
+  });  // Objets conservés
+  let ocPhoto = null;
+  const ocInput = val('#oc-photo');
+  if(ocInput) ocInput.onchange = async () => { const f = ocInput.files?.[0]; if(!f) return; ocPhoto = await reduireImage(f); val('#oc-photo-etat').textContent = 'Photo prête : elle sera envoyée avec l\'objet.'; };
+  const ocAjout = val('#oc-ajout');
+  if(ocAjout) ocAjout.onclick = async () => {
+    const nom = val('#oc-nom').value.trim(), destinataire = val('#oc-dest').value.trim();
+    if(!nom){ showToast('Indiquez l\'objet.'); return; }
+    if(!navigator.onLine){ showToast('Ajout impossible hors connexion.'); return; }
+    if(L._nouveau) await new Promise(r => { enregistrerEspace(d, true); setTimeout(r, 400); });
+    ocAjout.disabled = true;
+    let photo = null;
+    if(ocPhoto){
+      photo = `${d.id}/oc-${Date.now().toString(36)}${Math.random().toString(36).slice(2,5)}.jpg`;
+      const { error } = await sb.storage.from('photos').upload(photo, ocPhoto, { contentType: 'image/jpeg' });
+      if(error){ ocAjout.disabled = false; showToast('Photo non envoyée : ' + error.message); return; }
+      urlsPhotos[photo] = URL.createObjectURL(ocPhoto);
+    }
+    const { data, error } = await sb.from('objets_conserves').insert({ dossier_id: d.id, nom, destinataire, photo, ordre: e.objets.length }).select().single();
+    ocAjout.disabled = false;
+    if(error){ showToast('Objet non ajouté : ' + error.message); return; }
+    e.objets.push(data); ocPhoto = null; renderEspace(d); showToast('Objet ajouté.');
+  };
+  box.querySelectorAll('[data-oc]').forEach(inp => inp.addEventListener('change', async () => {
+    const x = e.objets.find(y => y.id === inp.dataset.oc); if(!x) return;
+    const champ = inp.dataset.ocChamp, v = inp.value.trim();
+    if(champ === 'nom' && !v){ inp.value = x.nom; return; }
+    const { data, error } = await sb.from('objets_conserves').update({ [champ]: v }).eq('id', x.id).select().single();
+    if(error){ showToast(error.message); inp.value = x[champ]; return; }
+    Object.assign(x, data); renderEspace(d);
+  }));
+  box.querySelectorAll('[data-oc-retirer]').forEach(b => b.onclick = async () => {
+    if(!b.dataset.ok){ b.dataset.ok = '1'; b.textContent = 'Confirmer'; return; }
+    const x = e.objets.find(y => y.id === b.dataset.ocRetirer);
+    const { error } = await sb.from('objets_conserves').delete().eq('id', x.id);
+    if(error){ showToast(error.message); return; }
+    if(x.photo) await sb.storage.from('photos').remove([x.photo]);
+    e.objets = e.objets.filter(y => y !== x); renderEspace(d); showToast('Objet retiré.');
   });
+  const ocPdf = val('#oc-pdf');
+  if(ocPdf) ocPdf.onclick = async () => {
+    ocPdf.disabled = true; showToast('Préparation du PDF…');
+    try{
+      const blob = await objetsPdf(d, e.objets);
+      const chemin = `${d.id}/objets-conserves.pdf`;
+      const { error } = await sb.storage.from('documents').upload(chemin, blob, { contentType: 'application/pdf', upsert: true });
+      if(error) throw error;
+      await publier(chemin, 'autre', 'Liste des objets conservés');
+    }catch(err){ showToast('La liste n\'a pas pu être publiée.'); }
+    ocPdf.disabled = false;
+  };
 }
 
 function bind(d){

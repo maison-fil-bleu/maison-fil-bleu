@@ -195,6 +195,34 @@ do $$ begin
 end $$;
 reset role;
 
+-- ---------- 9. Objets conservés : lecture par la famille, validation, remise à zéro ----------
+insert into public.objets_conserves (dossier_id, nom, destinataire, photo) values
+  ('dA', 'Album de famille', 'Paul', 'dA/oc-album.jpg'),
+  ('dB', 'Horloge', 'Claire', 'dB/oc-horloge.jpg');
+insert into storage.objects (bucket_id, name) values ('photos', 'dA/oc-album.jpg'), ('photos', 'dB/oc-horloge.jpg');
+set local role authenticated;
+set local request.jwt.claims = '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000a","email":"famille.a@essai.test","aal":"aal1"}';
+do $$ begin
+  if (select count(*) from public.objets_conserves) <> 1 then raise exception 'ÉCHEC 9a : la famille A ne voit pas uniquement ses objets'; end if;
+  if (select count(*) from storage.objects where bucket_id = 'photos' and name like '%/oc-%') <> 1 then raise exception 'ÉCHEC 9b : photos d''objets d''un autre dossier visibles'; end if;
+  begin insert into public.objets_conserves (dossier_id, nom) values ('dA', 'Ajout famille'); raise exception 'ÉCHEC 9c : la famille ajoute un objet';
+  exception when insufficient_privilege then null; end;
+  update public.objets_conserves set nom = 'Modifié' where dossier_id = 'dA';
+  if exists (select 1 from public.objets_conserves where nom = 'Modifié') then raise exception 'ÉCHEC 9d : la famille modifie un objet'; end if;
+  begin perform public.valider_objets_conserves('dB'); raise exception 'ÉCHEC 9e : la famille A valide la liste de dB';
+  exception when insufficient_privilege then null; end;
+  perform public.valider_objets_conserves('dA');
+  if (select valide_le from public.objets_conserves where dossier_id = 'dA') is null then raise exception 'ÉCHEC 9f : validation non enregistrée'; end if;
+end $$;
+reset role;
+set local role authenticated;
+set local request.jwt.claims = '{"role":"authenticated","sub":"00000000-0000-0000-0000-000000000001","email":"admin@essai.test","aal":"aal2"}';
+do $$ begin
+  update public.objets_conserves set destinataire = 'Claire' where dossier_id = 'dA';
+  if (select valide_le from public.objets_conserves where dossier_id = 'dA') is not null then raise exception 'ÉCHEC 9g : validation conservée après modification'; end if;
+end $$;
+reset role;
+
 rollback;
 
 select 'TOUS LES TESTS D''ACCÈS SONT PASSÉS' as resultat;

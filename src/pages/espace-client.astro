@@ -37,6 +37,16 @@ const tel = lienTel(SITE.telephone);
   .ec h2{font-family:var(--serif);font-weight:500;font-size:28px;line-height:1.15;color:var(--nuit);margin:0}
   .ec-carte{background:#fff;border:1px solid var(--filet-2);padding:32px;display:flex;flex-direction:column;gap:16px}
   .ec-bon{border-top:3px solid var(--bleu)}
+  .ec-objets{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+  .ec-objets li{display:flex;align-items:center;gap:16px;padding:12px 0;border-top:1px solid var(--filet-2)}
+  .ec-objets li:first-child{border-top:none;padding-top:0}
+  .ec-objets img,.ec-oc-sans{width:76px;height:76px;object-fit:cover;flex:none;background:var(--sable);display:block}
+  .ec-objets li div{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .ec-objets b{font-weight:600;font-size:16px}
+  .ec-objets span{font-size:14px;color:var(--gris)}
+  .ec-oc-note{font-style:italic}
+  .ec-objets .ec-oc-ok,.ec-oc-ok{color:#2F6B4F;font-weight:600;font-size:14px}
+  .ec-objets .ec-oc-attente{color:#8A6D43;font-weight:600}
   .ec-bon-bloc{display:flex;flex-direction:column;gap:4px;font-size:15px;line-height:1.55}
   .ec-bon-bloc p,.ec-bon-bloc ul{margin:0}.ec-bon-bloc ul{padding-left:20px}
   .ec-bon-lbl{font-size:14px;font-weight:600}

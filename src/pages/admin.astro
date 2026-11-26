@@ -128,6 +128,13 @@ body.bi-large main{max-width:960px}
 .bi-registre th{text-align:left;font-weight:600;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
 .bi-registre td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top;white-space:nowrap}
 .suggest.good{border-left-color:var(--good)}
+.oc-liste{display:flex;flex-direction:column;gap:10px}
+.oc-ligne{display:flex;align-items:center;gap:12px;padding:10px;border:1px solid var(--line);border-radius:12px}
+.oc-ligne img,.oc-sans{width:72px;height:72px;flex:none;object-fit:cover;border-radius:8px;background:var(--tint)}
+.oc-sans{display:grid;place-items:center;font-size:11px;color:var(--muted);text-align:center}
+.oc-champs{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.oc-champs input{padding:8px 10px}
+.oc-ok{color:var(--good)}
 [hidden]{display:none!important}
 #etat-reseau{position:sticky;top:0;z-index:6}
 .suggest.bad{border-left-color:var(--bad)}.suggest.warn{border-left-color:var(--warn)}

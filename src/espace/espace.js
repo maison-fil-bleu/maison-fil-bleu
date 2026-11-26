@@ -137,11 +137,14 @@ export function demarrerEspace(sb, racine, contact = {}) {
 
   async function afficherDossier() {
     const d = dossiers.find((x) => x.dossier_id === courant);
-    const [{ data: photos }, { data: docs }, { data: aSigner }] = await Promise.all([
+    const [{ data: photos }, { data: docs }, { data: aSigner }, { data: objets }] = await Promise.all([
       sb.from('photos_partagees').select('chemin, legende, ordre').eq('dossier_id', courant).order('ordre'),
       sb.from('documents').select('id, chemin, type, nom, date').eq('dossier_id', courant).order('date', { ascending: false }),
       sb.rpc('bon_a_signer').then((r) => r, () => ({ data: [] })),
+      sb.from('objets_conserves').select('id, nom, destinataire, note, photo, valide_le, valide_par').eq('dossier_id', courant).order('ordre').order('created_at').then((r) => r, () => ({ data: [] })),
     ]);
+    const listeObjets = Array.isArray(objets) ? objets : [];
+    const aValider = listeObjets.filter((o) => !o.valide_le).length;
     const bonsASigner = (Array.isArray(aSigner) ? aSigner : []).filter((b) => b.dossier_id === courant);
     const etapes = ETAPES.map(([cle, nom]) => ({ nom, ...((d.etapes || []).find((e) => e.cle === cle) || { cle, etat: 'a_venir' }) }));
     const enCours = etapes.find((e) => e.etat === 'en_cours') || etapes.find((e) => e.etat === 'a_venir');
@@ -159,6 +162,14 @@ export function demarrerEspace(sb, racine, contact = {}) {
       </div>
       ${(photos || []).length ? `<div class="ec-carte"><h2>Photos</h2><div class="ec-galerie" id="ec-galerie">${photos.map((p, i) => `<a href="#" data-photo="${esc(p.chemin)}" aria-label="Agrandir la photo ${i + 1}${p.legende ? ' : ' + esc(p.legende) : ''}"><img alt="${esc(p.legende || 'Photo du logement ' + (i + 1))}" loading="lazy"></a>`).join('')}</div></div>` : ''}
       ${bonsASigner.map(bonHtml).join('')}
+      ${listeObjets.length ? `<div class="ec-carte" id="ec-objets"><h2>Objets conservés</h2>
+        <p class="p" style="margin:0">Ce qui est mis de côté pour vous et vos proches, avec son destinataire.${aValider ? ' Vérifiez la liste puis validez-la : en cas d\'oubli ou d\'erreur, appelez-nous avant de valider.' : ''}</p>
+        <ul class="ec-objets">${listeObjets.map((o) => `<li>${o.photo ? `<a href="#" data-oc-photo="${esc(o.photo)}" aria-label="Agrandir la photo : ${esc(o.nom)}"><img alt="${esc(o.nom)}"></a>` : '<span class="ec-oc-sans" aria-hidden="true"></span>'}
+          <div><b>${esc(o.nom)}</b><span>${o.destinataire ? 'Pour ' + esc(o.destinataire) : 'Pour la famille'}</span>${o.note ? `<span class="ec-oc-note">${esc(o.note)}</span>` : ''}
+          <span class="${o.valide_le ? 'ec-oc-ok' : 'ec-oc-attente'}">${o.valide_le ? 'Validé le ' + esc(dateFr(o.valide_le)) : 'À valider'}</span></div></li>`).join('')}</ul>
+        ${aValider ? `<button type="button" class="btn" id="ec-valider">Je valide la liste (${aValider} objet${aValider > 1 ? 's' : ''})</button>` : '<p class="ec-oc-ok" style="margin:0">Liste validée.</p>'}
+        <div id="ec-msg-objets" class="ec-msg" role="status" hidden></div>
+      </div>` : ''}
       <div class="ec-carte"><h2>Documents</h2>
         ${(docs || []).length ? `<ul class="ec-docs">${docs.map((x) => `<li><div>${esc(x.nom)}<br><span>${esc(TYPES_DOC[x.type] || 'Document')} · ${esc(dateFr(x.date))}</span></div><button type="button" class="ec-lien" data-doc="${esc(x.chemin)}">Ouvrir</button></li>`).join('')}</ul>` : `<p class="p" style="margin:0">Les documents de votre dossier (devis signé, factures, état des lieux) apparaîtront ici.</p>`}
       </div>
@@ -166,6 +177,22 @@ export function demarrerEspace(sb, racine, contact = {}) {
       ${basHtml()}`);
     racine.querySelectorAll('[data-dossier]').forEach((b) => b.onclick = () => { courant = b.dataset.dossier; afficherDossier(); });
     racine.querySelectorAll('.ec-bon').forEach((c) => lierBon(sb, c, () => afficherDossier()));
+    // Objets conservés : photos (liens signés temporaires) et validation de la liste.
+    const cheminsObjets = listeObjets.map((o) => o.photo).filter(Boolean);
+    if (cheminsObjets.length) {
+      sb.storage.from('photos').createSignedUrls(cheminsObjets, 3600).then(({ data: urls }) => (urls || []).forEach((u) => {
+        const a = racine.querySelector(`[data-oc-photo="${CSS.escape(u.path)}"]`);
+        if (a && u.signedUrl) { a.href = u.signedUrl; a.target = '_blank'; a.rel = 'noopener'; a.querySelector('img').src = u.signedUrl; }
+      }));
+    }
+    const bv = racine.querySelector('#ec-valider');
+    if (bv) bv.onclick = async () => {
+      bv.disabled = true;
+      const { error } = await sb.rpc('valider_objets_conserves', { p_dossier: courant });
+      const m = racine.querySelector('#ec-msg-objets');
+      if (error) { bv.disabled = false; m.hidden = false; m.className = 'ec-msg alerte'; m.textContent = "La validation n'a pas pu être enregistrée. Vérifiez votre connexion internet et réessayez."; return; }
+      afficherDossier();
+    };
     // Photos : liens signés temporaires, seulement pour les photos partagées de ce dossier.
     const chemins = (photos || []).map((p) => p.chemin);
     if (chemins.length) {
