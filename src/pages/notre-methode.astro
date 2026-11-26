@@ -1,7 +1,7 @@
 ---
 /** Maquette : Methode.dc.html · adresse : /notre-methode */
 import Famille from '../layouts/Famille.astro';
-import { SITE } from '../config/site';
+import { SITE, FORMULES } from '../config/site';
 import Hero from '../components/Hero.astro';
 import Photo from '../components/Photo.astro';
 import { META } from '../config/meta';
@@ -14,7 +14,10 @@ const meta = META['/notre-methode'];
 <div style="max-width: 760px; display: flex; flex-direction: column; gap: 28px">
 <span class="lbl">Notre méthode</span>
 <h1 class="h1" style="color: #15233A">Anticiper avec douceur, accompagner avec exigence.</h1>
-<p class="lead" style="color: #4A4F58">Un départ, cela s'anticipe. Nous prenons le temps de vous écouter, de préparer chaque étape avec vous et de veiller à votre sérénité comme à celle de vos proches. Et quand ce moment s'inscrit dans un calendrier, une entrée en résidence, une succession ou un projet de vente, nous organisons tout pour que chaque échéance soit tenue, sans précipitation.</p>
+<p class="lead" style="color: #4A4F58">Un départ, une entrée en résidence, une succession ou un projet de vente, cela s'anticipe. Nous organisons tout pour que chaque échéance soit tenue, sans précipitation. Nous prenons le temps de vous écouter, de préparer chaque étape avec vous et de veiller à votre sérénité comme à celle de vos proches.</p>
+<nav class="nm-formules" aria-label="Nos trois formules">
+{FORMULES.map((f) => <a href={`/${f.slug}`}><span class="nm-nom">{f.nom}</span><span class="nm-ligne">{f.ligne}</span><span class="nm-fleche" aria-hidden="true">→</span></a>)}
+</nav>
 </div>
 </div>
 </Hero>
@@ -113,4 +116,11 @@ const meta = META['/notre-methode'];
 @media (max-width:960px){
   .g2,.g3,.step{grid-template-columns:minmax(0,1fr) !important;gap:24px !important}
 }
+.nm-formules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:4px}
+.nm-formules a{position:relative;display:flex;flex-direction:column;gap:4px;padding:16px 40px 16px 18px;background:rgba(255,255,255,.82);border:1px solid #DDD4C5;border-top:2px solid #B8925A;text-decoration:none;color:#15233A;transition:background .2s,border-color .2s}
+.nm-formules a:hover,.nm-formules a:focus-visible{background:#FFFFFF;border-color:#B8925A}
+.nm-nom{font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;font-weight:500;line-height:1.15}
+.nm-ligne{font-size:14px;color:#5B606A;line-height:1.4}
+.nm-fleche{position:absolute;right:16px;top:50%;transform:translateY(-50%);color:#8A6D43;font-size:18px}
+@media (max-width:760px){.nm-formules{grid-template-columns:minmax(0,1fr)}}
 </style>
