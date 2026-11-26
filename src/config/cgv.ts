@@ -99,7 +99,7 @@ export const CGV_PARTICULIERS: Article[] = [
       },
       {
         "ul": [
-          "garantit qu'il a qualité pour commander la prestation (propriétaire, locataire, héritier ou mandataire). En cas de succession, il déclare agir avec l'accord de l'ensemble des héritiers ou en vertu d'un mandat, et nous fournit sur demande les coordonnées du notaire chargé de la succession ;",
+          "garantit qu'il a qualité pour commander la prestation (propriétaire, locataire, héritier ou mandataire). En cas de succession, il déclare agir avec l'accord de l'ensemble des héritiers ou en vertu d'un mandat et nous fournit sur demande les coordonnées du notaire chargé de la succession ;",
           "nous donne accès au logement et nous informe des contraintes (étage, stationnement, horaires de copropriété, produits dangereux) ;",
           "valide par écrit, avant tout débarras, la liste de ce qui est conservé, donné ou évacué ;",
           "retire ou nous signale avant le début des interventions les sommes d'argent, valeurs, documents et objets auxquels il tient particulièrement."
@@ -179,7 +179,7 @@ export const CGV_PRO: Article[] = [
     "titre": "2. Devis et commande",
     "blocs": [
       {
-        "p": "Le devis est établi sous 24 heures ouvrées, sur photos ou après visite, et reste valable un mois. La commande est ferme à réception du devis signé ou d'un bon de commande. Le client professionnel ne bénéficie pas du droit de rétractation des consommateurs."
+        "p": "Le devis est établi sous 24 heures ouvrées, sur photos ou après visite et reste valable un mois. La commande est ferme à réception du devis signé ou d'un bon de commande. Le client professionnel ne bénéficie pas du droit de rétractation des consommateurs."
       }
     ]
   },

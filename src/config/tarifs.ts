@@ -56,9 +56,9 @@ export const NOTE_OPTIONS_T = "* Travaux des artisans et déménagement, à la d
 export const NOTE_OPTIONS_S = "* Travaux des artisans et transport par le déménageur, à la demande du client : réglés directement par le client, non compris dans le forfait. Non compris : les frais de notaire, les déchets dangereux. Conditions détaillées au devis.";
 
 /** Encadré « Et ensuite ? » (pages grand public) : aide aux rendez-vous avec les agences, libre choix. */
-export const VENTE_NEUTRE = "Vous êtes propriétaire et souhaitez vendre ou louer ? Nous préparons le logement pour les photos et les visites, et nous vous aidons à préparer vos rendez-vous avec les agences de votre choix : les bonnes questions à poser, les documents à réunir. Vous choisissez librement.";
+export const VENTE_NEUTRE = "Vous êtes propriétaire et souhaitez vendre ou louer ? Nous préparons le logement pour les photos et les visites et nous vous aidons à préparer vos rendez-vous avec les agences de votre choix : les bonnes questions à poser, les documents à réunir. Vous choisissez librement.";
 /** Même texte, sans la première question, sous un titre « Vous êtes propriétaire ». */
-export const VENTE_NEUTRE_SUITE = "Vous souhaitez vendre ou louer ? Nous préparons le logement pour les photos et les visites, et nous vous aidons à préparer vos rendez-vous avec les agences de votre choix : les bonnes questions à poser, les documents à réunir. Vous choisissez librement.";
+export const VENTE_NEUTRE_SUITE = "Vous souhaitez vendre ou louer ? Nous préparons le logement pour les photos et les visites et nous vous aidons à préparer vos rendez-vous avec les agences de votre choix : les bonnes questions à poser, les documents à réunir. Vous choisissez librement.";
 /** Version agences (/agences et contenus destinés aux vendeurs d'une agence). */
 export const VENTE_AGENCES = "Vous êtes propriétaire ? Vous souhaitez louer ou vendre votre logement ? Nous le vidons, le nettoyons et le préparons pour les photos et les visites, en lien avec votre agence. Le logement est prêt à être présenté dès la remise des clés.";
 /** Dernière ligne de « Ce qui est compris » : grand public, notaires, agences. */
