@@ -252,7 +252,7 @@ pre.quote{white-space:pre-wrap;font-family:var(--body);font-size:14px;background
 .phase-msg{padding:8px 18px 0}
 .phase-msg textarea{min-height:52px;font-size:14px}
 .taches{list-style:none;margin:0;padding:4px 18px 10px}
-.taches li{display:grid;grid-template-columns:28px 1fr auto 140px 28px;gap:8px;align-items:center;padding:4px 0}
+.taches li{display:grid;grid-template-columns:28px 1fr auto auto 140px 28px;gap:8px;align-items:center;padding:4px 0}
 .case{width:24px;height:24px;border:1.5px solid #CFC5B4;border-radius:4px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;color:#fff}
 .taches .fait .case{background:var(--good);border-color:var(--good)}
 .taches .en_cours .case{border-color:var(--blue);background:linear-gradient(90deg,var(--blue) 50%,#fff 50%)}
@@ -261,6 +261,14 @@ pre.quote{white-space:pre-wrap;font-family:var(--body);font-size:14px;background
 .taches input:hover{border-color:var(--line)}
 .qui{font:inherit;font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:12px;border:0;cursor:pointer;white-space:nowrap;background:var(--info-bg);color:var(--blue)}
 .qui.famille{background:var(--warn-bg);color:var(--warn)}
+.reperes{display:flex;gap:2px}
+.ob,.vis{width:28px;height:28px;border:0;border-radius:50%;background:none;color:#C8C0B0;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;padding:0}
+.ob.on{color:#C98A2B}.vis.on{color:var(--blue)}
+.ob:hover,.vis:hover:not(:disabled){background:var(--tint)}
+.vis:disabled{cursor:default;opacity:.6}
+.taches li.oblig:not(.fait) .case{border-color:#C98A2B}
+.prochaine{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 20px 14px;padding:10px 14px;background:#FFFBF3;border:1px solid #E4C48F;border-radius:6px}
+.prochaine b{font-size:14.5px;color:var(--nuit)}
 .suppr{width:28px;height:28px;border:0;background:none;color:#B0A898;font-size:18px;cursor:pointer;border-radius:50%}
 .suppr:hover{background:var(--bad-bg);color:var(--bad)}
 .ajout{background:none;border:0;color:var(--blue);font:inherit;font-weight:600;font-size:13.5px;padding:6px 36px;cursor:pointer;text-align:left}
@@ -377,11 +385,12 @@ body.bi-large main{max-width:980px}
   .semaine{grid-template-columns:repeat(3,1fr)}
   .vue-liste .tab{display:none}
   .cartes{display:flex;flex-direction:column;gap:8px}
-  .taches li{grid-template-columns:28px auto 1fr 28px;row-gap:0;column-gap:6px}
-  .taches li>input.lib{grid-column:2 / 4}
-  .taches li>.suppr{grid-column:4;grid-row:1}
-  .taches .qui{grid-column:2;justify-self:start}
-  .taches li>input[type=date]{grid-column:3;padding:4px 6px;font-size:13px}
+  .taches li{grid-template-columns:28px auto auto 1fr 28px;row-gap:0;column-gap:6px}
+  .taches li>input.lib{grid-column:2 / 5}
+  .taches li>.suppr{grid-column:5;grid-row:1}
+  .taches .reperes{grid-column:2;grid-row:2}
+  .taches .qui{grid-column:3;grid-row:2;justify-self:start}
+  .taches li>input[type=date]{grid-column:4;grid-row:2;padding:4px 6px;font-size:13px}
   .phase-b-h{grid-template-columns:1fr 1fr}
   .phase-b-h b{grid-column:1 / -1}
   .journal li{grid-template-columns:10px 1fr}

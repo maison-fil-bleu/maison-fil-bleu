@@ -244,7 +244,8 @@ export function demarrerEspace(sb, racine, contact = {}, apercu = null) {
     const iCours = etapes.findIndex((e) => e.etat === 'en_cours');
     const iEtape = iCours >= 0 ? iCours : Math.max(0, etapes.findIndex((e) => e.etat === 'a_venir'));
     const termine = etapes.every((e) => e.etat === 'termine');
-    const taches = Array.isArray(d.taches) ? d.taches : [];
+    // Tâches internes à l'équipe (et celles du premier appel) : jamais montrées à la famille.
+    const taches = (Array.isArray(d.taches) ? d.taches : []).filter((t) => !t.interne && t.phase !== 'appel');
     const tFait = taches.filter((t) => t.etat === 'fait').length;
     const avancement = taches.length ? Math.round(tFait / taches.length * 100) : Math.round(etapes.filter((e) => e.etat === 'termine').length / etapes.length * 100);
     const pieces = Array.isArray(d.pieces) ? d.pieces : [];

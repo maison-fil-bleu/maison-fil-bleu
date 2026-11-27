@@ -6,6 +6,7 @@
  */
 import { CGV_PARTICULIERS, CGV_PRO, texte as texteCgv } from '../config/cgv';
 import { creerBons } from './bons.js';
+import { PHASES, parcoursPour, completerParcours, infosManquantes, prochaineTache } from './parcours.js';
 
 export function demarrerAppli({ sb, utilisateur, actions }) {
 const $ = (s, el=document) => el.querySelector(s);
@@ -344,7 +345,7 @@ function evenementsAgenda(){
     if(!dossiers[e.dossier_id]) return;
     const p = e.prochain || {};
     if(p.date) ev.push({ date: p.date, heure: p.horaire || '', type: 'rdv', lib: 'Rendez-vous', titre: p.titre || 'Rendez-vous', id: e.dossier_id, detail: p.detail || '' });
-    (e.taches||[]).forEach(t => { if(t.date && t.etat!=='fait' && t.cote!=='famille') ev.push({ date: t.date, type: 'tache', lib: t.date < j0 ? 'En retard' : 'Tâche', titre: t.libelle || 'Tâche', id: e.dossier_id, retard: t.date < j0 }); });
+    (e.taches||[]).forEach(t => { if(t.date && t.etat!=='fait' && t.cote!=='famille') ev.push({ date: t.date, type: 'tache', lib: t.date < j0 ? 'En retard' : t.oblig ? 'Obligatoire' : 'Tâche', titre: t.libelle || 'Tâche', id: e.dossier_id, retard: t.date < j0 }); });
     (e.etapes||[]).forEach(x => { if(x.date && x.etat!=='termine' && x.date >= j0){ const nom = (ETAPES.find(([k]) => k===x.cle)||[])[1]; if(nom) ev.push({ date: x.date, type: 'etape', lib: 'Étape', titre: nom, id: e.dossier_id }); } });
   });
   return ev.sort((a,b) => (a.date+(a.heure||'')).localeCompare(b.date+(b.heure||'')));
@@ -427,6 +428,31 @@ function renderList(){
   app.querySelectorAll('[data-id]').forEach(b => { b.onclick = () => ouvrirDossier(b.dataset.id); b.onkeydown = e => { if(e.key==='Enter') ouvrirDossier(b.dataset.id); }; });
 }
 
+/* ---------- Parcours guidé : infos du premier appel, prochaine étape ---------- */
+const ECHEANCES = ['Compromis ou vente', 'Entrée en résidence', 'Fin de bail', 'Rendez-vous chez le notaire', 'Déménagement', 'Autre'];
+const SOURCES = ['Bouche-à-oreille', 'Notaire', 'Agence immobilière', 'Résidence ou EHPAD', 'Site internet', 'Recherche Google', 'Réseaux sociaux', 'Autre'];
+function cartePremierAppel(d){
+  const m = infosManquantes(d), pro = d.formule==='P', ech = d.echeance || {};
+  return `<div class="card"><h3>Infos obligatoires du premier appel</h3>
+    ${m.length ? `<div class="suggest warn"><b>${m.length} info${m.length>1?'s':''} à obtenir :</b> ${m.map(esc).join(' · ')}</div>` : '<div class="suggest good">Toutes les infos du premier appel sont recueillies.</div>'}
+    <div class="grid2"><label>Échéance qui commande tout<input type="date" data-f="echeance.date" value="${esc(ech.date||'')}"></label>
+      <label>Nature de l'échéance<select data-f="echeance.nature"><option value="">Choisir…</option>${ECHEANCES.map(x => `<option ${ech.nature===x?'selected':''}>${esc(x)}</option>`).join('')}</select></label></div>
+    ${pro ? '' : `<label>Qui décide et qui signe<input data-f="decideur" value="${esc(d.decideur||'')}" placeholder="${d.formule==='S' ? 'Ex. : les 3 héritiers, Claire signe pour tous' : 'Ex. : la personne elle-même, avec sa fille'}"></label>`}
+    ${d.formule==='S' ? `<label>Notaire de la succession<input data-f="notaire" value="${esc(d.notaire||'')}" placeholder="Nom, étude, commune"></label>` : ''}
+    <label>Qui a les clés, comment on accède au logement<input data-f="clesQui" value="${esc(d.clesQui||'')}" placeholder="Ex. : la fille (2 jeux), gardien"></label>
+    <div class="grid2"><label>Rendez-vous de diagnostic<input type="datetime-local" data-f="rdvDiag" value="${esc(d.rdvDiag||'')}"></label>
+      ${pro ? '' : `<label>Comment nous a-t-il connus<select data-f="source"><option value="">Choisir…</option>${SOURCES.map(x => `<option ${d.source===x?'selected':''}>${esc(x)}</option>`).join('')}</select></label>`}</div>
+  </div>`;
+}
+function bandeauProchaine(d, e){
+  const m = infosManquantes(d);
+  const t = e?.ligne ? prochaineTache(e.ligne.taches||[]) : null;
+  const nomPhase = t ? (PHASES.find(([k]) => k===t.phase)||[])[1] : '';
+  if(!t && !m.length) return '';
+  return `<div class="prochaine">${t ? `<span class="sur" style="margin:0">Prochaine étape</span><b>${esc(t.libelle)}</b><span class="muted small">${esc(nomPhase)}${t.oblig ? ' · obligatoire' : ''}${t.cote==='famille' ? ' · à faire par la famille' : ''}</span><button class="lien" type="button" data-aller-prepa>Voir le parcours</button>` : ''}
+    ${m.length ? `<button class="badge attente" type="button" data-aller-appel style="cursor:pointer">${m.length} info${m.length>1?'s':''} du premier appel à obtenir</button>` : ''}</div>`;
+}
+
 /* ---------- Fiche dossier : en-tête, étapes, onglets ---------- */
 const ONGLETS = [['synthese','Synthèse'],['appel','Appel et logement'],['diag','Sur place'],['devis','Devis'],['prepa','Préparation'],['journal','Journal et décisions'],['objets','Objets conservés'],['bons','Interventions'],['suivi','Suivi et paiement'],['espace','Espace client']];
 const ONGLETS_ESPACE = ['synthese','prepa','journal','objets','espace'];
@@ -446,6 +472,7 @@ function enteteDossier(d, c){
       <div class="fiche-a">${tel ? `<a class="btn ghost" href="${tel}">Appeler</a>` : ''}<a class="btn ghost" href="/espace-client#apercu=${encodeURIComponent(d.id)}" target="_blank" rel="noopener">Voir comme la famille</a><button class="btn" type="button" id="b-vers-bons">Bon d'intervention</button></div>
     </div>
     <ol class="phases">${ETAPES.map(([cle, nom]) => { const x = etapes.find(y => y.cle===cle) || {}; const et = x.etat || 'a_venir'; return `<li class="${et}" title="${esc(ETATS.find(([k])=>k===et)?.[1]||'')}${x.date ? ' · '+esc(dateCourte(x.date)) : ''}"><span>${et==='termine' ? coche : ''}</span>${esc(nom)}</li>`; }).join('')}</ol>
+    ${bandeauProchaine(d, e)}
     <div class="tabs" role="tablist">${ONGLETS.map(([k,l]) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${tab===k}">${l}${k==='journal' && nDec ? ` <em>${nDec}</em>` : ''}${k==='objets' && nObj ? ` <em>${nObj}</em>` : ''}</button>`).join('')}</div>
   </div>`;
 }
@@ -510,6 +537,7 @@ function renderDossier(){
     <label>Personne concernée (si différente)<input data-f="beneficiaire" value="${esc(d.beneficiaire)}"></label>
     <label>Client${seg('client',[['particulier','Particulier'],['agence','Agence ou pro']],d.client)}</label>
   </div>
+  ${cartePremierAppel(d)}
   <div class="card"><h3>Situation</h3>
     ${seg('situation', Object.entries(SITU), d.situation)}
     <div class="suggest">Formule conseillée : <b>${FORM[suggest(d)]}</b>${d.formule!==suggest(d)?` · formule choisie : <b>${FORM[d.formule]}</b>`:''}</div>
@@ -651,6 +679,8 @@ function renderDossier(){
   bind(d);
   $('#fil-liste').onclick = () => { view = {name:'list'}; render(); window.scrollTo(0,0); };
   $('#b-vers-bons').onclick = () => { tab = 'bons'; render(); window.scrollTo(0,0); };
+  const ap = app.querySelector('[data-aller-prepa]'); if(ap) ap.onclick = () => { tab = 'prepa'; render(); window.scrollTo(0,0); };
+  const aa = app.querySelector('[data-aller-appel]'); if(aa) aa.onclick = () => { tab = 'appel'; render(); window.scrollTo(0,0); };
   if(ONGLETS_ESPACE.includes(tab) || tab==='appel'){ if(espaces[d.id]?.ligne) renderEspace(d); else if(navigator.onLine) chargerEspace(d); }
   if(tab==='bons') bonsApi.onglet(d, $('#bons-onglet'));
 }
@@ -1097,7 +1127,7 @@ async function chargerEspace(d){
     acces: a.data || [], photos: p.data || [], docs: k.data || [], objets: o.data || [],
     journal: j.data || [], decisions: de.data || [], listing: (li.data || [])[0] || null
   };
-  const L0 = espaces[d.id].ligne; L0.etapes = L0.etapes?.length ? L0.etapes : etapesParDefaut(d); L0.taches = L0.taches || []; L0.pieces = L0.pieces || []; L0.contacts = L0.contacts || []; L0.bien = L0.bien || {}; L0.prochain = L0.prochain || {};
+  const L0 = espaces[d.id].ligne; L0.etapes = L0.etapes?.length ? L0.etapes : etapesParDefaut(d); L0.taches = L0.taches?.length ? L0.taches : parcoursPour(d.formule); L0.pieces = L0.pieces || []; L0.contacts = L0.contacts || []; L0.bien = L0.bien || {}; L0.prochain = L0.prochain || {};
   if(view.name==='dossier' && view.id===d.id) rerender();
 }
 function enregistrerEspace(d, tout){
@@ -1143,7 +1173,8 @@ function renderEspace(d){
 
 function htmlSynthese(d, e){
   const c = calc(d), L = e.ligne, pr = L.prochain || {}, taches = (L.taches||[]).map((t,i) => ({...t, i}));
-  const af = taches.filter(t => t.etat!=='fait').sort(parDate).slice(0, 7);
+  const af = taches.filter(t => t.etat!=='fait').sort((a,b) => (b.oblig?1:0)-(a.oblig?1:0) || parDate(a,b)).slice(0, 7);
+  const manque = infosManquantes(d);
   const pd = pr.date ? new Date(pr.date+'T12:00:00') : null;
   const nonValides = (e.objets||[]).filter(x => !x.valide_le).length, decAtt = (e.decisions||[]).filter(x => x.statut==='attente').length;
   const acompte = d.formule!=='P' ? c.ttc*0.4 : 0, s = d.suivi || {};
@@ -1152,8 +1183,9 @@ function htmlSynthese(d, e){
     <div class="col">
       <div class="pan">${pd && !isNaN(pd) ? `<div class="rdv"><b>${pd.getDate()}</b><div><span class="sur" style="margin:0">Prochain rendez-vous · ${esc(pd.toLocaleDateString('fr-FR',{weekday:'long', day:'numeric', month:'long'}))}</span><strong>${esc(pr.titre||'Rendez-vous')}</strong><span>${esc([pr.horaire, pr.detail].filter(Boolean).join(' · '))}</span></div><button class="btn ghost petit" type="button" data-aller="prepa">Modifier</button></div>`
         : `<div class="rdv"><div><span class="sur" style="margin:0">Prochain rendez-vous</span><strong>Aucun rendez-vous prévu</strong><span>Il s'affiche en haut de l'espace client de la famille.</span></div><button class="btn petit" type="button" data-aller="prepa">Programmer</button></div>`}</div>
-      <div class="pan"><div class="pan-h"><h3>À faire</h3><button class="lien" type="button" data-aller="prepa">Toutes les tâches</button></div>
-        ${af.length ? `<ul class="check">${af.map(t => `<li class="${t.etat}"><button type="button" class="case" data-tache-etat="${t.i}" aria-label="Changer l'état">${t.etat==='fait' ? coche : ''}</button><span>${esc(t.libelle || 'Tâche sans titre')}${t.cote==='famille' ? ' <span class="badge attente">Famille</span>' : ''}</span><span>${esc(dateCourte(t.date))}</span></li>`).join('')}</ul>` : `<p class="pan-vide">Aucune tâche en cours. Ajoutez-les dans « Préparation » : la famille les voit dans son espace.</p>`}
+      ${manque.length ? `<div class="suggest warn"><b>Infos du premier appel à obtenir :</b> ${manque.map(esc).join(' · ')} <button class="lien" type="button" data-aller="appel">Compléter</button></div>` : ''}
+      <div class="pan"><div class="pan-h"><h3>À faire</h3><button class="lien" type="button" data-aller="prepa">Tout le parcours</button></div>
+        ${af.length ? `<ul class="check">${af.map(t => `<li class="${t.etat}"><button type="button" class="case" data-tache-etat="${t.i}" aria-label="Changer l'état">${t.etat==='fait' ? coche : ''}</button><span>${t.oblig ? '<b class="warn" title="Obligatoire">★</b> ' : ''}${esc(t.libelle || 'Tâche sans titre')}${t.cote==='famille' ? ' <span class="badge attente">Famille</span>' : ''}</span><span>${esc(dateCourte(t.date))}</span></li>`).join('')}</ul>` : `<p class="pan-vide">Aucune tâche en cours. Ajoutez-les dans « Préparation » : la famille les voit dans son espace.</p>`}
       </div>
       <div class="pan"><div class="pan-h"><h3>Derniers événements</h3><button class="lien" type="button" data-aller="journal">Journal complet</button></div>
         ${(e.journal||[]).length ? `<ol class="journal">${e.journal.slice(0,4).map(j => `<li class="t-${esc(j.type)}"><i class="pt"></i><time>${esc(quandFr(j.quand))}</time><div><b>${esc(j.titre)}</b>${j.texte ? `<span>${esc(j.texte)}</span>` : ''}</div></li>`).join('')}</ol>` : '<p class="pan-vide">Aucun événement noté. Notez appels, décisions et interventions dans « Journal et décisions ».</p>'}
@@ -1196,11 +1228,12 @@ function htmlPrepa(d, e){
       <label>Précisions pour la famille<input data-prochain="detail" value="${esc(pr.detail||'')}" placeholder="Ex. : 2 personnes, 1 camion. Votre présence n'est pas nécessaire."></label>
       ${pr.date ? '<button class="lien" type="button" id="prochain-effacer" style="align-self:flex-start">Effacer le rendez-vous</button>' : ''}
     </div>
-    <div class="pan"><div class="pan-h"><h3>Étapes et tâches</h3><span class="small muted">${fait} faites sur ${taches.length} · visibles par la famille</span></div>
-      ${ETAPES.map(([cle, nom]) => { const x = L.etapes.find(y => y.cle===cle) || { etat:'a_venir', date:'', message:'' }; const tp = taches.filter(t => t.phase===cle); return `<div class="phase-b">
-        <div class="phase-b-h"><b>${esc(nom)}</b><select data-etape-etat="${cle}" aria-label="État de l'étape ${esc(nom)}">${ETATS.map(([k,l]) => `<option value="${k}" ${x.etat===k?'selected':''}>${l}</option>`).join('')}</select><input type="date" data-etape-date="${cle}" value="${esc(x.date||'')}" aria-label="Date de l'étape ${esc(nom)}"></div>
-        <div class="phase-msg"><textarea data-etape-msg="${cle}" placeholder="Message pour la famille (facultatif), ex. : Le tri est terminé, les dons partent mardi.">${esc(x.message||'')}</textarea></div>
-        <ul class="taches">${tp.map(t => `<li class="${t.etat}"><button type="button" class="case" data-tache-etat="${t.i}" aria-label="État : ${t.etat==='fait'?'fait':t.etat==='en_cours'?'en cours':'à faire'}">${t.etat==='fait' ? coche : ''}</button><input class="lib" data-tache="${t.i}" data-champ="libelle" value="${esc(t.libelle||'')}" placeholder="Tâche" aria-label="Tâche"><button type="button" class="qui ${t.cote==='famille'?'famille':''}" data-tache-qui="${t.i}" title="Qui s'en charge">${t.cote==='famille' ? 'Famille' : 'Nous'}</button><input type="date" data-tache="${t.i}" data-champ="date" value="${esc(t.date||'')}" aria-label="Date"><button type="button" class="suppr" data-tache-suppr="${t.i}" aria-label="Supprimer la tâche">×</button></li>`).join('')}
+    <div class="pan"><div class="pan-h"><h3>Parcours du dossier</h3><div class="row"><span class="small muted">${fait} faites sur ${taches.length} · ${taches.filter(t => t.oblig && t.etat!=='fait').length} obligatoires restantes</span><button class="btn ghost petit" type="button" id="parcours-completer">Compléter avec le parcours type</button></div></div>
+      <p class="pan-vide" style="padding-top:10px;padding-bottom:4px">Touchez la case pour passer une tâche à « en cours » puis « faite ». <b>★</b> = obligatoire. L'œil indique si la famille voit la tâche dans son espace.</p>
+      ${PHASES.map(([cle, nom]) => { const famille = cle !== 'appel'; const x = L.etapes.find(y => y.cle===cle) || { etat:'a_venir', date:'', message:'' }; const tp = taches.filter(t => t.phase===cle); const reste = tp.filter(t => t.oblig && t.etat!=='fait').length; return `<div class="phase-b">
+        <div class="phase-b-h"><b>${esc(nom)}${famille ? '' : ' <span class="small muted">(interne)</span>'} <span class="small muted">· ${tp.filter(t => t.etat==='fait').length}/${tp.length}${reste ? ` · <span class="warn">${reste} obligatoire${reste>1?'s':''}</span>` : ''}</span></b>${famille ? `<select data-etape-etat="${cle}" aria-label="État de l'étape ${esc(nom)}">${ETATS.map(([k,l]) => `<option value="${k}" ${x.etat===k?'selected':''}>${l}</option>`).join('')}</select><input type="date" data-etape-date="${cle}" value="${esc(x.date||'')}" aria-label="Date de l'étape ${esc(nom)}">` : '<span></span><span></span>'}</div>
+        ${famille ? `<div class="phase-msg"><textarea data-etape-msg="${cle}" placeholder="Message pour la famille (facultatif), ex. : Le tri est terminé, les dons partent mardi.">${esc(x.message||'')}</textarea></div>` : ''}
+        <ul class="taches">${tp.map(t => `<li class="${t.etat}${t.oblig ? ' oblig' : ''}"><button type="button" class="case" data-tache-etat="${t.i}" aria-label="État : ${t.etat==='fait'?'fait':t.etat==='en_cours'?'en cours':'à faire'}">${t.etat==='fait' ? coche : ''}</button><input class="lib" data-tache="${t.i}" data-champ="libelle" value="${esc(t.libelle||'')}" placeholder="Tâche" aria-label="Tâche"><span class="reperes"><button type="button" class="ob ${t.oblig?'on':''}" data-tache-oblig="${t.i}" title="${t.oblig?'Obligatoire':'Facultative'}" aria-label="Obligatoire : ${t.oblig?'oui':'non'}">★</button><button type="button" class="vis ${t.interne || !famille ?'':'on'}" data-tache-vis="${t.i}" title="${t.interne || !famille ? 'Interne : la famille ne la voit pas' : 'Visible par la famille'}" aria-label="${t.interne || !famille ? 'Interne' : 'Visible par la famille'}" ${famille ? '' : 'disabled'}>${t.interne || !famille ? '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.1A10 10 0 0 1 12 5c7 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.6 6.6A17 17 0 0 0 2 12s3 7 10 7a10 10 0 0 0 5.4-1.6"/></svg>' : '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>'}</button></span><button type="button" class="qui ${t.cote==='famille'?'famille':''}" data-tache-qui="${t.i}" title="Qui s'en charge">${t.cote==='famille' ? 'Famille' : 'Nous'}</button><input type="date" data-tache="${t.i}" data-champ="date" value="${esc(t.date||'')}" aria-label="Date"><button type="button" class="suppr" data-tache-suppr="${t.i}" aria-label="Supprimer la tâche">×</button></li>`).join('')}
           <li style="display:block"><button type="button" class="ajout" data-tache-ajout="${cle}">+ Ajouter une tâche</button></li></ul>
       </div>`; }).join('')}
     </div>
@@ -1344,7 +1377,17 @@ function bindEspace(d, box){
 
   // Étapes (état, date, message à la famille)
   const etape = cle => { let x = L.etapes.find(y => y.cle===cle); if(!x){ x = { cle, etat:'a_venir', date:'', message:'' }; L.etapes.push(x); } return x; };
-  box.querySelectorAll('[data-etape-etat]').forEach(el => el.onchange = () => { etape(el.dataset.etapeEtat).etat = el.value; enregistrerEspace(d); redessiner(true); });
+  box.querySelectorAll('[data-etape-etat]').forEach(el => el.onchange = () => {
+    const cle = el.dataset.etapeEtat;
+    if(el.value==='termine'){
+      const reste = (L.taches||[]).filter(t => t.phase===cle && t.oblig && t.etat!=='fait');
+      if(reste.length && !confirm(`Il reste ${reste.length} tâche${reste.length>1?'s':''} obligatoire${reste.length>1?'s':''} dans cette étape :\n\n${reste.map(t => '• '+t.libelle).join('\n')}\n\nMarquer l'étape comme terminée quand même ?`)){ el.value = etape(cle).etat; return; }
+    }
+    etape(cle).etat = el.value; enregistrerEspace(d); redessiner(true);
+  });
+  box.querySelectorAll('[data-tache-oblig]').forEach(b => b.onclick = () => { const t = L.taches[+b.dataset.tacheOblig]; t.oblig = !t.oblig; enregistrerEspace(d); redessiner(true); });
+  box.querySelectorAll('[data-tache-vis]').forEach(b => b.onclick = () => { const t = L.taches[+b.dataset.tacheVis]; t.interne = !t.interne; enregistrerEspace(d); redessiner(); });
+  const pc = val('#parcours-completer'); if(pc) pc.onclick = () => { const n = completerParcours(L.taches, d.formule); if(n){ enregistrerEspace(d); redessiner(true); } showToast(n ? `${n} tâche${n>1?'s':''} du parcours type ajoutée${n>1?'s':''}.` : 'Le parcours type est déjà complet.'); };
   box.querySelectorAll('[data-etape-date]').forEach(el => el.addEventListener('change', () => { etape(el.dataset.etapeDate).date = el.value; enregistrerEspace(d); }));
   box.querySelectorAll('[data-etape-msg]').forEach(el => el.addEventListener('input', () => { etape(el.dataset.etapeMsg).message = el.value; enregistrerEspace(d); }));
 
