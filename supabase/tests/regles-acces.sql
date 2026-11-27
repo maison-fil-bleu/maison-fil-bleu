@@ -223,6 +223,42 @@ do $$ begin
 end $$;
 reset role;
 
+-- ---------- 10. Espace détaillé : journal, décisions, listing signé, photos multiples ----------
+insert into public.journal (dossier_id, type, titre) values ('dA', 'contact', 'Appel A'), ('dB', 'contact', 'Appel B');
+insert into public.decisions (id, dossier_id, question) values
+  ('00000000-0000-0000-0000-0000000000d1', 'dA', 'Bibliothèque : vendre ou donner ?'),
+  ('00000000-0000-0000-0000-0000000000d2', 'dB', 'Question B');
+update public.objets_conserves set photos = array['dA/oc-a1.jpg', 'dA/oc-a2.jpg'], valide_le = null where dossier_id = 'dA';
+insert into storage.objects (bucket_id, name) values ('photos', 'dA/oc-a1.jpg'), ('photos', 'dA/oc-a2.jpg'), ('photos', 'dB/oc-b1.jpg');
+do $$ begin
+  begin update public.objets_conserves set photos = array['dB/oc-b1.jpg'] where dossier_id = 'dA'; raise exception 'ÉCHEC 10a : photo d''un autre dossier acceptée';
+  exception when check_violation then null; end;
+end $$;
+set local role authenticated;
+set local request.jwt.claims = '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000a","email":"famille.a@essai.test","aal":"aal1"}';
+do $$ declare r jsonb; begin
+  if (select count(*) from public.journal) <> 1 then raise exception 'ÉCHEC 10b : journal d''un autre dossier visible'; end if;
+  if (select count(*) from public.decisions) <> 1 then raise exception 'ÉCHEC 10c : décisions d''un autre dossier visibles'; end if;
+  if (select count(*) from storage.objects where bucket_id = 'photos' and name in ('dA/oc-a1.jpg', 'dA/oc-a2.jpg', 'dB/oc-b1.jpg')) <> 2 then raise exception 'ÉCHEC 10d : photos multiples mal filtrées'; end if;
+  begin insert into public.journal (dossier_id, type, titre) values ('dA', 'contact', 'Faux'); raise exception 'ÉCHEC 10e : la famille écrit dans le journal';
+  exception when insufficient_privilege then null; end;
+  begin perform public.repondre_decision('00000000-0000-0000-0000-0000000000d2', 'Donner'); raise exception 'ÉCHEC 10f : la famille A répond pour dB';
+  exception when insufficient_privilege then null; end;
+  perform public.repondre_decision('00000000-0000-0000-0000-0000000000d1', 'Donner');
+  if (select statut from public.decisions where id = '00000000-0000-0000-0000-0000000000d1') <> 'validee' then raise exception 'ÉCHEC 10g : réponse non enregistrée'; end if;
+  begin perform public.repondre_decision('00000000-0000-0000-0000-0000000000d1', 'Vendre'); raise exception 'ÉCHEC 10h : décision modifiable après réponse';
+  exception when invalid_parameter_value then null; end;
+  begin perform public.signer_listing_objets('dB', 'A', 'data:image/jpeg;base64,AAAA'); raise exception 'ÉCHEC 10i : la famille A signe le listing de dB';
+  exception when insufficient_privilege then null; end;
+  r := public.signer_listing_objets('dA', 'Claire Martin', 'data:image/jpeg;base64,AAAA');
+  if (r->>'version')::int <> 1 then raise exception 'ÉCHEC 10j : version de listing inattendue'; end if;
+  if exists (select 1 from public.objets_conserves where dossier_id = 'dA' and valide_le is null) then raise exception 'ÉCHEC 10k : objets non validés après signature'; end if;
+  if (select count(*) from public.journal where dossier_id = 'dA') <> 3 then raise exception 'ÉCHEC 10l : signature ou réponse absente du journal'; end if;
+  begin perform public.signer_listing_objets('dA', 'Claire Martin', 'data:image/jpeg;base64,AAAA'); raise exception 'ÉCHEC 10m : double signature acceptée';
+  exception when invalid_parameter_value then null; end;
+end $$;
+reset role;
+
 rollback;
 
 select 'TOUS LES TESTS D''ACCÈS SONT PASSÉS' as resultat;

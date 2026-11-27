@@ -1,7 +1,8 @@
 /**
  * Espace client Maison Fil Bleu.
- * Connexion : e-mail seul, puis code à 6 chiffres (ou lien) reçu par e-mail. Une famille ne lit que les tables
- * espace_client, photos_partagees et documents de ses propres dossiers (règles d'accès Supabase).
+ * Connexion : e-mail seul, puis code à 6 chiffres (ou lien) reçu par e-mail.
+ * Une famille ne lit que les données de ses propres dossiers (règles d'accès Supabase) et n'agit que par
+ * des fonctions dédiées : répondre à une décision, signer le listing des objets, signer un bon.
  */
 import { createClient } from '@supabase/supabase-js';
 import { SUPABASE_URL, SUPABASE_CLE_PUBLIQUE } from '../config/supabase';
@@ -81,20 +82,50 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 const dateFr = (d) => { if (!d) return ''; const x = new Date(d.length === 10 ? d + 'T12:00:00' : d); return isNaN(x) ? '' : x.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }); };
 const telLien = (t) => { const n = String(t || '').replace(/[^\d+]/g, ''); return n.length >= 10 && !/\[/.test(t) ? `tel:${n.startsWith('0') ? '+33' + n.slice(1) : n}` : null; };
 
+const coche = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" aria-hidden="true"><path d="M5 12l5 5L19 7"/></svg>';
+const icDoc = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>';
+const TJ = { contact: 'Contact', decision: 'Décision', intervention: 'Intervention', organisation: 'Organisation', document: 'Document' };
+const TRI = { a_trier: ['À trier', 'a'], en_cours: ['En cours', 'cours'], trie: ['Trié', 'ok'] };
+const BIEN = [['type', 'Type'], ['acces', 'Accès'], ['stationnement', 'Stationnement'], ['cles', 'Clés'], ['compteurs', 'Compteurs'], ['cave', 'Cave'], ['devenir', 'Devenir']];
+const jourCourt = (d) => { const x = d ? new Date(d.length === 10 ? d + 'T12:00:00' : d) : null; return x && !isNaN(x) ? x.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : (d || ''); };
+const quandFr = (d) => { const x = new Date(d); if (isNaN(x)) return ''; const h = x.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }); return jourCourt(d) + (h !== '00:00' ? ' · ' + h : ''); };
+const initiales = (n) => String(n || '').split(/[\s'-]+/).filter(Boolean).map((m) => m[0]).join('').slice(0, 2).toUpperCase() || '·';
+const m3 = (v) => `${nombre(v)} m³`;
+
+// Zone de signature au doigt ou à la souris.
+function creerPad(cv) {
+  const g = cv.getContext('2d'); let trace = false, dernier = null;
+  const taille = () => { const r = cv.getBoundingClientRect(), k = window.devicePixelRatio || 1; cv.width = r.width * k; cv.height = r.height * k; g.setTransform(k, 0, 0, k, 0, 0); g.fillStyle = '#fff'; g.fillRect(0, 0, r.width, r.height); g.lineWidth = 2.4; g.lineCap = 'round'; g.lineJoin = 'round'; g.strokeStyle = '#18202C'; trace = false; };
+  taille();
+  const pt = (e) => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  cv.onpointerdown = (e) => { cv.setPointerCapture(e.pointerId); dernier = pt(e); g.beginPath(); g.arc(dernier[0], dernier[1], 1.2, 0, 7); g.fillStyle = '#18202C'; g.fill(); trace = true; };
+  cv.onpointermove = (e) => { if (!dernier) return; const p = pt(e); g.beginPath(); g.moveTo(...dernier); g.lineTo(...p); g.stroke(); dernier = p; };
+  cv.onpointerup = cv.onpointercancel = () => { dernier = null; };
+  return {
+    effacer: taille, vide: () => !trace,
+    image() { const o = document.createElement('canvas'); o.width = 480; o.height = Math.round(480 * cv.height / cv.width); const og = o.getContext('2d'); og.fillStyle = '#fff'; og.fillRect(0, 0, o.width, o.height); og.drawImage(cv, 0, 0, o.width, o.height); return o.toDataURL('image/jpeg', 0.75); },
+  };
+}
+
 export function demarrerEspace(sb, racine, contact = {}, apercu = null) {
   let session = null, dossiers = [], courant = null, parCode = false;
+  const fond = contact.photoFond || '';
 
-  const bandeau = () => apercu ? `<div class="ec-apercu" role="note"><b>Aperçu administrateur</b> · Vous voyez exactement ce que voit la famille. Les boutons de validation et de signature sont désactivés.</div>` : '';
+  const bandeau = () => apercu ? `<div class="ec-apercu" role="note"><div class="w"><b>Aperçu administrateur</b> · Vous voyez exactement ce que voit la famille. Les boutons de réponse, de validation et de signature sont désactivés.</div></div>` : '';
   function afficher(html) { racine.innerHTML = bandeau() + html; }
-  function message(texte, alerte) {
-    const el = racine.querySelector('#ec-msg'); if (!el) return;
+  function message(texte, alerte, sel = '#ec-msg') {
+    const el = racine.querySelector(sel); if (!el) return;
     el.hidden = !texte; el.className = 'ec-msg' + (alerte ? ' alerte' : ''); el.textContent = texte;
   }
+  // Écran simple (connexion, messages) : photo en fond, carte au centre.
+  const ecranSimple = (html) => afficher(`<section class="hero ec-simple">${fond ? `<img class="hero-img" src="${esc(fond)}" alt="">` : ''}
+    <div class="w ec-simple-in"><div class="ec-w">${html}</div></div></section>`);
 
   /* ---------- Connexion : e-mail, puis code à 6 chiffres (ou lien) reçu par e-mail ---------- */
   function ecranConnexion(info, emailConnu = '') {
-    afficher(`<h1>Suivez votre dossier, avec vos proches.</h1>
-      <p class="lead">Les étapes, les photos et les documents de votre accompagnement, au même endroit. Votre espace est ouvert par votre interlocuteur après le diagnostic.</p>
+    ecranSimple(`<span class="lbl">Espace client</span>
+      <h1>Suivez votre dossier, avec vos proches.</h1>
+      <p class="lead">Les étapes, le journal, les décisions, les photos et les documents de votre accompagnement, au même endroit. Votre espace est ouvert par votre interlocuteur après le diagnostic.</p>
       <form class="ec-carte" id="ec-form" novalidate>
         <label for="ec-email">Votre adresse e-mail</label>
         <input id="ec-email" type="email" autocomplete="email" inputmode="email" required placeholder="prenom.nom@exemple.fr" value="${esc(emailConnu)}">
@@ -125,7 +156,8 @@ export function demarrerEspace(sb, racine, contact = {}, apercu = null) {
   }
 
   function ecranCode(email) {
-    afficher(`<h1>Saisissez votre code.</h1>
+    ecranSimple(`<span class="lbl">Espace client</span>
+      <h1>Saisissez votre code.</h1>
       <form class="ec-carte" id="ec-code-form" novalidate>
         <p class="p" style="margin:0">Si l'adresse <strong>${esc(email)}</strong> est rattachée à un dossier, un e-mail vient d'y être envoyé avec un code à 6 chiffres. Pensez à vérifier les courriers indésirables.</p>
         <label for="ec-code">Code reçu par e-mail</label>
@@ -166,7 +198,7 @@ export function demarrerEspace(sb, racine, contact = {}, apercu = null) {
 
   /* ---------- Chargement des dossiers ---------- */
   async function charger() {
-    let q = sb.from('espace_client').select('dossier_id, formule, ville, interlocuteur, etapes, updated_at').order('updated_at', { ascending: false });
+    let q = sb.from('espace_client').select('*').order('updated_at', { ascending: false });
     if (apercu) q = q.eq('dossier_id', apercu);
     const { data, error } = await q;
     if (error) throw error;
@@ -176,88 +208,375 @@ export function demarrerEspace(sb, racine, contact = {}, apercu = null) {
     await afficherDossier();
   }
   function ecranSansDossier() {
-    if (apercu) return afficher(`<h1>Aperçu indisponible.</h1><div class="ec-carte sable"><p class="p" style="margin:0">L'espace de ce dossier n'est pas encore enregistré, ou votre session du back-office a expiré. Enregistrez l'onglet « 5 · Espace client » dans l'appli, reconnectez-vous si besoin, puis rouvrez l'aperçu.</p></div>`);
-    afficher(`<h1>Votre espace n'est pas encore ouvert.</h1>
-      <div class="ec-carte sable"><p class="p" style="margin:0">Votre espace sera ouvert par votre interlocuteur après le diagnostic. Vous recevrez alors un e-mail pour vous connecter.</p>
+    if (apercu) return ecranSimple(`<h1>Aperçu indisponible.</h1><div class="ec-carte"><p class="p" style="margin:0">L'espace de ce dossier n'est pas encore enregistré, ou votre session du back-office a expiré. Enregistrez l'onglet « 5 · Espace client » dans l'appli, reconnectez-vous si besoin, puis rouvrez l'aperçu.</p></div>`);
+    ecranSimple(`<span class="lbl">Espace client</span><h1>Votre espace n'est pas encore ouvert.</h1>
+      <div class="ec-carte"><p class="p" style="margin:0">Votre espace sera ouvert par votre interlocuteur après le diagnostic. Vous recevrez alors un e-mail pour vous connecter.</p>
       ${contactHtml(null)}</div>
-      ${basHtml()}`);
+      <div class="ecx-bas"><span>Connecté : ${esc(session?.user?.email || '')}</span><button type="button" class="ec-lien" id="ec-deco">Se déconnecter</button></div>`);
     lierBas();
   }
 
+  const lire = (p) => p.then((r) => r, () => ({ data: [] }));
   async function afficherDossier() {
     const d = dossiers.find((x) => x.dossier_id === courant);
-    const [{ data: photos }, { data: docs }, { data: aSigner }, { data: objets }] = await Promise.all([
-      sb.from('photos_partagees').select('chemin, legende, ordre').eq('dossier_id', courant).order('ordre'),
-      sb.from('documents').select('id, chemin, type, nom, date').eq('dossier_id', courant).order('date', { ascending: false }),
-      (apercu ? sb.from('bons').select('id, dossier_id, numero, marque, data').eq('dossier_id', courant).not('signe_porteur_le', 'is', null).is('signe_client_le', null).then((r) => ({ data: (r.data || []).filter((x) => x.data?.signatures?.distance).map((x) => ({ ...x, resume: x.data })) }), () => ({ data: [] })) : sb.rpc('bon_a_signer').then((r) => r, () => ({ data: [] }))),
-      sb.from('objets_conserves').select('id, nom, destinataire, note, photo, valide_le, valide_par').eq('dossier_id', courant).order('ordre').order('created_at').then((r) => r, () => ({ data: [] })),
+    const [{ data: photos }, { data: docs }, { data: aSigner }, { data: objets }, { data: journal }, { data: decisions }, { data: listings }] = await Promise.all([
+      lire(sb.from('photos_partagees').select('chemin, legende, ordre, moment').eq('dossier_id', courant).order('ordre')),
+      lire(sb.from('documents').select('id, chemin, type, nom, date').eq('dossier_id', courant).order('date', { ascending: false })),
+      apercu
+        ? lire(sb.from('bons').select('id, dossier_id, numero, marque, data').eq('dossier_id', courant).not('signe_porteur_le', 'is', null).is('signe_client_le', null)).then((r) => ({ data: (r.data || []).filter((x) => x.data?.signatures?.distance).map((x) => ({ ...x, resume: x.data })) }))
+        : lire(sb.rpc('bon_a_signer')),
+      lire(sb.from('objets_conserves').select('id, nom, piece, destinataire, note, photo, photos, valide_le, valide_par').eq('dossier_id', courant).order('ordre').order('created_at')),
+      lire(sb.from('journal').select('id, quand, type, titre, texte').eq('dossier_id', courant).order('quand', { ascending: false }).limit(60)),
+      lire(sb.from('decisions').select('id, posee_le, question, choix, statut, reponse, decide_par, decide_le').eq('dossier_id', courant).order('posee_le', { ascending: false })),
+      lire(sb.from('listings_objets').select('version, signe_le, nom').eq('dossier_id', courant).order('version', { ascending: false }).limit(1)),
     ]);
-    const listeObjets = Array.isArray(objets) ? objets : [];
-    const aValider = listeObjets.filter((o) => !o.valide_le).length;
-    const bonsASigner = (Array.isArray(aSigner) ? aSigner : []).filter((b) => b.dossier_id === courant);
-    const etapes = ETAPES.map(([cle, nom]) => ({ nom, ...((d.etapes || []).find((e) => e.cle === cle) || { cle, etat: 'a_venir' }) }));
-    const enCours = etapes.find((e) => e.etat === 'en_cours') || etapes.find((e) => e.etat === 'a_venir');
-    afficher(`
-      ${dossiers.length > 1 ? `<div class="ec-choix" role="group" aria-label="Choisir le dossier">${dossiers.map((x) => `<button type="button" data-dossier="${esc(x.dossier_id)}" aria-pressed="${x.dossier_id === courant}">${esc(FORMULES[x.formule] || 'Dossier')}${x.ville ? ' · ' + esc(x.ville) : ''}</button>`).join('')}</div>` : ''}
-      <div class="ec-entete">
-        <h1>Formule ${esc(FORMULES[d.formule] || '')}</h1>
-        <span class="ec-meta">${d.ville ? 'Logement à ' + esc(d.ville) : ''}${enCours ? ` · Étape en cours : ${esc(enCours.nom)}` : ' · Accompagnement terminé'}</span>
-      </div>
-      <div class="ec-carte">
-        <h2>Les étapes</h2>
-        <ol class="ec-frise">${etapes.map((e) => `<li class="${esc(e.etat)}"><span class="ec-point" aria-hidden="true"></span>
-          <div class="ec-etape"><b>${esc(e.nom)}</b><span class="ec-etat">${esc(ETATS[e.etat] || '')}</span>${e.date ? `<span class="ec-date">${e.etat === 'termine' ? 'le ' : 'prévu le '}${esc(dateFr(e.date))}</span>` : ''}</div>
-          ${e.message ? `<p class="ec-texte">${esc(e.message)}</p>` : ''}</li>`).join('')}</ol>
-      </div>
-      ${(photos || []).length ? `<div class="ec-carte"><h2>Photos</h2><div class="ec-galerie" id="ec-galerie">${photos.map((p, i) => `<a href="#" data-photo="${esc(p.chemin)}" aria-label="Agrandir la photo ${i + 1}${p.legende ? ' : ' + esc(p.legende) : ''}"><img alt="${esc(p.legende || 'Photo du logement ' + (i + 1))}" loading="lazy"></a>`).join('')}</div></div>` : ''}
-      ${bonsASigner.map(bonHtml).join('')}
-      ${listeObjets.length ? `<div class="ec-carte" id="ec-objets"><h2>Objets conservés</h2>
-        <p class="p" style="margin:0">Ce qui est mis de côté pour vous et vos proches, avec son destinataire.${aValider ? ' Vérifiez la liste puis validez-la : en cas d\'oubli ou d\'erreur, appelez-nous avant de valider.' : ''}</p>
-        <ul class="ec-objets">${listeObjets.map((o) => `<li>${o.photo ? `<a href="#" data-oc-photo="${esc(o.photo)}" aria-label="Agrandir la photo : ${esc(o.nom)}"><img alt="${esc(o.nom)}"></a>` : '<span class="ec-oc-sans" aria-hidden="true"></span>'}
-          <div><b>${esc(o.nom)}</b><span>${o.destinataire ? 'Pour ' + esc(o.destinataire) : 'Pour la famille'}</span>${o.note ? `<span class="ec-oc-note">${esc(o.note)}</span>` : ''}
-          <span class="${o.valide_le ? 'ec-oc-ok' : 'ec-oc-attente'}">${o.valide_le ? 'Validé le ' + esc(dateFr(o.valide_le)) : 'À valider'}</span></div></li>`).join('')}</ul>
-        ${aValider ? `<button type="button" class="btn" id="ec-valider">Je valide la liste (${aValider} objet${aValider > 1 ? 's' : ''})</button>` : '<p class="ec-oc-ok" style="margin:0">Liste validée.</p>'}
-        <div id="ec-msg-objets" class="ec-msg" role="status" hidden></div>
-      </div>` : ''}
-      <div class="ec-carte"><h2>Documents</h2>
-        ${(docs || []).length ? `<ul class="ec-docs">${docs.map((x) => `<li><div>${esc(x.nom)}<br><span>${esc(TYPES_DOC[x.type] || 'Document')} · ${esc(dateFr(x.date))}</span></div><button type="button" class="ec-lien" data-doc="${esc(x.chemin)}">Ouvrir</button></li>`).join('')}</ul>` : `<p class="p" style="margin:0">Les documents de votre dossier (devis signé, factures, état des lieux) apparaîtront ici.</p>`}
-      </div>
-      <div class="ec-carte sable"><h2>Votre interlocuteur</h2>${contactHtml(d.interlocuteur)}</div>
-      ${basHtml()}`);
-    racine.querySelectorAll('[data-dossier]').forEach((b) => b.onclick = () => { courant = b.dataset.dossier; afficherDossier(); });
-    if (apercu) racine.querySelectorAll('.ec-bon button, .ec-bon input, .ec-bon canvas, #ec-valider').forEach((el) => { el.disabled = true; el.style.pointerEvents = 'none'; el.style.opacity = '.5'; });
-    else racine.querySelectorAll('.ec-bon').forEach((c) => lierBon(sb, c, () => afficherDossier()));
-    // Objets conservés : photos (liens signés temporaires) et validation de la liste.
-    const cheminsObjets = listeObjets.map((o) => o.photo).filter(Boolean);
-    if (cheminsObjets.length) {
-      sb.storage.from('photos').createSignedUrls(cheminsObjets, 3600).then(({ data: urls }) => (urls || []).forEach((u) => {
-        const a = racine.querySelector(`[data-oc-photo="${CSS.escape(u.path)}"]`);
-        if (a && u.signedUrl) { a.href = u.signedUrl; a.target = '_blank'; a.rel = 'noopener'; a.querySelector('img').src = u.signedUrl; }
-      }));
-    }
-    const bv = racine.querySelector('#ec-valider');
-    if (bv && !apercu) bv.onclick = async () => {
-      bv.disabled = true;
-      const { error } = await sb.rpc('valider_objets_conserves', { p_dossier: courant });
-      const m = racine.querySelector('#ec-msg-objets');
-      if (error) { bv.disabled = false; m.hidden = false; m.className = 'ec-msg alerte'; m.textContent = "La validation n'a pas pu être enregistrée. Vérifiez votre connexion internet et réessayez."; return; }
-      afficherDossier();
+    const L = {
+      photos: photos || [], docs: docs || [], objets: Array.isArray(objets) ? objets : [], journal: journal || [], decisions: decisions || [],
+      listing: (listings || [])[0] || null, bons: (Array.isArray(aSigner) ? aSigner : []).filter((b) => b.dossier_id === courant),
     };
-    // Photos : liens signés temporaires, seulement pour les photos partagées de ce dossier.
-    const chemins = (photos || []).map((p) => p.chemin);
-    if (chemins.length) {
-      const { data: urls } = await sb.storage.from('photos').createSignedUrls(chemins, 3600);
-      (urls || []).forEach((u) => { const a = racine.querySelector(`[data-photo="${CSS.escape(u.path)}"]`); if (a && u.signedUrl) { a.href = u.signedUrl; a.target = '_blank'; a.rel = 'noopener'; a.querySelector('img').src = u.signedUrl; } });
-    }
+    afficher(dossierHtml(d, L));
+    lierDossier(d, L);
+  }
+
+  /* ---------- Tableau de bord du dossier ---------- */
+  function dossierHtml(d, L) {
+    const etapes = ETAPES.map(([cle, nom]) => ({ cle, nom, ...((d.etapes || []).find((e) => e.cle === cle) || { etat: 'a_venir' }) }));
+    const iCours = etapes.findIndex((e) => e.etat === 'en_cours');
+    const iEtape = iCours >= 0 ? iCours : Math.max(0, etapes.findIndex((e) => e.etat === 'a_venir'));
+    const termine = etapes.every((e) => e.etat === 'termine');
+    const taches = Array.isArray(d.taches) ? d.taches : [];
+    const tFait = taches.filter((t) => t.etat === 'fait').length;
+    const avancement = taches.length ? Math.round(tFait / taches.length * 100) : Math.round(etapes.filter((e) => e.etat === 'termine').length / etapes.length * 100);
+    const pieces = Array.isArray(d.pieces) ? d.pieces : [];
+    const volume = pieces.reduce((s, p) => s + (Number(p.volume) || 0), 0);
+    const dons = pieces.reduce((s, p) => s + (Number(p.dons_volume) || 0), 0);
+    const triees = pieces.filter((p) => p.tri === 'trie').length;
+    const bien = d.bien || {}, prochain = d.prochain || {};
+    const nonValides = L.objets.filter((o) => !o.valide_le).length;
+    const decAttente = L.decisions.filter((x) => x.statut === 'attente');
+    const famille = taches.filter((t) => t.cote === 'famille' && t.etat !== 'fait');
+    const nbAction = L.bons.length + decAttente.length + (nonValides ? 1 : 0) + famille.length;
+    const cles = etapes.find((e) => e.cle === 'cles');
+    const titre = bien.famille ? `Bonjour, ${bien.famille}.` : (d.titre || `Formule ${FORMULES[d.formule] || ''}`);
+    const sousTitre = [bien.famille ? d.titre : '', d.adresse || (d.ville ? 'Logement à ' + d.ville : '')].filter(Boolean).join(' · ');
+
+    // Prochain rendez-vous (ou étape en cours, à défaut).
+    const pd = prochain.date ? new Date(prochain.date + 'T12:00:00') : null;
+    const carte = pd && !isNaN(pd) ? `<aside class="ecx-next">
+        <span class="ecx-next-lbl">Prochain rendez-vous</span>
+        <div class="ecx-next-date"><b>${pd.getDate()}</b><span>${esc(pd.toLocaleDateString('fr-FR', { month: 'short' }))}<br>${esc(pd.toLocaleDateString('fr-FR', { weekday: 'long' }))}</span></div>
+        ${prochain.titre ? `<p class="ecx-next-t">${esc(prochain.titre)}</p>` : ''}
+        <p class="ecx-next-d">${esc([prochain.horaire, prochain.detail].filter(Boolean).join(' · '))}</p>
+        <a class="ecx-next-l" href="#contact">Une question ? Appeler votre interlocuteur →</a>
+      </aside>` : `<aside class="ecx-next">
+        <span class="ecx-next-lbl">${termine ? 'Accompagnement' : 'Étape en cours'}</span>
+        <p class="ecx-next-t">${termine ? 'Terminé. Merci pour votre confiance.' : esc(etapes[iEtape].nom)}</p>
+        ${!termine && etapes[iEtape].message ? `<p class="ecx-next-d">${esc(etapes[iEtape].message)}</p>` : ''}
+        <a class="ecx-next-l" href="#contact">Une question ? Appeler votre interlocuteur →</a>
+      </aside>`;
+
+    const kpis = [
+      ['Avancement', `${avancement} %`, taches.length ? `${tFait} tâches sur ${taches.length}` : `Étape ${iEtape + 1} sur 5`],
+      pieces.length ? ['Pièces triées', `${triees} / ${pieces.length}`, triees < pieces.length ? pieces.filter((p) => p.tri !== 'trie').map((p) => p.nom).slice(0, 3).join(', ').toLowerCase() + (pieces.length - triees > 3 ? '…' : '') + ' en cours' : 'tri terminé'] : null,
+      L.objets.length ? ['Objets conservés', String(L.objets.length), nonValides ? 'listing à signer' : `listing signé${L.listing ? ' (v' + L.listing.version + ')' : ''}`] : null,
+      volume ? ['Volume à évacuer', m3(volume), dons ? `dont ${m3(dons)} de dons` : 'estimation au diagnostic'] : null,
+      cles?.date ? [cles.etat === 'termine' ? 'Clés remises' : 'Remise des clés', jourCourt(cles.date), cles.message ? cles.message.slice(0, 40) : ''] : null,
+    ].filter(Boolean);
+
+    const sections = [['faire', 'À faire', nbAction], ['avancement', 'Avancement'], L.journal.length && ['journal', 'Journal'], L.decisions.length && ['decisions', 'Décisions'],
+      (Object.keys(bien).some((k) => k !== 'famille' && bien[k]) || pieces.length) && ['logement', 'Le logement'], L.objets.length && ['objets', 'Objets conservés'],
+      ['documents', 'Documents'], L.photos.length && ['photos', 'Photos'], ['contact', 'Contacts']].filter(Boolean);
+
+    return `
+      <section class="hero ecx-top">${fond ? `<img class="hero-img" id="ecx-fond" src="${esc(fond)}" alt="">` : ''}
+        <div class="w ecx-hero">
+          <div class="ecx-hero-txt">
+            ${dossiers.length > 1 ? `<div class="ec-choix" role="group" aria-label="Choisir le dossier">${dossiers.map((x) => `<button type="button" data-dossier="${esc(x.dossier_id)}" aria-pressed="${x.dossier_id === courant}">${esc(x.titre || FORMULES[x.formule] || 'Dossier')}${x.ville ? ' · ' + esc(x.ville) : ''}</button>`).join('')}</div>` : ''}
+            <span class="lbl">Votre espace client${d.reference ? ' · Dossier n° ' + esc(d.reference) : ''}</span>
+            <h1 class="h1">${esc(titre)}</h1>
+            <p class="lead">${esc(sousTitre || 'Formule ' + (FORMULES[d.formule] || ''))}</p>
+            <div class="ecx-prog" aria-label="Avancement : ${avancement} %">
+              <div class="ecx-prog-barre"><span style="width:${avancement}%"></span></div>
+              <span>${termine ? 'Accompagnement terminé' : `Étape ${iEtape + 1} sur 5 · ${esc(etapes[iEtape].nom)}${etapes[iEtape].etat === 'en_cours' ? ' en cours' : ''}`}${taches.length ? ` · ${tFait} tâches faites sur ${taches.length}` : ''}</span>
+            </div>
+          </div>
+          ${carte}
+        </div>
+      </section>
+      <nav class="ecx-nav" aria-label="Sections de votre espace"><div class="w ecx-nav-in">
+        ${sections.map(([k, l, n]) => `<a href="#${k}">${l}${n ? ` <span class="ecx-pastille">${n}</span>` : ''}</a>`).join('')}
+      </div></nav>
+      <div class="ecx"><div class="w ecx-w">
+        <div class="ecx-kpis" style="--n:${kpis.length}">${kpis.map(([a, b, c]) => `<div><span>${esc(a)}</span><b>${esc(b)}</b><small>${esc(c)}</small></div>`).join('')}</div>
+        ${aFaireHtml(taches, L, nonValides, decAttente, famille)}
+        ${avancementHtml(etapes, taches)}
+        ${journalHtml(L.journal)}
+        ${decisionsHtml(L.decisions)}
+        ${logementHtml(d, bien, pieces, volume, dons, triees)}
+        ${objetsHtml(L, nonValides)}
+        ${documentsHtml(L.docs, termine)}
+        ${photosHtml(L.photos)}
+        <section id="contact" class="ecx-contact">
+          <div class="ecx-contact-c">
+            <span class="lbl" style="color:#C9B48F">Votre interlocuteur</span>
+            <h2 class="h2" style="color:#fff">${d.interlocuteur?.nom ? esc(d.interlocuteur.nom) + ' vous accompagne.' : 'Une seule personne, du diagnostic à la remise des clés.'}</h2>
+            <p>Une question, un imprévu, un objet oublié ? Nous sommes joignables directement.</p>
+            ${contactBoutons(d.interlocuteur)}
+          </div>
+        </section>
+        ${(d.contacts || []).length ? `<div class="ecx-contacts">${d.contacts.map((c) => `<div class="ecx-panneau ecx-ct"><span class="ecx-avatar clair" aria-hidden="true">${esc(initiales(c.nom))}</span><div><b>${esc(c.nom)}</b>${c.role ? `<span>${esc(c.role)}</span>` : ''}${c.detail ? `<small>${esc(c.detail)}</small>` : ''}</div></div>`).join('')}</div>` : ''}
+        ${basHtml()}
+      </div></div>`;
+  }
+
+  function aFaireHtml(taches, L, nonValides, decAttente, famille) {
+    const vous = [
+      ...(nonValides ? [`<li><div><b>Signer le listing des objets conservés</b><span>${L.objets.length} objet${L.objets.length > 1 ? 's' : ''}${nonValides < L.objets.length ? `, dont ${nonValides} nouveau${nonValides > 1 ? 'x' : ''} ou modifié${nonValides > 1 ? 's' : ''}` : ''} · rien ne part avant votre signature</span></div><a class="ecx-b plein" href="#objets">Relire et signer</a></li>`] : []),
+      ...decAttente.map((x) => `<li><div><b>${esc(x.question)}</b><span>Question posée le ${esc(jourCourt(x.posee_le))}</span></div><a class="ecx-b" href="#decisions">Répondre</a></li>`),
+      ...L.bons.map((b) => `<li><div><b>Signer le bon d'intervention n° ${esc(b.numero)}</b><span>À relire et signer ci-dessous</span></div><a class="ecx-b plein" href="#bon-${esc(b.id)}">Signer</a></li>`),
+      ...famille.map((t) => `<li><div><b>${esc(t.libelle)}</b><span>${t.date ? 'Pour le ' + esc(jourCourt(t.date)) + ' · ' : ''}Prévenez votre interlocuteur quand c'est fait</span></div><a class="ecx-b" href="#contact">Contacter</a></li>`),
+    ];
+    const nous = taches.filter((t) => t.cote !== 'famille');
+    const aFaire = nous.filter((t) => t.etat !== 'fait').sort((a, b) => String(a.date || '9').localeCompare(String(b.date || '9'))).slice(0, 6);
+    const faits = nous.filter((t) => t.etat === 'fait').sort((a, b) => String(b.date || '').localeCompare(String(a.date || ''))).slice(0, 4).reverse();
+    const ligne = (t) => `<li class="${t.etat === 'fait' ? 'ok' : t.etat === 'en_cours' ? 'cours' : ''}"><i>${t.etat === 'fait' ? coche : ''}</i>${esc(t.libelle)}<span>${esc(jourCourt(t.date))}</span></li>`;
+    return `<section id="faire" class="ecx-sec">
+      <header class="ecx-sec-h"><span class="lbl">À faire</span><h2 class="h2">Ce qui reste à faire</h2></header>
+      ${L.bons.map(bonHtml).join('')}
+      <div class="ecx-duo2">
+        <div class="ecx-panneau">
+          <div class="ecx-panneau-h"><h3>De votre côté</h3>${vous.length ? `<span class="ecx-badge attente">${vous.length} en attente</span>` : '<span class="ecx-badge ok">Rien à faire</span>'}</div>
+          ${vous.length ? `<ul class="ecx-actions">${vous.join('')}</ul>` : `<p class="ecx-vide">Rien ne vous est demandé pour l'instant. Nous vous préviendrons ici dès qu'une signature ou une réponse sera nécessaire.</p>`}
+        </div>
+        <div class="ecx-panneau">
+          <div class="ecx-panneau-h"><h3>De notre côté</h3>${nous.length ? `<span class="ecx-mini">${nous.filter((t) => t.etat === 'fait').length} sur ${nous.length} faits</span>` : ''}</div>
+          ${nous.length ? `<ul class="ecx-check">${[...faits, ...aFaire].map(ligne).join('')}</ul>` : `<p class="ecx-vide">Le détail des tâches apparaîtra ici au fil de l'accompagnement.</p>`}
+        </div>
+      </div>
+    </section>`;
+  }
+
+  function avancementHtml(etapes, taches) {
+    return `<section id="avancement" class="ecx-sec">
+      <header class="ecx-sec-h"><span class="lbl">Avancement</span><h2 class="h2">Où en est votre accompagnement</h2></header>
+      <ol class="ecx-frise">${etapes.map((e, i) => `<li class="${esc(e.etat)}"><span class="ecx-rond" aria-hidden="true">${e.etat === 'termine' ? coche : i + 1}</span><b>${esc(e.nom)}</b>
+        <span>${e.etat === 'termine' ? (e.date ? 'Fait le ' + esc(jourCourt(e.date)) : 'Terminé') : e.etat === 'en_cours' ? 'En cours' + (e.date ? ', prévu le ' + esc(jourCourt(e.date)) : '') : e.date ? 'Prévu le ' + esc(jourCourt(e.date)) : 'À venir'}</span></li>`).join('')}</ol>
+      <div class="ecx-phases">${etapes.map((e, i) => {
+        const tp = taches.filter((t) => t.phase === e.cle);
+        if (!tp.length && !e.message) return '';
+        return `<details class="ecx-phase ${esc(e.etat)}"${e.etat === 'en_cours' ? ' open' : ''}>
+          <summary><span class="ecx-num">${e.etat === 'termine' ? coche : i + 1}</span><b>${esc(e.nom)}</b><span class="ecx-quand">${esc(ETATS[e.etat] || '')}${e.date ? ' · ' + esc(jourCourt(e.date)) : ''}</span>${tp.length ? `<span class="ecx-mini">${tp.filter((t) => t.etat === 'fait').length}/${tp.length}</span>` : ''}</summary>
+          ${e.message ? `<p class="ecx-phase-msg">${esc(e.message)}</p>` : ''}
+          ${tp.length ? `<ul class="ecx-check">${tp.map((t) => `<li class="${t.etat === 'fait' ? 'ok' : t.etat === 'en_cours' ? 'cours' : ''}${t.cote === 'famille' && t.etat !== 'fait' ? ' attente' : ''}"><i>${t.etat === 'fait' ? coche : ''}</i>${esc(t.libelle)}<span>${t.cote === 'famille' && t.etat !== 'fait' ? '<em class="ecx-badge attente">Votre action</em>' : esc(jourCourt(t.date))}</span></li>`).join('')}</ul>` : ''}
+        </details>`;
+      }).join('')}</div>
+    </section>`;
+  }
+
+  function journalHtml(journal) {
+    if (!journal.length) return '';
+    const types = [...new Set(journal.map((j) => j.type))];
+    return `<section id="journal" class="ecx-sec">
+      <header class="ecx-sec-h ecx-sec-h2">
+        <div><span class="lbl">Journal</span><h2 class="h2">Tout ce qui s'est passé</h2></div>
+        ${types.length > 1 ? `<div class="ecx-filtres" role="group" aria-label="Filtrer le journal"><button type="button" aria-pressed="true" data-filtre="">Tout</button>${types.map((t) => `<button type="button" aria-pressed="false" data-filtre="${esc(t)}">${esc(TJ[t] || t)}</button>`).join('')}</div>` : ''}
+      </header>
+      <ol class="ecx-journal ecx-panneau">${journal.map((j, i) => `<li data-type="${esc(j.type)}"${i >= 10 ? ' data-plus hidden' : ''}><span class="ecx-pt ${esc(j.type)}" aria-hidden="true"></span><time datetime="${esc(j.quand)}">${esc(quandFr(j.quand))}</time>
+        <div><span class="ecx-type ${esc(j.type)}">${esc(TJ[j.type] || '')}</span><b>${esc(j.titre)}</b>${j.texte ? `<p>${esc(j.texte)}</p>` : ''}</div></li>`).join('')}
+        ${journal.length > 10 ? `<li class="ecx-plus"><button type="button" class="ec-lien" id="ecx-plus">Voir les ${journal.length - 10} événements plus anciens</button></li>` : ''}
+      </ol>
+    </section>`;
+  }
+
+  function decisionsHtml(decisions) {
+    if (!decisions.length) return '';
+    return `<section id="decisions" class="ecx-sec">
+      <header class="ecx-sec-h"><span class="lbl">Décisions</span><h2 class="h2">Ce qui a été décidé, par qui et quand</h2></header>
+      ${decisions.filter((x) => x.statut === 'attente').map((x) => `<div class="ecx-question" data-decision="${esc(x.id)}">
+        <div><span class="ecx-badge attente">Votre réponse est attendue</span><b>${esc(x.question)}</b><span>Question posée le ${esc(jourCourt(x.posee_le))}. Votre réponse est datée et visible par vos proches.</span></div>
+        <div class="ecx-question-r">${(x.choix || []).length ? x.choix.map((c) => `<button type="button" class="ecx-b" data-choix="${esc(c)}">${esc(c)}</button>`).join('') : `<input type="text" maxlength="500" placeholder="Votre réponse" aria-label="Votre réponse"><button type="button" class="ecx-b plein" data-envoyer>Envoyer</button>`}</div>
+        <div class="ec-msg" role="status" hidden></div>
+      </div>`).join('')}
+      <div class="ecx-panneau ecx-tab"><table>
+        <thead><tr><th>Date</th><th>Décision</th><th>Décidé par</th><th>Statut</th></tr></thead>
+        <tbody>${decisions.map((x) => `<tr class="${x.statut === 'attente' ? 'attente' : ''}"><td class="ecx-gris">${esc(jourCourt(x.decide_le || x.posee_le))}</td><td><b>${esc(x.question)}</b>${x.reponse ? `<br><span class="ecx-gris">${esc(x.reponse)}</span>` : ''}</td><td>${esc(x.decide_par || '—')}</td><td>${x.statut === 'validee' ? '<span class="ecx-badge ok">Validée</span>' : '<span class="ecx-badge attente">En attente</span>'}</td></tr>`).join('')}</tbody>
+      </table></div>
+    </section>`;
+  }
+
+  function logementHtml(d, bien, pieces, volume, dons, triees) {
+    const fiche = [['Adresse', d.adresse], ...BIEN.map(([k, l]) => [l, bien[k]])].filter(([, v]) => v);
+    if (!fiche.length && !pieces.length) return '';
+    return `<section id="logement" class="ecx-sec">
+      <header class="ecx-sec-h"><span class="lbl">Le logement</span><h2 class="h2">${esc(bien.type || 'Le logement')}</h2></header>
+      <div class="ecx-bien${pieces.length && fiche.length ? '' : ' seul'}">
+        ${fiche.length ? `<dl class="ecx-fiche ecx-panneau">${fiche.map(([l, v]) => `<div><dt>${esc(l)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>` : ''}
+        ${pieces.length ? `<div class="ecx-panneau ecx-tab"><table>
+          <thead><tr><th>Pièce</th><th>Tri</th><th>Conservés</th><th>Dons</th><th>Évacuation</th></tr></thead>
+          <tbody>${pieces.map((p) => { const [t, c] = TRI[p.tri] || TRI.a_trier; return `<tr><td><b>${esc(p.nom)}</b></td><td><span class="ecx-badge ${c}">${t}</span></td><td>${esc(p.conserves ?? '—')}</td><td>${esc(p.dons || '—')}</td><td>${p.volume ? esc(m3(p.volume)) + (p.tri === 'trie' ? '' : ' (est.)') : '—'}</td></tr>`; }).join('')}</tbody>
+          <tfoot><tr><td>Total</td><td>${triees} / ${pieces.length}</td><td>${pieces.reduce((s, p) => s + (Number(p.conserves) || 0), 0)}</td><td>${dons ? esc(m3(dons)) : ''}</td><td>${volume ? esc(m3(volume)) : ''}</td></tr></tfoot>
+        </table></div>` : ''}
+      </div>
+    </section>`;
+  }
+
+  function objetsHtml(L, nonValides) {
+    if (!L.objets.length) return '';
+    const pdf = L.docs.find((x) => /objets-conserves\.pdf$/.test(x.chemin));
+    const premiere = (o) => (o.photos || [])[0] || o.photo;
+    const nbPh = (o) => (o.photos || []).length || (o.photo ? 1 : 0);
+    return `<section id="objets" class="ecx-sec">
+      <header class="ecx-sec-h"><span class="lbl">Objets conservés</span><h2 class="h2">Le listing des objets mis de côté</h2></header>
+      <div class="ecx-signature${nonValides ? '' : ' signe'}">
+        <div>${nonValides ? '<span class="ecx-badge attente">Non signé</span>' : '<span class="ecx-badge ok">Signé</span>'}
+          <b>${L.objets.length} objet${L.objets.length > 1 ? 's' : ''}${L.listing ? ` · version ${L.listing.version + (nonValides ? 1 : 0)}` : ''}</b>
+          <span>${nonValides ? (L.listing ? `La version ${L.listing.version} a été signée par ${esc(L.listing.nom)} le ${esc(jourCourt(L.listing.signe_le))}. Le listing a changé depuis : une nouvelle signature est nécessaire.` : 'Rien ne part du logement avant votre signature. Toute modification après signature crée une nouvelle version à signer.') : `Signé par ${esc(L.listing?.nom || '')} le ${esc(dateFr(L.listing?.signe_le))}. Toute modification créera une nouvelle version à signer.`}</span></div>
+        ${pdf ? `<button type="button" class="ecx-b" data-doc="${esc(pdf.chemin)}">Ouvrir le PDF</button>` : ''}
+        ${nonValides ? '<button type="button" class="ecx-b plein" id="ecx-signer-ouvrir">Signer le listing</button>' : ''}
+      </div>
+      <div class="ecx-panneau ecx-signer" id="ecx-signer" hidden>
+        <div class="ecx-panneau-h"><h3>Signer le listing</h3><button type="button" class="ec-lien" id="ecx-signer-fermer">Annuler</button></div>
+        <div class="ecx-signer-c">
+          <p class="p" style="margin:0">En signant, vous confirmez que les ${L.objets.length} objets ci-dessous sont à conserver pour les destinataires indiqués. Tout ce qui n'y figure pas pourra être donné, recyclé ou évacué selon le devis.</p>
+          <label>Votre nom<input type="text" id="ecx-signer-nom" maxlength="120" autocomplete="name"></label>
+          <span class="ec-bon-lbl">Votre signature, au doigt ou à la souris</span>
+          <canvas class="ec-pad" aria-label="Zone de signature"></canvas>
+          <div class="ec-contact"><button type="button" class="btn2" id="ecx-signer-effacer">Effacer</button><button type="button" class="btn" id="ecx-signer-ok">Je signe le listing</button></div>
+          <div class="ec-msg" id="ecx-signer-msg" role="status" hidden></div>
+        </div>
+      </div>
+      <div class="ecx-panneau ecx-tab"><table>
+        <thead><tr><th>N°</th><th>Objet</th><th>Pièce</th><th>Destinataire</th><th>Photos</th></tr></thead>
+        <tbody>${L.objets.map((o, i) => `<tr class="${o.valide_le ? '' : 'attente'}"><td class="ecx-gris">${String(i + 1).padStart(2, '0')}</td>
+          <td><span class="ecx-obj">${premiere(o) ? `<span class="ecx-vign"><img alt="" data-ph="${esc(premiere(o))}"></span>` : '<span class="ecx-vign vide"></span>'}<span><b>${esc(o.nom)}</b>${o.note ? `<br><span class="ecx-gris">${esc(o.note)}</span>` : ''}</span></span></td>
+          <td>${esc(o.piece || '—')}</td><td>${esc(o.destinataire || 'La famille')}</td>
+          <td>${nbPh(o) ? `<button type="button" class="ec-lien" data-photos="${esc(JSON.stringify((o.photos || []).length ? o.photos : [o.photo]))}">${nbPh(o)} photo${nbPh(o) > 1 ? 's' : ''}</button>` : '<span class="ecx-gris">—</span>'}</td></tr>`).join('')}</tbody>
+      </table></div>
+    </section>`;
+  }
+
+  function documentsHtml(docs, termine) {
+    const types = new Set(docs.map((x) => x.type));
+    const avenir = termine ? [] : [['bon_intervention', "Bons d'intervention signés"], ['etat_des_lieux', 'État des lieux de sortie'], ['facture', 'Facture finale']].filter(([t]) => !types.has(t) || t === 'facture');
+    return `<section id="documents" class="ecx-sec">
+      <header class="ecx-sec-h"><span class="lbl">Documents</span><h2 class="h2">Vos documents</h2></header>
+      <div class="ecx-panneau ecx-tab"><table>
+        <thead><tr><th>Type</th><th>Document</th><th>Date</th><th></th></tr></thead>
+        <tbody>${docs.map((x) => `<tr><td><span class="ecx-doc">${icDoc}${esc(TYPES_DOC[x.type] || 'Document')}</span></td><td><b>${esc(x.nom)}</b></td><td class="ecx-gris">${esc(dateFr(x.date))}</td><td class="ecx-dr"><button type="button" class="ec-lien" data-doc="${esc(x.chemin)}">Ouvrir</button></td></tr>`).join('')}
+          ${avenir.map(([t, n]) => `<tr class="avenir"><td><span class="ecx-doc">${icDoc}${esc(TYPES_DOC[t])}</span></td><td><b>${esc(n)}</b></td><td></td><td class="ecx-dr"><span class="ecx-gris">À venir</span></td></tr>`).join('')}
+          ${!docs.length && !avenir.length ? '<tr><td colspan="4" class="ecx-gris">Les documents de votre dossier apparaîtront ici.</td></tr>' : ''}</tbody>
+      </table></div>
+    </section>`;
+  }
+
+  function photosHtml(photos) {
+    if (!photos.length) return '';
+    const av = photos.find((p) => p.moment === 'avant'), ap = photos.find((p) => p.moment === 'apres');
+    const autres = photos.filter((p) => p !== av && p !== ap);
+    return `<section id="photos" class="ecx-sec">
+      <header class="ecx-sec-h"><span class="lbl">Photos</span><h2 class="h2">${av && ap ? 'Le logement, avant et après' : 'Les photos de votre accompagnement'}</h2></header>
+      ${av && ap ? `<div class="ecx-avap" id="ecx-avap">
+        <img class="ecx-avap-apres" alt="${esc(ap.legende || 'Après')}" data-ph="${esc(ap.chemin)}">
+        <div class="ecx-avap-avant"><img alt="${esc(av.legende || 'Avant')}" data-ph="${esc(av.chemin)}"></div>
+        <span class="ecx-avap-tag g">Avant</span><span class="ecx-avap-tag d">Après</span>
+        <input type="range" min="0" max="100" value="50" aria-label="Comparer avant et après">
+        <span class="ecx-avap-ligne" aria-hidden="true"></span>
+      </div>
+      <p class="ecx-legende">${esc(ap.legende || av.legende || '')}${ap.legende || av.legende ? ' · ' : ''}glissez pour comparer · ${photos.length} photo${photos.length > 1 ? 's' : ''} au total</p>` : ''}
+      ${autres.length ? `<div class="ecx-galerie">${autres.map((p, i) => `<figure${i >= 8 ? ' data-plus hidden' : ''}><a href="#" data-photo="${esc(p.chemin)}" aria-label="Agrandir${p.legende ? ' : ' + esc(p.legende) : ''}"><img alt="${esc(p.legende || 'Photo ' + (i + 1))}" data-ph="${esc(p.chemin)}" loading="lazy"></a>${p.legende ? `<figcaption>${esc(p.legende)}</figcaption>` : ''}</figure>`).join('')}</div>
+        ${autres.length > 8 ? `<button type="button" class="ec-lien" id="ecx-photos-plus">Voir les ${autres.length - 8} autres photos</button>` : ''}` : ''}
+    </section>`;
+  }
+
+  /* ---------- Interactions ---------- */
+  function lierDossier(d, L) {
+    racine.querySelectorAll('[data-dossier]').forEach((b) => b.onclick = () => { courant = b.dataset.dossier; afficherDossier(); });
+    racine.querySelectorAll('.ec-bon').forEach((c) => { c.id = 'bon-' + c.dataset.bon; if (!apercu) lierBon(sb, c, () => afficherDossier()); });
+
+    // Photos : liens signés temporaires (une seule demande pour toutes les images de la page).
+    const chemins = [...new Set([...racine.querySelectorAll('[data-ph]')].map((x) => x.dataset.ph))];
+    if (d.couverture) chemins.push(d.couverture);
+    if (chemins.length) sb.storage.from('photos').createSignedUrls(chemins, 3600).then(({ data: urls }) => (urls || []).forEach((u) => {
+      if (!u.signedUrl) return;
+      if (u.path === d.couverture) { const f = racine.querySelector('#ecx-fond'); if (f) f.src = u.signedUrl; else racine.querySelector('.ecx-top')?.insertAdjacentHTML('afterbegin', `<img class="hero-img" src="${esc(u.signedUrl)}" alt="">`); }
+      racine.querySelectorAll(`[data-ph="${CSS.escape(u.path)}"]`).forEach((im) => { im.src = u.signedUrl; });
+      racine.querySelectorAll(`[data-photo="${CSS.escape(u.path)}"]`).forEach((a) => { a.href = u.signedUrl; a.target = '_blank'; a.rel = 'noopener'; });
+    }));
+    racine.querySelectorAll('[data-photos]').forEach((b) => b.onclick = async () => {
+      const liste = JSON.parse(b.dataset.photos || '[]').filter(Boolean);
+      const { data: urls } = await sb.storage.from('photos').createSignedUrls(liste, 600);
+      const ok = (urls || []).filter((u) => u.signedUrl);
+      if (!ok.length) { alert("Ces photos ne sont pas disponibles pour l'instant."); return; }
+      const v = document.createElement('dialog'); v.className = 'ecx-visio';
+      v.innerHTML = `<div class="ecx-visio-in">${ok.map((u) => `<img src="${esc(u.signedUrl)}" alt="">`).join('')}</div><button type="button" class="ecx-b" autofocus>Fermer</button>`;
+      document.body.appendChild(v); v.querySelector('button').onclick = () => v.close(); v.onclose = () => v.remove(); v.showModal();
+    });
+
+    // Comparateur avant / après.
+    const av = racine.querySelector('#ecx-avap');
+    if (av) { const r = av.querySelector('input'); const maj = () => av.style.setProperty('--pos', r.value + '%'); r.oninput = maj; maj(); }
+
+    // Filtres et suite du journal, suite de la galerie.
+    racine.querySelectorAll('.ecx-filtres button').forEach((b) => b.onclick = () => {
+      racine.querySelectorAll('.ecx-filtres button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      racine.querySelectorAll('.ecx-journal li[data-type]').forEach((li) => { li.hidden = (b.dataset.filtre && li.dataset.type !== b.dataset.filtre) || (!b.dataset.filtre && li.hasAttribute('data-plus') && !racine.querySelector('#ecx-journal-tout')); });
+      const plus = racine.querySelector('#ecx-plus'); if (plus) plus.parentElement.hidden = !!b.dataset.filtre;
+    });
+    const plus = racine.querySelector('#ecx-plus');
+    if (plus) plus.onclick = () => { racine.querySelectorAll('.ecx-journal li[data-plus]').forEach((li) => { li.hidden = false; }); plus.id = 'ecx-journal-tout'; plus.parentElement.hidden = true; };
+    const pp = racine.querySelector('#ecx-photos-plus');
+    if (pp) pp.onclick = () => { racine.querySelectorAll('.ecx-galerie [data-plus]').forEach((f) => { f.hidden = false; }); pp.hidden = true; };
+
+    // Documents : liens signés de courte durée.
     racine.querySelectorAll('[data-doc]').forEach((b) => b.onclick = async () => {
       const fenetre = window.open('', '_blank');
       const { data, error } = await sb.storage.from('documents').createSignedUrl(b.dataset.doc, 300);
       if (error || !data?.signedUrl) { fenetre?.close(); alert("Ce document n'est pas disponible pour l'instant."); return; }
       if (fenetre) fenetre.location = data.signedUrl; else location.href = data.signedUrl;
     });
+
+    // Réponse aux décisions.
+    racine.querySelectorAll('[data-decision]').forEach((q) => {
+      const envoyer = async (reponse, bouton) => {
+        if (apercu) return;
+        if (!reponse.trim()) { message('Écrivez votre réponse.', true, `[data-decision="${q.dataset.decision}"] .ec-msg`); return; }
+        q.querySelectorAll('button, input').forEach((x) => { x.disabled = true; });
+        const { error } = await sb.rpc('repondre_decision', { p_id: q.dataset.decision, p_reponse: reponse });
+        if (error) { q.querySelectorAll('button, input').forEach((x) => { x.disabled = false; }); const m = q.querySelector('.ec-msg'); m.hidden = false; m.className = 'ec-msg alerte'; m.textContent = "Votre réponse n'a pas pu être enregistrée. Vérifiez votre connexion internet et réessayez."; return; }
+        afficherDossier();
+      };
+      q.querySelectorAll('[data-choix]').forEach((b) => b.onclick = () => envoyer(b.dataset.choix, b));
+      const env = q.querySelector('[data-envoyer]'); if (env) env.onclick = () => envoyer(q.querySelector('input').value, env);
+    });
+
+    // Signature du listing des objets conservés.
+    const ouvrir = racine.querySelector('#ecx-signer-ouvrir'), boite = racine.querySelector('#ecx-signer');
+    if (ouvrir && boite) {
+      let pad = null;
+      ouvrir.onclick = () => { boite.hidden = false; ouvrir.hidden = true; pad = creerPad(boite.querySelector('canvas')); boite.scrollIntoView({ behavior: 'smooth', block: 'center' }); racine.querySelector('#ecx-signer-nom').focus(); };
+      racine.querySelector('#ecx-signer-fermer').onclick = () => { boite.hidden = true; ouvrir.hidden = false; };
+      racine.querySelector('#ecx-signer-effacer').onclick = () => pad?.effacer();
+      racine.querySelector('#ecx-signer-ok').onclick = async (e) => {
+        const nom = racine.querySelector('#ecx-signer-nom').value.trim();
+        if (!nom) { message('Indiquez votre nom.', true, '#ecx-signer-msg'); return; }
+        if (!pad || pad.vide()) { message('Signez dans le cadre.', true, '#ecx-signer-msg'); return; }
+        e.target.disabled = true; message('Signature en cours…', false, '#ecx-signer-msg');
+        const { error } = await sb.rpc('signer_listing_objets', { p_dossier: courant, p_nom: nom, p_img: pad.image() });
+        e.target.disabled = false;
+        if (error) { message("La signature n'a pas pu être enregistrée. Vérifiez votre connexion internet et réessayez.", true, '#ecx-signer-msg'); return; }
+        afficherDossier();
+      };
+    }
+
+    if (apercu) racine.querySelectorAll('.ec-bon button, .ec-bon input, .ec-bon canvas, #ecx-signer-ouvrir, [data-decision] button, [data-decision] input').forEach((el) => { el.disabled = true; el.style.pointerEvents = 'none'; el.style.opacity = '.5'; });
     lierBas();
   }
 
+  function contactBoutons(interlocuteur) {
+    const tel = interlocuteur?.tel || contact.telephone;
+    const lien = telLien(tel) || contact.lienTelephone;
+    return `<div class="ecx-contact-b">${lien ? `<a class="btn ecx-btn-clair" href="${esc(lien)}">Appeler ${esc(tel)}</a>` : ''}<a class="ecx-btn-ligne" href="/contact#formulaire">Nous écrire</a></div>`;
+  }
   function contactHtml(interlocuteur) {
     const nom = interlocuteur?.nom, tel = interlocuteur?.tel || contact.telephone;
     const lien = telLien(tel) || contact.lienTelephone;
@@ -265,12 +584,12 @@ export function demarrerEspace(sb, racine, contact = {}, apercu = null) {
       <div class="ec-contact">${lien ? `<a class="btn" href="${esc(lien)}">Appeler ${esc(tel)}</a>` : ''}<a class="btn2" href="/contact#formulaire">Nous écrire</a></div>`;
   }
   function basHtml() {
-    if (apercu) return `<div class="ec-bas"><span>Aperçu du dossier ${esc(apercu)}</span><button type="button" class="ec-lien" onclick="window.close()">Fermer l'aperçu</button></div>`;
-    return `<div class="ec-bas"><span>Connecté : ${esc(session?.user?.email || '')}</span><button type="button" class="ec-lien" id="ec-deco">Se déconnecter</button></div>`;
+    if (apercu) return `<div class="ecx-bas"><span>Aperçu du dossier ${esc(apercu)}</span><button type="button" class="ec-lien" onclick="window.close()">Fermer l'aperçu</button></div>`;
+    return `<div class="ecx-bas"><span>Connecté : ${esc(session?.user?.email || '')}</span><button type="button" class="ec-lien" id="ec-deco">Se déconnecter</button></div>`;
   }
   function lierBas() {
     const b = racine.querySelector('#ec-deco');
-    if (b) b.onclick = async () => { await sb.auth.signOut(); session = null; parCode = false; ecranConnexion({ texte: 'Vous êtes déconnecté.' }); };
+    if (b) b.onclick = async () => { await sb.auth.signOut(); session = null; parCode = false; ecranConnexion({ texte: 'Vous êtes déconnecté.' }); scrollTo(0, 0); };
   }
 
   /* ---------- Démarrage ---------- */
@@ -280,7 +599,7 @@ export function demarrerEspace(sb, racine, contact = {}, apercu = null) {
       const { data } = await sb.auth.getSession();
       session = data.session;
       if (!session && apercu) return ecranSansDossier();
-      if (!session) return ecranConnexion(erreurUrl ? { texte: 'Ce lien de connexion a expiré ou a déjà servi. Demandez-en un nouveau ci-dessous.', alerte: true } : null);
+      if (!session) return ecranConnexion(erreurUrl ? { texte: 'Ce lien de connexion a expiré ou a déjà servi. Demandez un code ci-dessous.', alerte: true } : null);
       if (location.search.includes('code=')) history.replaceState(null, '', '/espace-client');
       await charger();
     } catch (e) {
