@@ -706,6 +706,67 @@ function bindCourriers(d){
   const rs = $('#cr-reset'); if(rs) rs.onclick = () => { const f = d.courriers[sel.cle]?._fait; d.courriers[sel.cle] = f ? { _fait: f } : {}; if(!f) delete d.courriers[sel.cle]; persist(d); render(); };
 }
 
+
+/* ---------- Prévenir la famille par e-mail (message relu et validé avant l'envoi) ---------- */
+const ICONE_MAIL = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>';
+const signatureMail = d => `Bien cordialement,\n${espaces[d.id]?.ligne?.interlocuteur?.nom || "L'équipe " + (d.formule==='P' ? 'Fil Bleu Pro' : 'Maison Fil Bleu')}`;
+function messageType(d, quoi){
+  const sig = signatureMail(d), nomEt = cle => (PHASES.find(([k]) => k===cle)||[])[1] || '';
+  if(quoi.type==='etape'){
+    const x = quoi.etape, nom = nomEt(x.cle), dt = x.date ? dateFr(new Date(x.date+'T12:00:00')) : '';
+    const phrase = x.etat==='termine' ? `L'étape « ${nom} » de votre accompagnement est terminée.` : x.etat==='en_cours' ? `L'étape « ${nom} » de votre accompagnement a commencé${dt ? ` ; elle est prévue jusqu'au ${dt}` : ''}.` : `L'étape « ${nom} » de votre accompagnement est prévue${dt ? ` le ${dt}` : ' prochainement'}.`;
+    return { sujet: `${nom} : ${x.etat==='termine' ? "c'est terminé" : x.etat==='en_cours' ? "c'est commencé" : 'à venir'}`, texte: `Bonjour,\n\n${phrase}${x.message ? '\n\n' + x.message : ''}\n\nVous retrouvez tout le détail dans votre espace client.\n\n${sig}` };
+  }
+  if(quoi.type==='tache'){
+    const t = quoi.tache, dt = t.date ? dateFr(new Date(t.date+'T12:00:00')) : '';
+    if(t.cote==='famille' && t.etat!=='fait') return { sujet: `Nous avons besoin de vous : ${t.libelle}`, texte: `Bonjour,\n\nPour avancer, nous avons besoin de vous : « ${t.libelle} »${dt ? `, si possible avant le ${dt}` : ''}.\n\nN'hésitez pas à nous appeler ou à répondre à cet e-mail si vous avez une question.\n\n${sig}` };
+    return { sujet: `Avancement : ${t.libelle}`, texte: `Bonjour,\n\n${t.etat==='fait' ? `C'est fait : « ${t.libelle} ».` : `Nous nous occupons de : « ${t.libelle} »${dt ? `, prévu le ${dt}` : ''}.`}\n\nVous suivez l'avancement de votre accompagnement dans votre espace client.\n\n${sig}` };
+  }
+  if(quoi.type==='rdv'){
+    const p = quoi.prochain, dt = p.date ? new Date(p.date+'T12:00:00').toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' }) : '';
+    return { sujet: `Prochain rendez-vous : ${p.titre || 'intervention'}, ${dt}`, texte: `Bonjour,\n\nNotre prochain rendez-vous : ${p.titre || 'intervention'}, le ${dt}${p.horaire ? `, ${p.horaire}` : ''}.${p.detail ? '\n\n' + p.detail : ''}\n\nSi cette date ne vous convient pas, appelez-nous ou répondez à cet e-mail.\n\n${sig}` };
+  }
+  if(quoi.type==='journal') return { sujet: quoi.titre, texte: `Bonjour,\n\n${quoi.texte || quoi.titre}\n\n${sig}` };
+  if(quoi.type==='question') return { sujet: 'Une question pour vous sur votre accompagnement', texte: `Bonjour,\n\nNous avons besoin de votre avis : ${quoi.question}${(quoi.choix||[]).length ? `\n\nRéponses possibles : ${quoi.choix.join(', ')}.` : ''}\n\nVous pouvez répondre directement dans votre espace client, rubrique « À faire ». Votre réponse est datée et visible par vos proches.\n\n${sig}` };
+  if(quoi.type==='listing') return { sujet: 'Le listing des objets conservés est prêt à signer', texte: `Bonjour,\n\nLe listing des ${quoi.nb} objets mis de côté pour vous est prêt, avec leurs photos. Merci de le relire et de le signer dans votre espace client : rien ne part du logement avant votre signature.\n\nEn cas d'oubli ou d'erreur, appelez-nous avant de signer.\n\n${sig}` };
+  return { sujet: '', texte: `Bonjour,\n\n\n\n${sig}` };
+}
+async function prevenirFamille(d, cle, quoi){
+  if(!navigator.onLine){ showToast('Pas de réseau : l\'e-mail partira quand vous serez connecté.'); return; }
+  let acces = espaces[d.id]?.acces;
+  if(!acces){ const r = await sb.from('dossier_acces').select('email, role').eq('dossier_id', d.id); acces = r.data || []; }
+  const adresses = [...new Map([...acces.map(a => [a.email, a.role==='titulaire' ? 'Titulaire' : 'Proche']), ...(d.contact.email ? [[d.contact.email.toLowerCase(), 'Contact du dossier']] : [])]).entries()];
+  if(!adresses.length){ showToast('Aucune adresse e-mail : ajoutez celle du contact (onglet Appel) ou un accès (onglet Espace client).'); return; }
+  const { sujet, texte } = messageType(d, quoi), deja = d.envois?.[cle];
+  const m = document.createElement('div'); m.className = 'modal'; m.setAttribute('role','dialog'); m.setAttribute('aria-modal','true'); m.setAttribute('aria-label','Prévenir la famille');
+  m.innerHTML = `<div class="sheet"><h2>Prévenir la famille</h2>
+    ${deja ? `<div class="suggest warn">Un e-mail a déjà été envoyé pour cela le ${esc(new Date(deja).toLocaleString('fr-FR', { dateStyle:'long', timeStyle:'short' }))}.</div>` : ''}
+    <b class="small">Destinataires</b>
+    ${adresses.map(([e, r]) => `<label class="row"><input type="checkbox" data-dest="${esc(e)}" checked> ${esc(e)} <span class="muted small">· ${esc(r)}</span></label>`).join('')}
+    <label>Objet<input id="pv-sujet" value="${esc(sujet)}" maxlength="200"></label>
+    <label>Message<textarea id="pv-texte" rows="11">${esc(texte)}</textarea></label>
+    <p class="small muted" style="margin:0">Un bouton « Ouvrir mon espace client » est ajouté sous le message. La famille peut répondre directement à l'e-mail.</p>
+    <div class="row"><button class="btn ghost" type="button" id="pv-annul" style="flex:1">Annuler</button><button class="btn" type="button" id="pv-envoyer" style="flex:2">Envoyer l'e-mail</button></div></div>`;
+  document.body.appendChild(m);
+  $('#pv-annul', m).onclick = () => m.remove();
+  $('#pv-envoyer', m).onclick = async (ev) => {
+    const destinataires = [...m.querySelectorAll('[data-dest]:checked')].map(x => x.dataset.dest);
+    const s2 = $('#pv-sujet', m).value.trim(), t2 = $('#pv-texte', m).value.trim();
+    if(!destinataires.length || !s2 || !t2){ showToast('Choisissez au moins un destinataire et écrivez le message.'); return; }
+    ev.target.disabled = true; ev.target.textContent = 'Envoi…';
+    let rep, corps = {};
+    try{
+      const { data: { session } } = await sb.auth.getSession();
+      rep = await fetch('/api/prevenir', { method:'POST', headers:{ 'content-type':'application/json', authorization:`Bearer ${session?.access_token||''}` }, body: JSON.stringify({ dossier_id: d.id, destinataires, sujet: s2, texte: t2 }) });
+      corps = await rep.json().catch(() => ({}));
+    }catch(err){ ev.target.disabled = false; ev.target.textContent = "Envoyer l'e-mail"; showToast("Pas de réseau : l'e-mail n'est pas parti."); return; }
+    if(!rep.ok){ ev.target.disabled = false; ev.target.textContent = "Envoyer l'e-mail"; showToast(corps.erreur || "L'e-mail n'a pas pu partir."); return; }
+    d.envois = {...(d.envois||{}), [cle]: new Date().toISOString()}; persist(d);
+    m.remove(); showToast(`E-mail envoyé à ${corps.envoyes?.length || destinataires.length} personne${(corps.envoyes?.length || destinataires.length)>1?'s':''}.`); rerender();
+  };
+}
+const boutonMail = (d, cle, attrs, libelle) => `<button type="button" class="${libelle ? 'btn ghost petit' : 'vis'} ${d.envois?.[cle] ? 'envoye' : ''}" ${attrs} title="${d.envois?.[cle] ? 'Famille prévenue le ' + esc(new Date(d.envois[cle]).toLocaleDateString('fr-FR')) : 'Prévenir la famille par e-mail'}" aria-label="Prévenir la famille par e-mail">${ICONE_MAIL}${libelle ? ' ' + libelle : ''}</button>`;
+
 /* ---------- Parcours guidé : infos du premier appel, prochaine étape ---------- */
 const ECHEANCES = ['Compromis ou vente', 'Entrée en résidence', 'Fin de bail', 'Rendez-vous chez le notaire', 'Déménagement', 'Autre'];
 const SOURCES = ['Bouche-à-oreille', 'Notaire', 'Agence immobilière', 'Résidence ou EHPAD', 'Site internet', 'Recherche Google', 'Réseaux sociaux', 'Autre'];
@@ -1508,14 +1569,14 @@ function htmlPrepa(d, e){
       <div class="grid2"><label>Date<input type="date" data-prochain="date" value="${esc(pr.date||'')}"></label><label>Horaire<input data-prochain="horaire" value="${esc(pr.horaire||'')}" placeholder="Ex. : 8 h à 17 h"></label></div>
       <label>Ce qui est prévu<input data-prochain="titre" value="${esc(pr.titre||'')}" placeholder="Ex. : Débarras sur place"></label>
       <label>Précisions pour la famille<input data-prochain="detail" value="${esc(pr.detail||'')}" placeholder="Ex. : 2 personnes, 1 camion. Votre présence n'est pas nécessaire."></label>
-      ${pr.date ? '<button class="lien" type="button" id="prochain-effacer" style="align-self:flex-start">Effacer le rendez-vous</button>' : ''}
+      ${pr.date ? `<div class="row">${boutonMail(d, 'rdv:'+pr.date, 'id="prochain-prevenir"', 'Prévenir la famille')}<button class="lien" type="button" id="prochain-effacer">Effacer le rendez-vous</button></div>` : ''}
     </div>
     <div class="pan"><div class="pan-h"><h3>Parcours du dossier</h3><div class="row"><span class="small muted">${fait} faites sur ${taches.length} · ${taches.filter(t => t.oblig && t.etat!=='fait').length} obligatoires restantes</span><button class="btn ghost petit" type="button" id="parcours-completer">Compléter avec le parcours type</button></div></div>
       <p class="pan-vide" style="padding-top:10px;padding-bottom:4px">Touchez la case pour passer une tâche à « en cours » puis « faite ». <b>★</b> = obligatoire. L'œil indique si la famille voit la tâche dans son espace.</p>
       ${PHASES.map(([cle, nom]) => { const famille = cle !== 'appel'; const x = L.etapes.find(y => y.cle===cle) || { etat:'a_venir', date:'', message:'' }; const tp = taches.filter(t => t.phase===cle); const reste = tp.filter(t => t.oblig && t.etat!=='fait').length; return `<div class="phase-b">
-        <div class="phase-b-h"><b>${esc(nom)}${famille ? '' : ' <span class="small muted">(interne)</span>'} <span class="small muted">· ${tp.filter(t => t.etat==='fait').length}/${tp.length}${reste ? ` · <span class="warn">${reste} obligatoire${reste>1?'s':''}</span>` : ''}</span></b>${famille ? `<select data-etape-etat="${cle}" aria-label="État de l'étape ${esc(nom)}">${ETATS.map(([k,l]) => `<option value="${k}" ${x.etat===k?'selected':''}>${l}</option>`).join('')}</select><input type="date" data-etape-date="${cle}" value="${esc(x.date||'')}" aria-label="Date de l'étape ${esc(nom)}">` : '<span></span><span></span>'}</div>
+        <div class="phase-b-h"><b>${famille ? boutonMail(d, 'etape:'+cle, `data-prev-etape="${cle}"`) : ''}${esc(nom)}${famille ? '' : ' <span class="small muted">(interne)</span>'} <span class="small muted">· ${tp.filter(t => t.etat==='fait').length}/${tp.length}${reste ? ` · <span class="warn">${reste} obligatoire${reste>1?'s':''}</span>` : ''}</span></b>${famille ? `<select data-etape-etat="${cle}" aria-label="État de l'étape ${esc(nom)}">${ETATS.map(([k,l]) => `<option value="${k}" ${x.etat===k?'selected':''}>${l}</option>`).join('')}</select><input type="date" data-etape-date="${cle}" value="${esc(x.date||'')}" aria-label="Date de l'étape ${esc(nom)}">` : '<span></span><span></span>'}</div>
         ${famille ? `<div class="phase-msg"><textarea data-etape-msg="${cle}" placeholder="Message pour la famille (facultatif), ex. : Le tri est terminé, les dons partent mardi.">${esc(x.message||'')}</textarea></div>` : ''}
-        <ul class="taches">${tp.map(t => `<li class="${t.etat}${t.oblig ? ' oblig' : ''}"><button type="button" class="case" data-tache-etat="${t.i}" aria-label="État : ${t.etat==='fait'?'fait':t.etat==='en_cours'?'en cours':'à faire'}">${t.etat==='fait' ? coche : ''}</button><input class="lib" data-tache="${t.i}" data-champ="libelle" value="${esc(t.libelle||'')}" placeholder="Tâche" aria-label="Tâche"><span class="reperes">${DOC_DE_TACHE[t.modele] ? `<button type="button" class="vis on" data-vers-doc="${DOC_DE_TACHE[t.modele]}" title="Préparer le document" aria-label="Préparer le document"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg></button>` : ''}<button type="button" class="ob ${t.oblig?'on':''}" data-tache-oblig="${t.i}" title="${t.oblig?'Obligatoire':'Facultative'}" aria-label="Obligatoire : ${t.oblig?'oui':'non'}">★</button><button type="button" class="vis ${t.interne || !famille ?'':'on'}" data-tache-vis="${t.i}" title="${t.interne || !famille ? 'Interne : la famille ne la voit pas' : 'Visible par la famille'}" aria-label="${t.interne || !famille ? 'Interne' : 'Visible par la famille'}" ${famille ? '' : 'disabled'}>${t.interne || !famille ? '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.1A10 10 0 0 1 12 5c7 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.6 6.6A17 17 0 0 0 2 12s3 7 10 7a10 10 0 0 0 5.4-1.6"/></svg>' : '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>'}</button></span><button type="button" class="qui ${t.cote==='famille'?'famille':''}" data-tache-qui="${t.i}" title="Qui s'en charge">${t.cote==='famille' ? 'Famille' : 'Nous'}</button><input type="date" data-tache="${t.i}" data-champ="date" value="${esc(t.date||'')}" aria-label="Date"><button type="button" class="suppr" data-tache-suppr="${t.i}" aria-label="Supprimer la tâche">×</button></li>`).join('')}
+        <ul class="taches">${tp.map(t => `<li class="${t.etat}${t.oblig ? ' oblig' : ''}"><button type="button" class="case" data-tache-etat="${t.i}" aria-label="État : ${t.etat==='fait'?'fait':t.etat==='en_cours'?'en cours':'à faire'}">${t.etat==='fait' ? coche : ''}</button><input class="lib" data-tache="${t.i}" data-champ="libelle" value="${esc(t.libelle||'')}" placeholder="Tâche" aria-label="Tâche"><span class="reperes">${famille && !t.interne ? boutonMail(d, 'tache:'+(t.modele || t.libelle), `data-prev-tache="${t.i}"`) : ''}${DOC_DE_TACHE[t.modele] ? `<button type="button" class="vis on" data-vers-doc="${DOC_DE_TACHE[t.modele]}" title="Préparer le document" aria-label="Préparer le document"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg></button>` : ''}<button type="button" class="ob ${t.oblig?'on':''}" data-tache-oblig="${t.i}" title="${t.oblig?'Obligatoire':'Facultative'}" aria-label="Obligatoire : ${t.oblig?'oui':'non'}">★</button><button type="button" class="vis ${t.interne || !famille ?'':'on'}" data-tache-vis="${t.i}" title="${t.interne || !famille ? 'Interne : la famille ne la voit pas' : 'Visible par la famille'}" aria-label="${t.interne || !famille ? 'Interne' : 'Visible par la famille'}" ${famille ? '' : 'disabled'}>${t.interne || !famille ? '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.1A10 10 0 0 1 12 5c7 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.6 6.6A17 17 0 0 0 2 12s3 7 10 7a10 10 0 0 0 5.4-1.6"/></svg>' : '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>'}</button></span><button type="button" class="qui ${t.cote==='famille'?'famille':''}" data-tache-qui="${t.i}" title="Qui s'en charge">${t.cote==='famille' ? 'Famille' : 'Nous'}</button><input type="date" data-tache="${t.i}" data-champ="date" value="${esc(t.date||'')}" aria-label="Date"><button type="button" class="suppr" data-tache-suppr="${t.i}" aria-label="Supprimer la tâche">×</button></li>`).join('')}
           <li style="display:block"><button type="button" class="ajout" data-tache-ajout="${cle}">+ Ajouter une tâche</button></li></ul>
       </div>`; }).join('')}
     </div>
@@ -1535,6 +1596,7 @@ function htmlJournal(d, e){
         <div class="seg types" data-jtype role="group" aria-label="Type d'événement">${Object.entries(TJ).map(([k,l]) => `<button type="button" class="t-${k}" data-v="${k}" aria-pressed="${(e._jType||'contact')===k}">${l}</button>`).join('')}</div>
         <input id="j-titre" placeholder="Titre, ex. : Appel avec Claire Martin" maxlength="160">
         <textarea id="j-texte" placeholder="Ce qui a été dit ou fait, en une ou deux phrases." maxlength="1000"></textarea>
+        <label class="row"><input type="checkbox" id="j-prevenir"> Prévenir aussi la famille par e-mail</label>
         <div class="row" style="justify-content:space-between"><input id="j-quand" type="datetime-local" value="${maintenantLocal()}" style="width:auto"><button class="btn" type="button" id="j-ajout">Ajouter</button></div>
       </div>
       <div class="pan"><div class="pan-h"><h3>Journal</h3><span class="small muted">${(e.journal||[]).length} événement${(e.journal||[]).length>1?'s':''}</span></div>
@@ -1547,6 +1609,7 @@ function htmlJournal(d, e){
         <input id="q-question" placeholder="Ex. : Bibliothèque du bureau, vendre ou donner ?" maxlength="300">
         <div class="choix" id="q-choix">${(e._choix||[]).map((c,i) => `<em>${esc(c)}<button type="button" data-choix-suppr="${i}" aria-label="Retirer">×</button></em>`).join('')}<input id="q-choix-in" placeholder="Réponse proposée" style="width:170px;padding:6px 10px;font-size:13.5px"><button class="btn ghost petit" type="button" id="q-choix-ajout">+ Ajouter</button></div>
         <p class="small muted" style="margin:0">Sans réponse proposée, la famille écrit sa réponse. Elle la voit dans « À faire » de son espace.</p>
+        <label class="row"><input type="checkbox" id="q-prevenir" checked> Prévenir la famille par e-mail</label>
         <button class="btn" type="button" id="q-envoyer" style="align-self:flex-start">Poser la question</button>
       </div>
       <div class="pan tab"><div class="pan-h"><h3>Décisions</h3></div>
@@ -1568,7 +1631,7 @@ function htmlObjets(d, e){
   return `${objets.length ? `<div class="bandeau ${nv ? '' : 'ok'}"><div>${nv ? '<span class="badge attente">Non signé</span>' : '<span class="badge ok">Signé</span>'}
       <b>${objets.length} objet${objets.length>1?'s':''}${li ? ` · version ${li.version + (nv?1:0)}` : ''}</b>
       <span>${nv ? (li ? `Version ${li.version} signée par ${esc(li.nom)} le ${esc(dateCourte(li.signe_le))}. Le listing a changé : la famille doit signer à nouveau.` : 'La famille signe le listing depuis son espace. Rien ne part avant sa signature.') : `Signé par ${esc(li?.nom||'la famille')} le ${esc(dateCourte(li?.signe_le))}.`}${pdf ? ` PDF publié le ${esc(dateCourte(pdf.date))}.` : ' PDF pas encore publié.'}</span></div>
-      <button class="btn ${pdf?'ghost':''}" type="button" id="oc-pdf">${pdf ? 'Republier le PDF' : 'Publier le PDF'}</button></div>` : ''}
+      ${nv ? boutonMail(d, 'listing:'+objets.length, 'id="oc-prevenir"', 'Prévenir la famille') : ''}<button class="btn ${pdf?'ghost':''}" type="button" id="oc-pdf">${pdf ? 'Republier le PDF' : 'Publier le PDF'}</button></div>` : ''}
     <div class="pan tab"><div class="pan-h"><h3>Listing des objets conservés</h3><span class="small muted">3 photos par objet au plus</span></div>
       ${objets.length ? `<table class="saisie"><thead><tr><th>N°</th><th>Objet</th><th>Pièce</th><th>Destinataire</th><th>Photos</th><th>Statut</th><th></th></tr></thead><tbody>
         ${objets.map((x,i) => { const ph = photosDe(x); return `<tr><td class="muted">${String(i+1).padStart(2,'0')}</td>
@@ -1670,6 +1733,10 @@ function bindEspace(d, box){
   box.querySelectorAll('[data-tache-oblig]').forEach(b => b.onclick = () => { const t = L.taches[+b.dataset.tacheOblig]; t.oblig = !t.oblig; enregistrerEspace(d); redessiner(true); });
   box.querySelectorAll('[data-tache-vis]').forEach(b => b.onclick = () => { const t = L.taches[+b.dataset.tacheVis]; t.interne = !t.interne; enregistrerEspace(d); redessiner(); });
   box.querySelectorAll('[data-vers-doc]').forEach(b => b.onclick = () => { const doc = documentsDuDossier(d, ctxCourriers).find(x => x.type===b.dataset.versDoc); view.doc = doc?.cle || (b.dataset.versDoc==='resiliation' ? 'aucune-resiliation' : null); tab = 'courriers'; render(); window.scrollTo(0,0); });
+  box.querySelectorAll('[data-prev-etape]').forEach(b => b.onclick = () => prevenirFamille(d, 'etape:'+b.dataset.prevEtape, { type:'etape', etape: etape(b.dataset.prevEtape) }));
+  box.querySelectorAll('[data-prev-tache]').forEach(b => b.onclick = () => { const t = L.taches[+b.dataset.prevTache]; prevenirFamille(d, 'tache:'+(t.modele || t.libelle), { type:'tache', tache: t }); });
+  const ppv = val('#prochain-prevenir'); if(ppv) ppv.onclick = () => prevenirFamille(d, 'rdv:'+L.prochain.date, { type:'rdv', prochain: L.prochain });
+  const ocp = val('#oc-prevenir'); if(ocp) ocp.onclick = () => prevenirFamille(d, 'listing:'+(e.objets||[]).length, { type:'listing', nb: (e.objets||[]).length });
   const pc = val('#parcours-completer'); if(pc) pc.onclick = () => { const n = completerParcours(L.taches, d.formule); if(n){ enregistrerEspace(d); redessiner(true); } showToast(n ? `${n} tâche${n>1?'s':''} du parcours type ajoutée${n>1?'s':''}.` : 'Le parcours type est déjà complet.'); };
   box.querySelectorAll('[data-etape-date]').forEach(el => el.addEventListener('change', () => { etape(el.dataset.etapeDate).date = el.value; enregistrerEspace(d); }));
   box.querySelectorAll('[data-etape-msg]').forEach(el => el.addEventListener('input', () => { etape(el.dataset.etapeMsg).message = el.value; enregistrerEspace(d); }));
@@ -1701,7 +1768,9 @@ function bindEspace(d, box){
     const { data, error } = await sb.from('journal').insert({ dossier_id: d.id, type: e._jType || 'contact', titre, texte: val('#j-texte').value.trim(), quand: q }).select().single();
     ja.disabled = false;
     if(error){ showToast('Non ajouté : ' + error.message); return; }
+    const prev = val('#j-prevenir')?.checked;
     e.journal = [data, ...(e.journal||[])].sort((a,b) => String(b.quand).localeCompare(String(a.quand))); tb.charge = false; redessiner(); showToast('Ajouté au journal.');
+    if(prev) prevenirFamille(d, 'journal:'+data.id, { type:'journal', titre: data.titre, texte: data.texte });
   };
   box.querySelectorAll('[data-j-edit]').forEach(b => b.onclick = () => { e._jEdit = b.dataset.jEdit; redessiner(); });
   box.querySelectorAll('[data-j-annul]').forEach(b => b.onclick = () => { e._jEdit = null; redessiner(); });
@@ -1724,6 +1793,7 @@ function bindEspace(d, box){
   box.querySelectorAll('[data-choix-suppr]').forEach(b => b.onclick = () => { const q = val('#q-question').value; e._choix.splice(+b.dataset.choixSuppr, 1); redessiner(); val('#q-question').value = q; });
   const qe = val('#q-envoyer'); if(qe) qe.onclick = async () => {
     const question = val('#q-question').value.trim(); if(!question){ showToast('Écrivez la question.'); return; }
+    const prevQ = val('#q-prevenir')?.checked, choixQ = [...(e._choix||[])];
     await ouvrirSiNouveau(); qe.disabled = true;
     const { data, error } = await sb.from('decisions').insert({ dossier_id: d.id, question, choix: e._choix || [] }).select().single();
     qe.disabled = false;
@@ -1732,6 +1802,7 @@ function bindEspace(d, box){
     e.decisions = [data, ...(e.decisions||[])]; e._choix = []; tb.charge = false;
     const { data: j } = await sb.from('journal').select('*').eq('dossier_id', d.id).order('quand', { ascending:false }); if(j) e.journal = j;
     redessiner(true); showToast('Question posée : la famille la voit dans son espace.');
+    if(prevQ) prevenirFamille(d, 'question:'+data.id, { type:'question', question, choix: choixQ });
   };
   const dp = val('#dp-ajout'); if(dp) dp.onclick = async () => {
     const question = val('#dp-question').value.trim(); if(!question){ showToast('Décrivez la décision.'); return; }
