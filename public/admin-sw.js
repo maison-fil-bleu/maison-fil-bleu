@@ -1,7 +1,7 @@
 // Service worker du back-office (/admin) : permet d'ouvrir l'appli sans réseau pendant une visite.
 // Les pages et fichiers du site sont mis en cache ; les données (Supabase) ne le sont jamais.
-const CACHE = 'fil-bleu-admin-v1';
-const BASE = ['/admin', '/admin.webmanifest', '/icons/fil-bleu-192.png', '/fonts/admin/dm-sans-latin-400-normal.woff2', '/fonts/admin/dm-sans-latin-500-normal.woff2', '/fonts/admin/instrument-serif-latin-400-normal.woff2'];
+const CACHE = 'fil-bleu-admin-v2';
+const BASE = ['/admin', '/admin.webmanifest', '/icons/fil-bleu-192.png', '/fonts/nunito-sans-latin-400-normal.woff2', '/fonts/nunito-sans-latin-600-normal.woff2', '/fonts/cormorant-garamond-latin-600-normal.woff2'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(BASE)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', (e) => {

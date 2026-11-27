@@ -12,13 +12,14 @@ const sb = createClient(SUPABASE_URL, SUPABASE_CLE_PUBLIQUE, {
 });
 const app = document.getElementById('app');
 const nav = document.querySelector('nav.bottom');
+const side = document.getElementById('side'), shell = document.getElementById('shell');
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 let appli = null;
 
 const entete = (sous) => `<div class="top"><div class="brand"><svg width="46" height="22" viewBox="0 0 164 80" aria-hidden="true"><path d="M8 74 V44 L34 22 L60 44 V74" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><path d="M104 74 V44 L130 22 L156 44 V74" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><path d="M34 60 C52 76, 64 40, 82 54 S112 70, 130 60" fill="none" stroke="var(--blue)" stroke-width="5.5" stroke-linecap="round"/></svg><div><div style="font-family:var(--display);font-size:20px;line-height:1">Fil Bleu</div><small>${esc(sous)}</small></div></div></div>`;
 
 function ecran(html) {
-  nav.hidden = true;
+  nav.hidden = true; if (side) side.hidden = true; shell?.classList.add('sans-menu');
   app.innerHTML = entete('Back-office') + html;
   const f = app.querySelector('input'); if (f) f.focus();
 }

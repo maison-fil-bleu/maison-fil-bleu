@@ -83,8 +83,8 @@ const TAILLES = ["1-2 pièces","3 pièces","4 pièces","5 pièces et +"];
 
 let S = structuredClone(DEFAULTS);
 let dossiers = {};          // id -> data
-let view = {name:'list'};   // list | dossier | settings
-let tab = 'appel';
+let view = {name:'accueil'};   // accueil | list | dossier | bon | registre | bilan | settings
+let tab = 'synthese';
 let store = 'db';
 let saveTimers = {};
 let bonsApi = null;   // bons d'intervention (src/admin/bons.js)
@@ -217,6 +217,8 @@ function majBandeau(){
   if(!navigator.onLine){ el.hidden = false; el.textContent = `Hors ligne : vos modifications sont gardées sur l'appareil${n?` (${n} en attente)`:''} et partiront au retour du réseau.`; }
   else if(n){ el.hidden = false; el.textContent = `${n} modification${n>1?'s':''} en attente d'envoi…`; }
   else el.hidden = true;
+  const sy = document.getElementById('side-sync');
+  if(sy){ sy.className = 'side-sync' + (!navigator.onLine ? ' horsligne' : n ? ' attente' : ''); sy.lastElementChild.textContent = !navigator.onLine ? 'Hors ligne' : n ? `${n} en attente d'envoi` : 'Synchronisé'; sy.title = sy.lastElementChild.textContent; }
 }
 
 /* ---------- Nouveau dossier ---------- */
@@ -299,28 +301,153 @@ function calc(d){
 
 /* ---------- Rendu ---------- */
 const app = $('#app');
-function setNav(){ $('#nav-registre')?.setAttribute('aria-current', view.name==='registre'?'page':'false'); $('#nav-list').setAttribute('aria-current', ['list','dossier','bon'].includes(view.name)?'page':'false'); $('#nav-set').setAttribute('aria-current', view.name==='settings'?'page':'false'); $('#nav-bilan').setAttribute('aria-current', view.name==='bilan'?'page':'false'); }
-function render(){ setNav(); if(view.name!=='bon') bonsApi?.quitter(); if(view.name==='list') renderList(); else if(view.name==='dossier') renderDossier(); else if(view.name==='bon') bonsApi.ecran(view.id); else if(view.name==='registre') bonsApi.registre(); else if(view.name==='bilan') renderBilan(); else renderSettings(); }
+/* ---------- Navigation ---------- */
+const STATUT_CL = { 'Appel':'bad', 'Diagnostic':'diag', 'Devis envoyé':'attente', 'Signé':'signe', 'Terminé':'ok', 'Perdu':'' };
+const telLien = t => { const n = String(t||'').replace(/[^\d+]/g,''); return n.length>=10 && !/\[/.test(t) ? 'tel:'+(n.startsWith('0') ? '+33'+n.slice(1) : n) : null; };
+const coche = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" aria-hidden="true"><path d="M5 12l5 5L19 7"/></svg>';
+const icPhoto = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>';
+const auj = () => { const x = new Date(); x.setHours(0,0,0,0); return x; };
+const isoJour = x => `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`;
+const jourCourt = s => { if(!s) return ''; const x = new Date(String(s).length===10 ? s+'T12:00:00' : s); return isNaN(x) ? '' : x.toLocaleDateString('fr-FR', { weekday:'short', day:'numeric', month:'short' }); };
+const dateCourte = s => { if(!s) return ''; const x = new Date(String(s).length===10 ? s+'T12:00:00' : s); return isNaN(x) ? '' : x.toLocaleDateString('fr-FR', { day:'numeric', month:'short' }); };
+const quandFr = s => { const x = new Date(s); if(isNaN(x)) return ''; const h = x.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' }); return dateCourte(s) + (h!=='00:00' ? ' · '+h : ''); };
+const nomDossier = id => dossiers[id]?.contact?.nom || 'Dossier sans nom';
+function ouvrirDossier(id, t){ delete espaces[id]; view = {name:'dossier', id}; tab = t || 'synthese'; render(); window.scrollTo(0,0); }
 
-function header(sub){
-  return `<div class="top"><div class="brand"><svg width="46" height="22" viewBox="0 0 164 80" aria-hidden="true"><path d="M8 74 V44 L34 22 L60 44 V74" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><path d="M104 74 V44 L130 22 L156 44 V74" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><path d="M34 60 C52 76, 64 40, 82 54 S112 70, 130 60" fill="none" stroke="var(--blue)" stroke-width="5.5" stroke-linecap="round"/></svg><div><div style="font-family:var(--display);font-size:20px;line-height:1">Fil Bleu</div><small>${esc(sub)}</small></div></div></div>`;
+function header(titre, sur){ return `<header class="pg-h"><div>${sur ? `<span class="sur">${esc(sur)}</span>` : ''}<h1>${esc(titre)}</h1></div></header>`; }
+function setNav(){
+  const cle = ['list','dossier','bon'].includes(view.name) ? 'list' : view.name;
+  document.querySelectorAll('[data-nav]').forEach(b => b.setAttribute('aria-current', b.dataset.nav===cle ? 'page' : 'false'));
+}
+function render(){ setNav(); if(view.name!=='bon') bonsApi?.quitter(); if(view.name==='accueil') renderAccueil(); else if(view.name==='list') renderList(); else if(view.name==='dossier') renderDossier(); else if(view.name==='bon') bonsApi.ecran(view.id); else if(view.name==='registre') bonsApi.registre(); else if(view.name==='bilan') renderBilan(); else renderSettings(); }
+
+/* ---------- Tableau de bord ---------- */
+// Données légères chargées pour l'accueil : rendez-vous et tâches (espace_client), attentes des familles, activité.
+const tb = { charge: false, enCours: false, espaces: [], decisions: [], objets: [], bons: [], journal: [] };
+async function chargerTableau(){
+  if(tb.enCours || !navigator.onLine) return;
+  tb.enCours = true;
+  const lire = p => p.then(r => r.data || [], () => []);
+  const [es, de, ob, bo, jo] = await Promise.all([
+    lire(sb.from('espace_client').select('dossier_id, prochain, etapes, taches, titre')),
+    lire(sb.from('decisions').select('id, dossier_id, question, posee_le').eq('statut', 'attente')),
+    lire(sb.from('objets_conserves').select('dossier_id, valide_le').is('valide_le', null)),
+    lire(sb.from('bons').select('id, dossier_id, numero, data').not('signe_porteur_le', 'is', null).is('signe_client_le', null)),
+    lire(sb.from('journal').select('dossier_id, quand, type, titre').order('quand', { ascending:false }).limit(8)),
+  ]);
+  Object.assign(tb, { charge: true, enCours: false, espaces: es, decisions: de, objets: ob, bons: bo.filter(b => b.data?.signatures?.distance), journal: jo });
+  if(view.name==='accueil') rerender();
+}
+function evenementsAgenda(){
+  const ev = [], j0 = isoJour(auj());
+  tb.espaces.forEach(e => {
+    if(!dossiers[e.dossier_id]) return;
+    const p = e.prochain || {};
+    if(p.date) ev.push({ date: p.date, heure: p.horaire || '', type: 'rdv', lib: 'Rendez-vous', titre: p.titre || 'Rendez-vous', id: e.dossier_id, detail: p.detail || '' });
+    (e.taches||[]).forEach(t => { if(t.date && t.etat!=='fait' && t.cote!=='famille') ev.push({ date: t.date, type: 'tache', lib: t.date < j0 ? 'En retard' : 'Tâche', titre: t.libelle || 'Tâche', id: e.dossier_id, retard: t.date < j0 }); });
+    (e.etapes||[]).forEach(x => { if(x.date && x.etat!=='termine' && x.date >= j0){ const nom = (ETAPES.find(([k]) => k===x.cle)||[])[1]; if(nom) ev.push({ date: x.date, type: 'etape', lib: 'Étape', titre: nom, id: e.dossier_id }); } });
+  });
+  return ev.sort((a,b) => (a.date+(a.heure||'')).localeCompare(b.date+(b.heure||'')));
+}
+function renderAccueil(){
+  if(!tb.charge) chargerTableau();
+  const all = Object.values(dossiers), j0 = auj(), mois = j0.getMonth(), an = j0.getFullYear();
+  const actifs = all.filter(d => ['Diagnostic','Devis envoyé','Signé'].includes(d.statut));
+  const appels = all.filter(d => d.statut==='Appel').sort((a,b) => (b.created||'').localeCompare(a.created||''));
+  const devis = all.filter(d => d.statut==='Devis envoyé');
+  const signesMois = all.filter(d => { const x = d.signature?.date && new Date(d.signature.date); return x && x.getMonth()===mois && x.getFullYear()===an; });
+  const ev = evenementsAgenda();
+  const lundi = new Date(j0); lundi.setDate(j0.getDate() - ((j0.getDay()+6)%7));
+  const jours = Array.from({length:6}, (_, i) => { const x = new Date(lundi); x.setDate(lundi.getDate()+i); return x; });
+  const finSemaine = isoJour(new Date(jours[5].getTime() + 86400000));
+  const semaine = ev.filter(e => e.date >= isoJour(lundi) && e.date < finSemaine);
+  const prochains = ev.filter(e => e.retard || (e.date >= isoJour(j0) && e.date <= isoJour(new Date(j0.getTime() + 14*86400000)))).slice(0, 8);
+  const attentes = [
+    ...[...new Set(tb.objets.map(o => o.dossier_id))].filter(id => dossiers[id]).map(id => ({ id, txt: `Listing des objets à signer (${tb.objets.filter(o => o.dossier_id===id).length} objet${tb.objets.filter(o => o.dossier_id===id).length>1?'s':''})`, t: 'objets' })),
+    ...tb.decisions.filter(x => dossiers[x.dossier_id]).map(x => ({ id: x.dossier_id, txt: `Question : ${x.question}`, t: 'journal' })),
+    ...tb.bons.filter(b => dossiers[b.dossier_id]).map(b => ({ id: b.dossier_id, txt: `Bon ${b.numero} à signer à distance`, t: 'bons' })),
+  ];
+  const dateJ = j0.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  app.innerHTML = `<header class="pg-h"><div><span class="sur">${esc(dateJ)}</span><h1>Bonjour.</h1></div>
+    <label class="cherche" aria-label="Rechercher un dossier">${'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>'}<input id="q-accueil" type="search" placeholder="Rechercher un dossier, un nom, une ville…"></label></header>
+  <div class="kpis k5">
+    <div class="kpi"><span>Dossiers actifs</span><b>${actifs.length}</b><small>diagnostic, devis, signés</small></div>
+    <div class="kpi ${appels.length?'alerte':''}"><span>À rappeler</span><b>${appels.length}</b><small>${appels.length ? 'premier appel à traiter' : 'aucun appel en attente'}</small></div>
+    <div class="kpi"><span>Devis en attente</span><b>${devis.length}</b><small>${eur(devis.reduce((a,d)=>a+calc(d).ttc,0))} à signer</small></div>
+    <div class="kpi"><span>Signé ce mois-ci</span><b>${eur(signesMois.reduce((a,d)=>a+(d.signature.total||0),0))}</b><small>${signesMois.length} devis signé${signesMois.length>1?'s':''}</small></div>
+    <div class="kpi"><span>Cette semaine</span><b>${semaine.length}</b><small>rendez-vous, étapes et tâches</small></div>
+  </div>
+  <div class="grille">
+    <div class="col">
+      <div class="pan"><div class="pan-h"><h3>Prochains rendez-vous et échéances</h3><span class="small muted">14 jours</span></div>
+        ${!navigator.onLine && !tb.charge ? '<p class="pan-vide">Hors ligne : l\'agenda s\'affichera au retour du réseau.</p>' : prochains.length ? `<ol class="jour">${prochains.map(e => `<li><time>${esc(jourCourt(e.date))}${e.heure ? `<br><span class="small muted">${esc(e.heure)}</span>` : ''}</time><span class="tag ${e.retard ? 'appel' : e.type}">${esc(e.lib)}</span><div><b>${esc(nomDossier(e.id))} · ${esc(e.titre)}</b>${e.detail ? `<span>${esc(e.detail)}</span>` : ''}</div><button class="btn ghost petit" type="button" data-ouvrir="${esc(e.id)}" data-onglet="${e.type==='rdv'||e.type==='tache'||e.type==='etape' ? 'prepa' : 'synthese'}">Ouvrir</button></li>`).join('')}</ol>` : `<p class="pan-vide">${tb.charge ? 'Rien de prévu dans les 14 jours. Les dates se saisissent dans l\'onglet « Préparation » de chaque dossier.' : 'Chargement…'}</p>`}
+      </div>
+      <div class="pan"><div class="pan-h"><h3>Cette semaine</h3></div>
+        <div class="semaine">${jours.map(x => { const k = isoJour(x), evs = semaine.filter(e => e.date===k); return `<div class="j ${k===isoJour(j0)?'auj':''}"><span>${esc(x.toLocaleDateString('fr-FR',{weekday:'short', day:'numeric'}))}</span>${evs.map(e => `<button type="button" class="ev ${e.type}" data-ouvrir="${esc(e.id)}" data-onglet="prepa"><b>${esc(e.titre)}</b>${esc(nomDossier(e.id))}</button>`).join('')}</div>`; }).join('')}</div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="pan"><div class="pan-h"><h3>En attente des familles</h3>${attentes.length ? `<span class="badge attente">${attentes.length}</span>` : ''}</div>
+        ${attentes.length ? `<ul class="liste">${attentes.slice(0,8).map(a => `<li><div><b>${esc(nomDossier(a.id))}</b><span>${esc(a.txt)}</span></div><button class="lien" type="button" data-ouvrir="${esc(a.id)}" data-onglet="${a.t}">Voir</button></li>`).join('')}</ul>` : `<p class="pan-vide">${tb.charge ? 'Rien en attente : aucune signature ni réponse demandée aux familles.' : 'Chargement…'}</p>`}
+      </div>
+      <div class="pan"><div class="pan-h"><h3>Nouvelles demandes et appels</h3>${appels.length ? `<span class="badge bad">${appels.length}</span>` : ''}</div>
+        ${appels.length ? `<ul class="liste">${appels.slice(0,6).map(d => `<li><div><b>${esc(d.contact.nom || 'Sans nom')}${d.ville ? ' · '+esc(d.ville) : ''}</b><span>${esc(FORM[d.formule])} · reçu le ${esc(dateCourte(d.created))}${d.contact.tel ? ' · '+esc(d.contact.tel) : ''}</span></div>${telLien(d.contact.tel) ? `<a class="btn petit" href="${telLien(d.contact.tel)}">Appeler</a>` : ''}<button class="lien" type="button" data-ouvrir="${esc(d.id)}" data-onglet="appel">Traiter</button></li>`).join('')}</ul>` : '<p class="pan-vide">Aucun appel à traiter.</p>'}
+      </div>
+      <div class="pan"><div class="pan-h"><h3>Activité récente</h3></div>
+        ${tb.journal.length ? `<ul class="activite">${tb.journal.filter(j => dossiers[j.dossier_id]).map(j => `<li class="t-${esc(j.type)}"><i class="pt"></i><div><b>${esc(nomDossier(j.dossier_id))}</b> · ${esc(j.titre)}<span>${esc(quandFr(j.quand))}</span></div></li>`).join('')}</ul>` : `<p class="pan-vide">${tb.charge ? 'Le journal des dossiers apparaîtra ici.' : 'Chargement…'}</p>`}
+      </div>
+    </div>
+  </div>`;
+  app.querySelectorAll('[data-ouvrir]').forEach(b => b.onclick = () => ouvrirDossier(b.dataset.ouvrir, b.dataset.onglet));
+  const qa = $('#q-accueil'); qa.onkeydown = e => { if(e.key==='Enter'){ view = {name:'list', q: qa.value}; render(); } };
+  qa.oninput = () => { if(qa.value.length >= 2){ view = {name:'list', q: qa.value}; render(); const i = $('#q'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); } };
 }
 
+/* ---------- Liste des dossiers ---------- */
 function renderList(){
-  const q = (view.q||'').toLowerCase();
-  const arr = Object.values(dossiers).sort((a,b)=> (b.created||'').localeCompare(a.created||''))
-    .filter(d => !q || [d.contact.nom,d.ville,d.beneficiaire].join(' ').toLowerCase().includes(q));
-  const stLabel = s => ({'Signé':'good','Terminé':'good','Perdu':'bad','Devis envoyé':'warn'}[s]||'');
-  app.innerHTML = header('Dossiers') + `
-  <div class="row"><h1 style="flex:1">Mes dossiers</h1><button class="btn" id="b-new">Nouvel appel</button></div>
-  <button class="btn ghost" id="b-net">Devis nettoyage Fil Bleu Pro</button>
-  <input id="q" type="search" placeholder="Rechercher un nom, une ville…" value="${esc(view.q||'')}" aria-label="Rechercher">
-  <div class="list">${arr.length ? arr.map(d => { const c = calc(d); return `<button class="item" data-id="${d.id}"><div style="min-width:0"><div class="t">${esc(d.contact.nom||'Sans nom')} · ${esc(d.ville)}</div><div class="s">${esc(FORM[d.formule])} · ${TAILLES[d.taille]} · ${new Date(d.created).toLocaleDateString('fr-FR')}</div></div><div style="text-align:right"><div style="font-weight:500">${eur(c.ttc)}</div><span class="pill ${stLabel(d.statut)}">${esc(d.statut)}</span></div></button>`;}).join('') :
-    `<div class="card"><h3>Aucun dossier pour l'instant</h3><p class="muted small" style="margin:0">Touchez « Nouvel appel » dès qu'un client vous appelle : vous saisissez la situation pendant la conversation et l'appli vous donne la formule et une première estimation.</p></div>`}</div>`;
+  const q = (view.q||'').toLowerCase(), filtre = view.filtre || '';
+  const tous = Object.values(dossiers).sort((a,b)=> (b.created||'').localeCompare(a.created||''));
+  const trouves = tous.filter(d => !q || [d.contact.nom, d.ville, d.beneficiaire, d.contact.tel, d.contact.email, devisNo(d)].join(' ').toLowerCase().includes(q));
+  const arr = trouves.filter(d => !filtre || d.statut===filtre);
+  const compte = s => trouves.filter(d => d.statut===s).length;
+  app.innerHTML = `<header class="pg-h"><div><span class="sur">${tous.length} dossier${tous.length>1?'s':''}</span><h1>Dossiers</h1></div>
+    <div class="row"><label class="cherche" aria-label="Rechercher">${'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>'}<input id="q" type="search" placeholder="Nom, ville, téléphone, n° de devis…" value="${esc(view.q||'')}"></label>
+    <button class="btn ghost" id="b-net" type="button">Devis nettoyage Pro</button><button class="btn" id="b-new" type="button">Nouvel appel</button></div></header>
+  <div class="pipeline" role="group" aria-label="Filtrer par statut">${[['', 'Tous', trouves.length], ...STATUTS.map(s => [s, s==='Appel' ? 'À rappeler' : s, compte(s)])].map(([v,l,n]) => `<button type="button" data-filtre="${esc(v)}" aria-pressed="${v===filtre}"><span>${esc(l)}</span><b>${n}</b></button>`).join('')}</div>
+  <div class="vue-liste">
+  ${arr.length ? `<div class="pan tab"><table><thead><tr><th>N° de devis</th><th>Client</th><th>Formule</th><th>Ville</th><th>Créé le</th><th class="dr">Montant</th><th>Statut</th></tr></thead>
+    <tbody>${arr.map(d => { const c = calc(d); return `<tr class="clic" data-id="${d.id}" tabindex="0"><td class="muted">${esc(devisNo(d))}</td><td><b>${esc(d.contact.nom||'Sans nom')}</b>${d.beneficiaire ? `<br><span class="small muted">pour ${esc(d.beneficiaire)}</span>` : ''}</td><td>${esc(FORM[d.formule])}</td><td>${esc(d.ville||'')}</td><td>${esc(dateCourte(d.created))}</td><td class="dr">${eur(c.ttc)}${d.formule==='P'&&d.client==='agence'?' HT':''}</td><td><span class="badge ${STATUT_CL[d.statut]||''}">${esc(d.statut)}</span></td></tr>`; }).join('')}</tbody></table></div>
+    <div class="cartes">${arr.map(d => `<button class="item" type="button" data-id="${d.id}"><div style="min-width:0"><div class="t">${esc(d.contact.nom||'Sans nom')}</div><div class="s">${esc(FORM[d.formule])} · ${esc(d.ville||'')} · ${esc(dateCourte(d.created))}</div></div><div style="text-align:right;display:flex;flex-direction:column;gap:4px;align-items:flex-end"><span class="badge ${STATUT_CL[d.statut]||''}">${esc(d.statut)}</span><b>${eur(calc(d).ttc)}</b></div></button>`).join('')}</div>`
+  : `<div class="card"><h3>${tous.length ? 'Aucun dossier ne correspond' : 'Aucun dossier pour l\'instant'}</h3><p class="muted small" style="margin:0">${tous.length ? 'Changez la recherche ou le filtre.' : 'Touchez « Nouvel appel » dès qu\'un client vous appelle : vous saisissez la situation pendant la conversation et l\'appli vous donne la formule et une première estimation.'}</p></div>`}
+  </div>`;
   $('#b-new').onclick = startNew;
   $('#b-net').onclick = startNettoyage;
   $('#q').oninput = e => { view.q = e.target.value; const pos = e.target.selectionStart; renderList(); const i=$('#q'); i.focus(); i.setSelectionRange(pos,pos); };
-  app.querySelectorAll('.item').forEach(b => b.onclick = () => { view = {name:'dossier', id:b.dataset.id}; tab='appel'; render(); window.scrollTo(0,0); });
+  app.querySelectorAll('[data-filtre]').forEach(b => b.onclick = () => { view.filtre = b.dataset.filtre; renderList(); });
+  app.querySelectorAll('[data-id]').forEach(b => { b.onclick = () => ouvrirDossier(b.dataset.id); b.onkeydown = e => { if(e.key==='Enter') ouvrirDossier(b.dataset.id); }; });
+}
+
+/* ---------- Fiche dossier : en-tête, étapes, onglets ---------- */
+const ONGLETS = [['synthese','Synthèse'],['appel','Appel et logement'],['diag','Sur place'],['devis','Devis'],['prepa','Préparation'],['journal','Journal et décisions'],['objets','Objets conservés'],['bons','Interventions'],['suivi','Suivi et paiement'],['espace','Espace client']];
+const ONGLETS_ESPACE = ['synthese','prepa','journal','objets','espace'];
+function enteteDossier(d, c){
+  const e = espaces[d.id]?.ligne ? espaces[d.id] : null;
+  const etapes = e?.ligne?.etapes?.length ? e.ligne.etapes : etapesParDefaut(d);
+  const nDec = e ? (e.decisions||[]).filter(x => x.statut==='attente').length : 0;
+  const nObj = e ? (e.objets||[]).filter(x => !x.valide_le).length : 0;
+  const tel = telLien(d.contact.tel);
+  return `<div class="fiche-h">
+    <div class="fil"><button type="button" id="fil-liste">Dossiers</button><span>${esc(devisNo(d))}</span></div>
+    <div class="fiche-t">
+      <div class="fiche-n"><h1>${esc(d.contact.nom||'Nouveau dossier')}</h1>
+        <p>${[SITU[d.situation], d.contact.adresse || d.adr?.label || d.ville, d.contact.tel].filter(Boolean).map(esc).join(' · ')}</p>
+        <div class="chips"><span class="badge ${STATUT_CL[d.statut]||''}">${esc(d.statut)}</span><span class="badge">${esc(FORM[d.formule])}</span><span class="badge">${d.signature ? 'Devis signé · ' : ''}${eur(c.ttc)} ${d.formule==='P'&&d.client==='agence'?'HT':'TTC'}</span></div>
+      </div>
+      <div class="fiche-a">${tel ? `<a class="btn ghost" href="${tel}">Appeler</a>` : ''}<a class="btn ghost" href="/espace-client#apercu=${encodeURIComponent(d.id)}" target="_blank" rel="noopener">Voir comme la famille</a><button class="btn" type="button" id="b-vers-bons">Bon d'intervention</button></div>
+    </div>
+    <ol class="phases">${ETAPES.map(([cle, nom]) => { const x = etapes.find(y => y.cle===cle) || {}; const et = x.etat || 'a_venir'; return `<li class="${et}" title="${esc(ETATS.find(([k])=>k===et)?.[1]||'')}${x.date ? ' · '+esc(dateCourte(x.date)) : ''}"><span>${et==='termine' ? coche : ''}</span>${esc(nom)}</li>`; }).join('')}</ol>
+    <div class="tabs" role="tablist">${ONGLETS.map(([k,l]) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${tab===k}">${l}${k==='journal' && nDec ? ` <em>${nDec}</em>` : ''}${k==='objets' && nObj ? ` <em>${nObj}</em>` : ''}</button>`).join('')}</div>
+  </div>`;
 }
 
 function seg(name, opts, val){ return `<div class="seg" data-seg="${name}">${opts.map(([v,l])=>`<button type="button" data-v="${esc(v)}" aria-pressed="${String(v)===String(val)}">${esc(l)}</button>`).join('')}</div>`; }
@@ -374,7 +501,6 @@ function renderDossier(){
   d.suivi = {...structuredClone(SUIVI0), ...(d.suivi||{})};
   if(!d.kmSource){ d.kmSource = 'estime'; setTimeout(()=>updateDistances(d,true),0); }
   if(showNouveau(d) && !d.nouveau) d.nouveau = { type: d.situation==='residence' ? 'residence' : 'appartement', nom:'', adr:null, ville:'', taille: d.situation==='residence' ? 0 : 2, etage:0, ascenseur:true, date:'', contact:'', km:null, kmAN:null };
-  const tabs = `<div class="tabs" role="tablist">${[['appel','1 · Appel'],['diag','2 · Sur place'],['devis','3 · Devis'],['suivi','4 · Suivi'],['espace','5 · Espace client'],['bons','6 · Intervention']].map(([k,l])=>`<button role="tab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join('')}</div>`;
   const resume = `<div class="kpis"><div class="kpi"><b>${eur(c.ttc)}</b><span>${f_label(d)} · estimation</span></div><div class="kpi"><b class="${c.marge<0?'bad':c.pct<0.15?'warn':'good'}">${eur(c.marge)}</b><span>Marge société (${Math.round(c.pct*100)} %) après vos heures</span></div><div class="kpi"><b>${num(c.hEquipe,0)} h</b><span>Équipe · ${c.jours} jour${c.jours>1?'s':''}</span></div><div class="kpi"><b>${num(c.hPorteur,0)} h</b><span>Vos heures (${eur(c.cPorteur)})</span></div></div>`;
   let body = '';
   if(tab==='appel') body = `
@@ -406,7 +532,9 @@ function renderDossier(){
     <label>Notes de l'appel<textarea data-f="notes" placeholder="Délais (compromis, entrée en résidence), notaire, proches à prévenir…">${esc(d.notes)}</textarea></label>
   </div>
   ${d.formule!=='P' || d.pro?.debarras ? volCard(d, true) : ''}
-  ${showNouveau(d) ? nouvCard(d) : ''}`;
+  ${showNouveau(d) ? nouvCard(d) : ''}
+  <div id="espace-fiche">${navigator.onLine ? '' : '<div class="card"><p class="small muted" style="margin:0">Hors ligne : la fiche visible par la famille se modifie avec du réseau.</p></div>'}</div>
+  <button class="btn danger" id="b-del" type="button" style="align-self:flex-start">Supprimer ce dossier</button>`;
   if(tab==='diag') { const inv = d.diag.inventaire||{}; const nInv = Object.values(inv).reduce((a,b)=>a+b,0); body = `
   <div class="card"><h3>Inventaire des meubles</h3>
     <p class="small muted" style="margin:0">Touchez + pour chaque meuble : le volume se calcule tout seul, avec 20 % en plus pour les petits objets.</p>
@@ -517,11 +645,13 @@ function renderDossier(){
     <label>Ce que j'ai appris sur ce chantier<textarea data-f="suivi.notes" placeholder="Ce qui a pris plus de temps que prévu, ce qu'il faudra demander au prochain diagnostic…">${esc(s.notes)}</textarea></label>
   </div>`; }
   if(tab==='bons') body = `<div id="bons-onglet" style="display:flex;flex-direction:column;gap:18px"></div>`;
-  if(tab==='espace') body = `<div id="espace" style="display:flex;flex-direction:column;gap:18px"><div class="card"><p class="muted" style="margin:0">Chargement de l'espace client…</p></div></div>`;
-  app.innerHTML = header(FORM[d.formule]) + `<div><h2>${esc(d.contact.nom||'Nouveau dossier')}</h2><p class="small muted" style="margin:4px 0 0">${esc(SITU[d.situation])} · ${esc(d.ville)}</p></div>` + tabs + resume + body
-    + `<button class="btn danger" id="b-del" style="margin-top:8px">Supprimer ce dossier</button>`;
+  if(ONGLETS_ESPACE.includes(tab)) body = `<div id="espace" style="display:flex;flex-direction:column;gap:18px">${espaces[d.id]?.ligne ? '' : `<div class="card"><p class="muted" style="margin:0">${navigator.onLine ? 'Chargement…' : 'Hors ligne : cet onglet se consulte avec du réseau. Les onglets Appel, Sur place, Devis et Suivi restent utilisables.'}</p></div>`}</div>`;
+  const avecResume = ['appel','diag','devis','suivi'].includes(tab);
+  app.innerHTML = enteteDossier(d, c) + (avecResume ? resume + `<div class="deux-col">${body}</div>` : body);
   bind(d);
-  if(tab==='espace') chargerEspace(d);
+  $('#fil-liste').onclick = () => { view = {name:'list'}; render(); window.scrollTo(0,0); };
+  $('#b-vers-bons').onclick = () => { tab = 'bons'; render(); window.scrollTo(0,0); };
+  if(ONGLETS_ESPACE.includes(tab) || tab==='appel'){ if(espaces[d.id]?.ligne) renderEspace(d); else if(navigator.onLine) chargerEspace(d); }
   if(tab==='bons') bonsApi.onglet(d, $('#bons-onglet'));
 }
 function f_label(d){ return FORM[d.formule]; }
@@ -903,20 +1033,25 @@ async function objetsPdf(d, objets){
   wrap(`Objets mis de côté pour la famille, avec leur destinataire. ${nv === objets.length ? 'Liste entièrement validée par la famille.' : nv ? `${nv} objet${nv>1?'s':''} validé${nv>1?'s':''} par la famille sur ${objets.length}.` : 'Liste en attente de validation par la famille.'}`, 9.5, W).forEach(t => { P.text(L, y, t, {size:9.5}); y += 13; });
   y += 8;
   for(const [i, x] of objets.entries()){
-    if(y > 740){ pied(); P.addPage(); y = 56; entete(); }
-    const h = 62;
-    if(x.photo){
+    if(y > 730){ pied(); P.addPage(); y = 56; entete(); }
+    const h = 58, photos = ((x.photos||[]).length ? x.photos : [x.photo]).filter(Boolean).slice(0, 3);
+    // Jusqu'à 3 photos par objet, à droite ; le texte à gauche.
+    const pw = 72, gap = 6, px0 = R - (3*pw + 2*gap);
+    for(const [k, ch] of photos.entries()){
+      const xx = px0 + k*(pw+gap);
       try{
-        const { data } = await sb.storage.from('photos').download(x.photo);
-        if(data){ const im = await jpegDepuis(data, 400); const s = Math.min(80/im.w, h/im.h); P.image(im.bytes, im.w, im.h, L, y, im.w*s, im.h*s); }
-      }catch(err){ P.box(L, y, 80, h); }
-    } else { P.box(L, y, 80, h); P.text(L+40, y+h/2+3, 'Sans photo', {size:7, color:muted, align:'center'}); }
-    const x0 = L + 96;
-    P.text(x0, y+14, `${i+1}. ${x.nom}`, {size:11, bold:true});
-    P.text(x0, y+29, x.destinataire ? `Pour : ${x.destinataire}` : 'Pour la famille', {size:9.5, color:blue});
-    if(x.note) P.text(x0, y+42, wrap(x.note, 8.5, W-96)[0], {size:8.5, color:muted});
-    P.text(x0, y+h-4, x.valide_le ? `Validé par la famille le ${new Date(x.valide_le).toLocaleDateString('fr-FR')}` : 'En attente de validation par la famille', {size:8, color: x.valide_le ? good : muted});
-    y += h + 10; P.line(L, y-5, R, y-5, line);
+        const { data } = await sb.storage.from('photos').download(ch);
+        if(data){ const im = await jpegDepuis(data, 360); const s2 = Math.min(pw/im.w, h/im.h); P.image(im.bytes, im.w, im.h, xx, y, im.w*s2, im.h*s2); }
+        else P.box(xx, y, pw, h);
+      }catch(err){ P.box(xx, y, pw, h); }
+    }
+    if(!photos.length) P.text(px0 + (3*pw+2*gap)/2, y+h/2+3, 'Sans photo', {size:7.5, color:muted, align:'center'});
+    const tw0 = px0 - L - 14;
+    P.text(L, y+13, wrap(`${String(i+1).padStart(2,'0')}. ${x.nom}`, 11, tw0, true)[0], {size:11, bold:true});
+    P.text(L, y+28, [x.piece ? `Pièce : ${x.piece}` : '', x.destinataire ? `Pour : ${x.destinataire}` : 'Pour la famille'].filter(Boolean).join(' · '), {size:9.5, color:blue});
+    if(x.note) P.text(L, y+41, wrap(x.note, 8.5, tw0)[0], {size:8.5, color:muted});
+    P.text(L, y+h-3, x.valide_le ? `Validé par la famille le ${new Date(x.valide_le).toLocaleDateString('fr-FR')}` : 'À valider par la famille', {size:8, color: x.valide_le ? good : muted});
+    y += h + 12; P.line(L, y-6, R, y-6, line);
   }
   pied();
   return P.build();
@@ -938,8 +1073,8 @@ function etapesParDefaut(d){
   return ETAPES.map(([cle]) => ({ cle, etat: (cle==='diagnostic' && avance) || (cle==='devis' && signe) || (d.statut==='Terminé') ? 'termine' : 'a_venir', date:'', message:'' }));
 }
 async function chargerEspace(d){
-  const box = $('#espace'); if(!box) return;
-  if(!navigator.onLine){ box.innerHTML = `<div class="card"><p style="margin:0">L'espace client se gère avec du réseau. Vos autres onglets restent utilisables hors ligne.</p></div>`; return; }
+  if(!navigator.onLine || espaces[d.id]?._charge) return;
+  espaces[d.id] = { _charge: true };
   const enAttente = fileAttente()[d.id] || saveTimers[d.id];
   if(enAttente){ try{ await envoyer(d); }catch(e){} }
   const [l, a, p, k, o] = await Promise.all([
@@ -949,112 +1084,361 @@ async function chargerEspace(d){
     sb.from('documents').select('*').eq('dossier_id', d.id).order('date'),
     sb.from('objets_conserves').select('*').eq('dossier_id', d.id).order('ordre').order('created_at')
   ]);
+  const [j, de, li] = await Promise.all([
+    sb.from('journal').select('*').eq('dossier_id', d.id).order('quand', { ascending:false }),
+    sb.from('decisions').select('*').eq('dossier_id', d.id).order('posee_le', { ascending:false }),
+    sb.from('listings_objets').select('version, signe_le, nom').eq('dossier_id', d.id).order('version', { ascending:false }).limit(1),
+  ]);
   const err = l.error || a.error || p.error || k.error || o.error;
-  if(err){ box.innerHTML = `<div class="card"><p style="margin:0">Impossible de charger l'espace client : ${esc(err.message)}</p></div>`; return; }
+  if(err){ delete espaces[d.id]; const box = $('#espace') || $('#espace-fiche'); if(box) box.innerHTML = `<div class="card"><p style="margin:0">Impossible de charger l'espace client : ${esc(err.message)}</p></div>`; return; }
   const so = {...DEFAULTS.soc, ...(S.soc||{})};
   espaces[d.id] = {
     ligne: l.data || { dossier_id: d.id, formule: d.formule, ville: d.ville, interlocuteur: { nom: so.signataire && !/\[/.test(so.signataire) ? so.signataire.replace(/,.*$/, '') : '', tel: so.tel && !/\[/.test(so.tel) ? so.tel : '' }, etapes: etapesParDefaut(d), _nouveau: true },
-    acces: a.data || [], photos: p.data || [], docs: k.data || [], objets: o.data || []
+    acces: a.data || [], photos: p.data || [], docs: k.data || [], objets: o.data || [],
+    journal: j.data || [], decisions: de.data || [], listing: (li.data || [])[0] || null
   };
-  if(tab==='espace' && view.id===d.id) renderEspace(d);
+  const L0 = espaces[d.id].ligne; L0.etapes = L0.etapes?.length ? L0.etapes : etapesParDefaut(d); L0.taches = L0.taches || []; L0.pieces = L0.pieces || []; L0.contacts = L0.contacts || []; L0.bien = L0.bien || {}; L0.prochain = L0.prochain || {};
+  if(view.name==='dossier' && view.id===d.id) rerender();
 }
 function enregistrerEspace(d, tout){
   const e = espaces[d.id]; if(!e) return;
   clearTimeout(espaceTimer);
   espaceTimer = setTimeout(async () => {
-    const { _nouveau, updated_at, ...ligne } = e.ligne;
+    const { _nouveau, _charge, updated_at, ...ligne } = e.ligne;
     ligne.formule = d.formule; ligne.ville = d.ville;
     const { error } = await sb.from('espace_client').upsert(ligne);
     if(error) showToast("L'espace client n'a pas pu être enregistré : " + error.message);
     else { delete e.ligne._nouveau; if(tout) showToast('Espace client enregistré.'); }
   }, tout ? 0 : 600);
 }
+const TJ = { contact:'Contact', decision:'Décision', intervention:'Intervention', organisation:'Organisation', document:'Document' };
+const TRI = [['a_trier','À trier'], ['en_cours','En cours'], ['trie','Trié']];
+const BIEN = [['type','Type de logement'], ['acces','Accès'], ['stationnement','Stationnement'], ['cles','Clés'], ['compteurs','Compteurs'], ['cave','Cave, annexes'], ['devenir','Devenir du bien']];
+const maintenantLocal = () => { const x = new Date(); x.setMinutes(x.getMinutes() - x.getTimezoneOffset()); return x.toISOString().slice(0,16); };
+const parDate = (a,b) => String(a.date||'9999').localeCompare(String(b.date||'9999'));
+// Valeurs proposées à partir du dossier, pour pré-remplir la fiche visible par la famille.
+function ficheParDefaut(d){
+  return {
+    titre: d.formule==='S' ? `Succession${d.beneficiaire ? ' de '+d.beneficiaire : d.contact.nom ? ' '+d.contact.nom.split(' ').slice(-1)[0] : ''}` : `${FORM[d.formule]}${d.contact.nom ? ' · '+d.contact.nom : ''}`,
+    reference: devisNo(d),
+    adresse: d.adr?.label || d.contact.adresse || d.ville || '',
+    bien: {
+      famille: d.contact.nom ? (d.contact.nom.split(' ').length > 1 ? 'famille '+d.contact.nom.split(' ').slice(-1)[0] : d.contact.nom) : '',
+      type: `${d.typeLog==='maison' ? 'Maison' : 'Appartement'} ${TAILLES[d.taille]}, ${d.surface} m²`,
+      acces: d.typeLog==='appartement' ? (d.etage ? `${d.etage}e étage${d.ascenseur ? ', ascenseur' : ', sans ascenseur'}` : 'Rez-de-chaussée') : `${d.diag?.etagesMaison||1} niveau${(d.diag?.etagesMaison||1)>1?'x':''}`,
+      stationnement: d.diag?.stationnement ? 'Stationnement difficile' : '',
+    },
+  };
+}
+
+/* ---------- Rendu des onglets liés à l'espace client ---------- */
 function renderEspace(d){
-  const box = $('#espace'), e = espaces[d.id]; if(!box || !e) return;
-  const L = e.ligne, etapes = ETAPES.map(([cle, nom]) => ({ nom, ...(L.etapes.find(x => x.cle===cle) || { cle, etat:'a_venir', date:'', message:'' }) }));
-  const partagees = new Set(e.photos.map(x => x.chemin));
-  const photos = (d.photos||[]).filter(x => x.chemin);
-  box.innerHTML = `
-  ${L._nouveau ? '' : `<a class="btn ghost" href="/espace-client#apercu=${encodeURIComponent(d.id)}" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">Voir l'espace comme la famille</a>`}
-  ${L._nouveau ? `<div class="suggest">L'espace de cette famille n'est pas encore ouvert. Préparez-le ci-dessous, puis ajoutez les personnes qui y auront accès.</div>` : ''}
-  <div class="card"><h3>Accès</h3>
-    <p class="small muted" style="margin:0">La personne concernée et ses proches. Ils se connectent avec leur seule adresse e-mail : ils reçoivent un code à 6 chiffres (et un lien) par e-mail.</p>
-    ${e.acces.length ? `<table>${e.acces.map(x => `<tr><td>${esc(x.email)}<br><span class="small muted">${x.role==='titulaire'?'Titulaire':'Proche'}${x.invite_le?` · invité le ${new Date(x.invite_le).toLocaleDateString('fr-FR')}`:' · pas encore invité'}</span></td><td class="n" style="white-space:nowrap"><button type="button" class="btn ${x.invite_le?'ghost':''}" data-inviter="${esc(x.email)}" style="padding:8px 12px">${x.invite_le?'Renvoyer':'Inviter'}</button> <button type="button" class="btn ghost" data-retirer="${esc(x.email)}" style="padding:8px 12px">Retirer</button></td></tr>`).join('')}</table>` : `<p class="small" style="margin:0">Aucun accès pour l'instant.</p>`}
-    <div class="grid2"><label>E-mail<input id="ac-email" type="email" inputmode="email" placeholder="prenom.nom@exemple.fr" value="${e.acces.length ? '' : esc(d.contact.email||'')}"></label>
-    <label>Rôle${seg('ac-role', [['titulaire','Titulaire'],['proche','Proche']], e.acces.some(x=>x.role==='titulaire') ? 'proche' : 'titulaire')}</label></div>
-    <button type="button" class="btn ghost" id="ac-ajout">Ajouter cet accès</button>
-    ${e.acces.some(x=>!x.invite_le) ? `<button type="button" class="btn" id="ac-inviter">Inviter ${e.acces.filter(x=>!x.invite_le).length>1?'les personnes pas encore invitées':'la personne pas encore invitée'}</button>` : ''}
-    <p class="small muted" style="margin:0">L'invitation envoie un e-mail avec un code de connexion pour l'espace client du site. Vérifiez d'abord les étapes, photos et documents ci-dessous.</p>
-  </div>
-  <div class="card"><h3>Interlocuteur affiché</h3>
-    <div class="grid2"><label>Nom<input data-esp="interlocuteur.nom" value="${esc(L.interlocuteur?.nom||'')}" placeholder="Prénom Nom"></label>
-    <label>Téléphone<input data-esp="interlocuteur.tel" type="tel" value="${esc(L.interlocuteur?.tel||'')}"></label></div>
-  </div>
-  <div class="card"><h3>Étapes</h3>
-    <p class="small muted" style="margin:0">Ce que la famille voit, dans l'ordre de la méthode. Le message est visible par elle : écrivez-lui directement.</p>
-    ${etapes.map((x, i) => `<div style="display:flex;flex-direction:column;gap:8px;padding:10px 0;${i?'border-top:1px solid var(--line)':''}">
-      <b style="font-weight:500">${i+1}. ${esc(x.nom)}</b>
-      ${seg('etape.'+x.cle, ETATS, x.etat)}
-      <label>Date ${x.etat==='termine'?'réelle':'prévue'}<input type="date" data-etape-date="${x.cle}" value="${esc(x.date||'')}"></label>
-      <label>Message pour la famille<textarea data-etape-msg="${x.cle}" placeholder="Ex. : Le tri est terminé, les dons partent mardi à l'association.">${esc(x.message||'')}</textarea></label>
-    </div>`).join('')}
-  </div>
-  <div class="card"><h3>Photos visibles par la famille</h3>
-    <p class="small muted" style="margin:0">Cochez les photos que la famille peut voir. Par défaut, aucune n'est visible.</p>
-    ${photos.length ? `<div class="thumbs">${photos.map(x => `<label style="position:relative;cursor:pointer;gap:4px"><img data-chemin="${esc(x.chemin)}" alt="Photo du logement" style="outline:${partagees.has(x.chemin)?'3px solid var(--blue)':'none'};outline-offset:-3px"><span class="small" style="display:flex;gap:6px;align-items:center;color:var(--ink)"><input type="checkbox" data-partage="${esc(x.chemin)}" ${partagees.has(x.chemin)?'checked':''} style="width:auto"> Visible</span></label>`).join('')}</div>` : `<p class="small" style="margin:0">Aucune photo dans ce dossier (ajoutez-en dans « 2 · Sur place »).</p>`}
-  </div>
-  <div class="card"><h3>Objets conservés</h3>
-    <p class="small muted" style="margin:0">Ce qui est mis de côté pour la famille, avec une photo et le destinataire. La famille voit cette liste dans son espace et la valide. Un objet modifié ensuite doit être validé à nouveau.</p>
-    ${(e.objets||[]).length ? `<div class="oc-liste">${e.objets.map(x => `<div class="oc-ligne">
-      ${x.photo ? `<img data-chemin="${esc(x.photo)}" alt="Photo : ${esc(x.nom)}">` : `<span class="oc-sans">Sans photo</span>`}
-      <div class="oc-champs"><input data-oc="${esc(x.id)}" data-oc-champ="nom" value="${esc(x.nom)}" aria-label="Objet"><input data-oc="${esc(x.id)}" data-oc-champ="destinataire" value="${esc(x.destinataire)}" placeholder="Pour qui ?" aria-label="Destinataire">
-      <span class="small ${x.valide_le ? 'oc-ok' : 'muted'}">${x.valide_le ? `Validé par la famille le ${new Date(x.valide_le).toLocaleDateString('fr-FR')}` : 'En attente de validation par la famille'}</span></div>
-      <button type="button" class="btn danger" data-oc-retirer="${esc(x.id)}" style="padding:8px 12px">Retirer</button>
-    </div>`).join('')}</div>
-    <p class="small" style="margin:0">${(() => { const n = e.objets.filter(x => x.valide_le).length; return n === e.objets.length ? 'Liste entièrement validée par la famille. Republiez le PDF pour qu\'il l\'indique.' : n ? `${n} objet${n>1?'s':''} validé${n>1?'s':''} par la famille sur ${e.objets.length}.` : 'Aucun objet validé par la famille pour l\'instant.'; })()}</p>` : `<p class="small muted" style="margin:0">Aucun objet pour l'instant.</p>`}
-    <div class="grid2"><label>Objet<input id="oc-nom" placeholder="Ex. : Album de photos de famille"></label><label>Pour qui<input id="oc-dest" placeholder="Paul, Claire, la famille…"></label></div>
-    <div class="row"><label class="btn ghost" style="flex:1;text-align:center;cursor:pointer">Photographier l'objet<input id="oc-photo" type="file" accept="image/*" capture="environment" hidden></label><button type="button" class="btn" id="oc-ajout" style="flex:1">Ajouter l'objet</button></div>
-    <span class="small muted" id="oc-photo-etat">Photo facultative, mais conseillée.</span>
-    ${(e.objets||[]).length ? `<button type="button" class="btn ghost" id="oc-pdf">Publier la liste en PDF dans l'espace client</button>` : ''}
-  </div>
-  <div class="card"><h3>Documents</h3>
-    ${e.docs.length ? `<table>${e.docs.map(x => `<tr><td>${esc(x.nom)}<br><span class="small muted">${esc(TYPES_DOC[x.type]||'Document')} · ${new Date(x.date).toLocaleDateString('fr-FR')}</span></td><td class="n" style="white-space:nowrap"><button type="button" class="btn ghost" data-voir="${esc(x.chemin)}" style="padding:8px 10px">Voir</button> <button type="button" class="btn danger" data-retdoc="${esc(x.id)}" style="padding:8px 10px">Retirer</button></td></tr>`).join('')}</table>` : `<p class="small" style="margin:0">Aucun document publié.</p>`}
-    <button type="button" class="btn ghost" id="doc-devis">Publier le devis${d.signature?' signé':''} (PDF)</button>
-    <label>Type du document à ajouter${seg('doc-type', Object.entries(TYPES_DOC).filter(([k])=>k!=='devis' && k!=='bon_intervention'), espaces._type||'facture')}</label>
-    <label class="btn ghost" style="text-align:center;cursor:pointer">Ajouter un document (PDF ou photo)<input id="doc-fichier" type="file" accept="application/pdf,image/jpeg,image/png" hidden></label>
-  </div>`;
-  bindEspace(d);
+  const e = espaces[d.id]; if(!e?.ligne) return;
+  if(tab==='appel'){ const f = $('#espace-fiche'); if(f){ f.innerHTML = htmlFiche(d, e); bindEspace(d, f); } return; }
+  const box = $('#espace'); if(!box) return;
+  box.innerHTML = tab==='synthese' ? htmlSynthese(d, e) : tab==='prepa' ? htmlPrepa(d, e) : tab==='journal' ? htmlJournal(d, e) : tab==='objets' ? htmlObjets(d, e) : htmlEspaceClient(d, e);
+  bindEspace(d, box);
   remplirVignettes();
 }
-function bindEspace(d){
-  const e = espaces[d.id], box = $('#espace'), L = e.ligne;
-  const val = (sel) => box.querySelector(sel);
-  // Interlocuteur
+
+function htmlSynthese(d, e){
+  const c = calc(d), L = e.ligne, pr = L.prochain || {}, taches = (L.taches||[]).map((t,i) => ({...t, i}));
+  const af = taches.filter(t => t.etat!=='fait').sort(parDate).slice(0, 7);
+  const pd = pr.date ? new Date(pr.date+'T12:00:00') : null;
+  const nonValides = (e.objets||[]).filter(x => !x.valide_le).length, decAtt = (e.decisions||[]).filter(x => x.statut==='attente').length;
+  const acompte = d.formule!=='P' ? c.ttc*0.4 : 0, s = d.suivi || {};
+  const encaisse = (s.acompte ? acompte : 0) + (s.solde ? c.ttc - acompte : 0);
+  return `<div class="grille">
+    <div class="col">
+      <div class="pan">${pd && !isNaN(pd) ? `<div class="rdv"><b>${pd.getDate()}</b><div><span class="sur" style="margin:0">Prochain rendez-vous · ${esc(pd.toLocaleDateString('fr-FR',{weekday:'long', day:'numeric', month:'long'}))}</span><strong>${esc(pr.titre||'Rendez-vous')}</strong><span>${esc([pr.horaire, pr.detail].filter(Boolean).join(' · '))}</span></div><button class="btn ghost petit" type="button" data-aller="prepa">Modifier</button></div>`
+        : `<div class="rdv"><div><span class="sur" style="margin:0">Prochain rendez-vous</span><strong>Aucun rendez-vous prévu</strong><span>Il s'affiche en haut de l'espace client de la famille.</span></div><button class="btn petit" type="button" data-aller="prepa">Programmer</button></div>`}</div>
+      <div class="pan"><div class="pan-h"><h3>À faire</h3><button class="lien" type="button" data-aller="prepa">Toutes les tâches</button></div>
+        ${af.length ? `<ul class="check">${af.map(t => `<li class="${t.etat}"><button type="button" class="case" data-tache-etat="${t.i}" aria-label="Changer l'état">${t.etat==='fait' ? coche : ''}</button><span>${esc(t.libelle || 'Tâche sans titre')}${t.cote==='famille' ? ' <span class="badge attente">Famille</span>' : ''}</span><span>${esc(dateCourte(t.date))}</span></li>`).join('')}</ul>` : `<p class="pan-vide">Aucune tâche en cours. Ajoutez-les dans « Préparation » : la famille les voit dans son espace.</p>`}
+      </div>
+      <div class="pan"><div class="pan-h"><h3>Derniers événements</h3><button class="lien" type="button" data-aller="journal">Journal complet</button></div>
+        ${(e.journal||[]).length ? `<ol class="journal">${e.journal.slice(0,4).map(j => `<li class="t-${esc(j.type)}"><i class="pt"></i><time>${esc(quandFr(j.quand))}</time><div><b>${esc(j.titre)}</b>${j.texte ? `<span>${esc(j.texte)}</span>` : ''}</div></li>`).join('')}</ol>` : '<p class="pan-vide">Aucun événement noté. Notez appels, décisions et interventions dans « Journal et décisions ».</p>'}
+      </div>
+    </div>
+    <div class="col">
+      <div class="pan"><div class="pan-h"><h3>Finances</h3></div><dl class="dl">
+        <div><dt>Devis${d.signature ? ' signé' : ''}</dt><dd><b>${eur(c.ttc)} ${d.formule==='P'&&d.client==='agence'?'HT':'TTC'}</b></dd></div>
+        ${d.formule!=='P' ? `<div><dt>Acompte 40 %</dt><dd>${eur(acompte)} · ${s.acompte ? '<span class="good">encaissé</span>' : 'à encaisser'}</dd></div>` : ''}
+        <div><dt>Reste à encaisser</dt><dd>${eur(c.ttc - encaisse)}</dd></div>
+        <div><dt>Marge prévue</dt><dd class="${c.marge<0?'bad':c.pct<0.15?'warn':'good'}">${eur(c.marge)} (${Math.round(c.pct*100)} %)</dd></div>
+      </dl></div>
+      <div class="pan"><div class="pan-h"><h3>Espace client</h3>${L._nouveau ? '<span class="badge">Pas encore ouvert</span>' : e.acces.length ? '<span class="badge ok">Ouvert</span>' : '<span class="badge attente">Sans accès</span>'}</div><dl class="dl">
+        <div><dt>Accès</dt><dd>${e.acces.length ? esc(e.acces.map(x => x.email).join(', ')) : 'aucun'}</dd></div>
+        <div><dt>En attente de la famille</dt><dd>${[nonValides ? `listing à signer` : '', decAtt ? `${decAtt} question${decAtt>1?'s':''}` : ''].filter(Boolean).join(', ') || 'rien'}</dd></div>
+        <div><dt>Tâches</dt><dd>${taches.filter(t => t.etat==='fait').length} faites sur ${taches.length}</dd></div>
+      </dl><div class="pan-pied"><button class="lien" type="button" data-aller="espace">Gérer l'espace client</button></div></div>
+      <div class="pan"><div class="pan-h"><h3>Logement</h3></div><dl class="dl">
+        <div><dt>Adresse</dt><dd>${esc(L.adresse || d.adr?.label || d.ville || '—')}</dd></div>
+        <div><dt>Logement</dt><dd>${esc(d.typeLog)} ${esc(TAILLES[d.taille])}, ${d.surface} m²</dd></div>
+        <div><dt>Volume</dt><dd>${num(d.diag.volume)} m³ · ${d.diag.evac} % à évacuer</dd></div>
+        <div><dt>Distance</dt><dd>${num(d.km,0)} km du siège</dd></div>
+      </dl></div>
+      <div class="pan"><div class="pan-h"><h3>Contact</h3></div><dl class="dl">
+        <div><dt>Nom</dt><dd>${esc(d.contact.nom||'—')}${d.contact.lien ? ` (${esc(d.contact.lien)})` : ''}</dd></div>
+        <div><dt>Téléphone</dt><dd>${d.contact.tel ? `<a href="${telLien(d.contact.tel)||'#'}">${esc(d.contact.tel)}</a>` : '—'}</dd></div>
+        <div><dt>E-mail</dt><dd>${esc(d.contact.email||'—')}</dd></div>
+      </dl></div>
+    </div>
+  </div>`;
+}
+
+function htmlPrepa(d, e){
+  const L = e.ligne, pr = L.prochain || {}, taches = (L.taches||[]).map((t,i) => ({...t, i})), pieces = L.pieces || [];
+  const fait = taches.filter(t => t.etat==='fait').length;
+  const vol = pieces.reduce((a,p) => a + (Number(p.volume)||0), 0), triees = pieces.filter(p => p.tri==='trie').length;
+  return `<div class="card"><h3>Prochain rendez-vous (affiché en haut de l'espace client)</h3>
+      <div class="grid2"><label>Date<input type="date" data-prochain="date" value="${esc(pr.date||'')}"></label><label>Horaire<input data-prochain="horaire" value="${esc(pr.horaire||'')}" placeholder="Ex. : 8 h à 17 h"></label></div>
+      <label>Ce qui est prévu<input data-prochain="titre" value="${esc(pr.titre||'')}" placeholder="Ex. : Débarras sur place"></label>
+      <label>Précisions pour la famille<input data-prochain="detail" value="${esc(pr.detail||'')}" placeholder="Ex. : 2 personnes, 1 camion. Votre présence n'est pas nécessaire."></label>
+      ${pr.date ? '<button class="lien" type="button" id="prochain-effacer" style="align-self:flex-start">Effacer le rendez-vous</button>' : ''}
+    </div>
+    <div class="pan"><div class="pan-h"><h3>Étapes et tâches</h3><span class="small muted">${fait} faites sur ${taches.length} · visibles par la famille</span></div>
+      ${ETAPES.map(([cle, nom]) => { const x = L.etapes.find(y => y.cle===cle) || { etat:'a_venir', date:'', message:'' }; const tp = taches.filter(t => t.phase===cle); return `<div class="phase-b">
+        <div class="phase-b-h"><b>${esc(nom)}</b><select data-etape-etat="${cle}" aria-label="État de l'étape ${esc(nom)}">${ETATS.map(([k,l]) => `<option value="${k}" ${x.etat===k?'selected':''}>${l}</option>`).join('')}</select><input type="date" data-etape-date="${cle}" value="${esc(x.date||'')}" aria-label="Date de l'étape ${esc(nom)}"></div>
+        <div class="phase-msg"><textarea data-etape-msg="${cle}" placeholder="Message pour la famille (facultatif), ex. : Le tri est terminé, les dons partent mardi.">${esc(x.message||'')}</textarea></div>
+        <ul class="taches">${tp.map(t => `<li class="${t.etat}"><button type="button" class="case" data-tache-etat="${t.i}" aria-label="État : ${t.etat==='fait'?'fait':t.etat==='en_cours'?'en cours':'à faire'}">${t.etat==='fait' ? coche : ''}</button><input class="lib" data-tache="${t.i}" data-champ="libelle" value="${esc(t.libelle||'')}" placeholder="Tâche" aria-label="Tâche"><button type="button" class="qui ${t.cote==='famille'?'famille':''}" data-tache-qui="${t.i}" title="Qui s'en charge">${t.cote==='famille' ? 'Famille' : 'Nous'}</button><input type="date" data-tache="${t.i}" data-champ="date" value="${esc(t.date||'')}" aria-label="Date"><button type="button" class="suppr" data-tache-suppr="${t.i}" aria-label="Supprimer la tâche">×</button></li>`).join('')}
+          <li style="display:block"><button type="button" class="ajout" data-tache-ajout="${cle}">+ Ajouter une tâche</button></li></ul>
+      </div>`; }).join('')}
+    </div>
+    <div class="pan"><div class="pan-h"><h3>Pièces du logement</h3><span class="small muted">${triees} triée${triees>1?'s':''} sur ${pieces.length}${vol ? ` · ${num(vol)} m³ à évacuer` : ''}</span></div>
+      ${pieces.length ? `<div class="tab"><table class="saisie"><thead><tr><th>Pièce</th><th>Tri</th><th>Objets conservés</th><th>Dons</th><th>Volume dons (m³)</th><th>Volume à évacuer (m³)</th><th></th></tr></thead><tbody>
+        ${pieces.map((p,i) => `<tr><td><input data-piece="${i}" data-champ="nom" value="${esc(p.nom||'')}" aria-label="Pièce"></td><td><select data-piece="${i}" data-champ="tri" aria-label="Tri">${TRI.map(([k,l]) => `<option value="${k}" ${p.tri===k?'selected':''}>${l}</option>`).join('')}</select></td><td><input class="court" type="number" min="0" data-piece="${i}" data-champ="conserves" value="${esc(p.conserves ?? '')}" aria-label="Objets conservés"></td><td><input data-piece="${i}" data-champ="dons" value="${esc(p.dons||'')}" placeholder="—" aria-label="Dons"></td><td><input class="court" type="number" min="0" step="0.5" data-piece="${i}" data-champ="dons_volume" value="${esc(p.dons_volume ?? '')}" aria-label="Volume des dons"></td><td><input class="court" type="number" min="0" step="0.5" data-piece="${i}" data-champ="volume" value="${esc(p.volume ?? '')}" aria-label="Volume"></td><td><button type="button" class="suppr" data-piece-suppr="${i}" aria-label="Supprimer la pièce">×</button></td></tr>`).join('')}
+      </tbody></table></div>` : '<p class="pan-vide">Ajoutez les pièces pour suivre le tri : la famille voit l\'avancement pièce par pièce.</p>'}
+      <div class="pan-pied row"><button class="btn ghost petit" type="button" id="piece-ajout">+ Ajouter une pièce</button>${!pieces.length ? '<button class="btn ghost petit" type="button" id="pieces-type">Pièces types (séjour, cuisine, chambres…)</button>' : ''}</div>
+    </div>`;
+}
+
+function htmlJournal(d, e){
+  const jEd = e._jEdit;
+  return `<div class="grille">
+    <div class="col">
+      <div class="card"><h3>Ajouter au journal (visible par la famille)</h3>
+        <div class="seg types" data-jtype role="group" aria-label="Type d'événement">${Object.entries(TJ).map(([k,l]) => `<button type="button" class="t-${k}" data-v="${k}" aria-pressed="${(e._jType||'contact')===k}">${l}</button>`).join('')}</div>
+        <input id="j-titre" placeholder="Titre, ex. : Appel avec Claire Martin" maxlength="160">
+        <textarea id="j-texte" placeholder="Ce qui a été dit ou fait, en une ou deux phrases." maxlength="1000"></textarea>
+        <div class="row" style="justify-content:space-between"><input id="j-quand" type="datetime-local" value="${maintenantLocal()}" style="width:auto"><button class="btn" type="button" id="j-ajout">Ajouter</button></div>
+      </div>
+      <div class="pan"><div class="pan-h"><h3>Journal</h3><span class="small muted">${(e.journal||[]).length} événement${(e.journal||[]).length>1?'s':''}</span></div>
+        ${(e.journal||[]).length ? `<ol class="journal">${e.journal.map(j => jEd===j.id ? `<li style="grid-template-columns:1fr"><div style="gap:8px"><input data-jed="titre" value="${esc(j.titre)}" maxlength="160"><textarea data-jed="texte" maxlength="1000">${esc(j.texte||'')}</textarea><div class="row"><button class="btn petit" type="button" data-j-enreg="${esc(j.id)}">Enregistrer</button><button class="btn ghost petit" type="button" data-j-annul>Annuler</button><button class="btn danger petit" type="button" data-j-suppr="${esc(j.id)}">Supprimer</button></div></div></li>`
+          : `<li class="t-${esc(j.type)}"><i class="pt"></i><time>${esc(quandFr(j.quand))}</time><div><span class="jtype">${esc(TJ[j.type]||'')}</span><b>${esc(j.titre)}</b>${j.texte ? `<span>${esc(j.texte)}</span>` : ''}</div><button class="lien" type="button" data-j-edit="${esc(j.id)}">Modifier</button></li>`).join('')}</ol>` : '<p class="pan-vide">Rien pour l\'instant. Chaque appel, décision ou intervention noté ici apparaît dans l\'espace de la famille.</p>'}
+      </div>
+    </div>
+    <div class="col">
+      <div class="card"><h3>Poser une question à la famille</h3>
+        <input id="q-question" placeholder="Ex. : Bibliothèque du bureau, vendre ou donner ?" maxlength="300">
+        <div class="choix" id="q-choix">${(e._choix||[]).map((c,i) => `<em>${esc(c)}<button type="button" data-choix-suppr="${i}" aria-label="Retirer">×</button></em>`).join('')}<input id="q-choix-in" placeholder="Réponse proposée" style="width:170px;padding:6px 10px;font-size:13.5px"><button class="btn ghost petit" type="button" id="q-choix-ajout">+ Ajouter</button></div>
+        <p class="small muted" style="margin:0">Sans réponse proposée, la famille écrit sa réponse. Elle la voit dans « À faire » de son espace.</p>
+        <button class="btn" type="button" id="q-envoyer" style="align-self:flex-start">Poser la question</button>
+      </div>
+      <div class="pan tab"><div class="pan-h"><h3>Décisions</h3></div>
+        ${(e.decisions||[]).length ? `<table><thead><tr><th>Date</th><th>Décision</th><th>Par</th><th>Statut</th><th></th></tr></thead><tbody>${e.decisions.map(x => `<tr class="${x.statut==='attente'?'attente':''}"><td class="muted">${esc(dateCourte(x.decide_le || x.posee_le))}</td><td><b>${esc(x.question)}</b>${x.reponse ? `<br><span class="small muted">${esc(x.reponse)}</span>` : (x.choix||[]).length ? `<br><span class="small muted">${esc(x.choix.join(' / '))}</span>` : ''}</td><td>${esc(x.decide_par||'—')}</td><td>${x.statut==='validee' ? '<span class="badge ok">Validée</span>' : '<span class="badge attente">En attente</span>'}</td><td><button class="suppr" type="button" data-dec-suppr="${esc(x.id)}" aria-label="Supprimer">×</button></td></tr>`).join('')}</tbody></table>` : '<p class="pan-vide">Aucune décision notée.</p>'}
+        <div class="pan-c" style="border-top:1px solid var(--line)"><b class="small">Noter une décision déjà prise</b>
+          <input id="dp-question" placeholder="Ex. : Mobilier de la chambre 2 donné à l'association" maxlength="300">
+          <div class="grid2"><input id="dp-reponse" placeholder="Réponse (ex. : Oui)" maxlength="500"><input id="dp-par" placeholder="Décidé par (ex. : Claire et Paul)" maxlength="160"></div>
+          <button class="btn ghost petit" type="button" id="dp-ajout" style="align-self:flex-start">Noter la décision</button></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function htmlObjets(d, e){
+  const objets = e.objets || [], nv = objets.filter(x => !x.valide_le).length, li = e.listing;
+  const pieces = [...new Set([...(e.ligne.pieces||[]).map(p => p.nom).filter(Boolean)])];
+  const pdf = (e.docs||[]).find(x => /objets-conserves\.pdf$/.test(x.chemin));
+  const photosDe = x => ((x.photos||[]).length ? x.photos : [x.photo]).filter(Boolean);
+  return `${objets.length ? `<div class="bandeau ${nv ? '' : 'ok'}"><div>${nv ? '<span class="badge attente">Non signé</span>' : '<span class="badge ok">Signé</span>'}
+      <b>${objets.length} objet${objets.length>1?'s':''}${li ? ` · version ${li.version + (nv?1:0)}` : ''}</b>
+      <span>${nv ? (li ? `Version ${li.version} signée par ${esc(li.nom)} le ${esc(dateCourte(li.signe_le))}. Le listing a changé : la famille doit signer à nouveau.` : 'La famille signe le listing depuis son espace. Rien ne part avant sa signature.') : `Signé par ${esc(li?.nom||'la famille')} le ${esc(dateCourte(li?.signe_le))}.`}${pdf ? ` PDF publié le ${esc(dateCourte(pdf.date))}.` : ' PDF pas encore publié.'}</span></div>
+      <button class="btn ${pdf?'ghost':''}" type="button" id="oc-pdf">${pdf ? 'Republier le PDF' : 'Publier le PDF'}</button></div>` : ''}
+    <div class="pan tab"><div class="pan-h"><h3>Listing des objets conservés</h3><span class="small muted">3 photos par objet au plus</span></div>
+      ${objets.length ? `<table class="saisie"><thead><tr><th>N°</th><th>Objet</th><th>Pièce</th><th>Destinataire</th><th>Photos</th><th>Statut</th><th></th></tr></thead><tbody>
+        ${objets.map((x,i) => { const ph = photosDe(x); return `<tr><td class="muted">${String(i+1).padStart(2,'0')}</td>
+          <td style="min-width:220px"><input data-oc="${esc(x.id)}" data-oc-champ="nom" value="${esc(x.nom)}" aria-label="Objet"><input data-oc="${esc(x.id)}" data-oc-champ="note" value="${esc(x.note||'')}" placeholder="Note (facultatif)" aria-label="Note" style="margin-top:4px;font-size:13px"></td>
+          <td><input data-oc="${esc(x.id)}" data-oc-champ="piece" value="${esc(x.piece||'')}" list="oc-pieces" placeholder="Pièce" aria-label="Pièce" style="width:140px"></td>
+          <td><input data-oc="${esc(x.id)}" data-oc-champ="destinataire" value="${esc(x.destinataire||'')}" placeholder="Pour qui ?" aria-label="Destinataire" style="width:150px"></td>
+          <td><div class="phs">${ph.map(c => `<span class="vign"><img data-chemin="${esc(c)}" alt=""><button type="button" class="x" data-oc-ph-suppr="${esc(x.id)}" data-ch="${esc(c)}" aria-label="Retirer la photo">×</button></span>`).join('')}${ph.length < 3 ? `<label class="vign vide" title="Prendre une photo">${icPhoto}<input type="file" accept="image/*" capture="environment" data-oc-ph="${esc(x.id)}" hidden></label>` : ''}</div></td>
+          <td>${x.valide_le ? `<span class="badge ok">Validé</span>` : '<span class="badge attente">À signer</span>'}</td>
+          <td><button type="button" class="suppr" data-oc-retirer="${esc(x.id)}" aria-label="Retirer l'objet">×</button></td></tr>`; }).join('')}
+      </tbody></table>` : '<p class="pan-vide">Aucun objet pour l\'instant. Photographiez chaque objet mis de côté : la famille signe ensuite le listing depuis son espace.</p>'}
+      <datalist id="oc-pieces">${pieces.map(p => `<option value="${esc(p)}">`).join('')}</datalist>
+      <div class="pan-c" style="border-top:1px solid var(--line)"><b class="small">Ajouter un objet</b>
+        <div class="grid2" style="grid-template-columns:2fr 1fr 1fr"><input id="oc-nom" placeholder="Ex. : Album de photos de famille"><input id="oc-piece" list="oc-pieces" placeholder="Pièce"><input id="oc-dest" placeholder="Pour qui"></div>
+        <div class="row"><label class="btn ghost" style="cursor:pointer">${icPhoto} Photos (3 au plus)<input id="oc-photo" type="file" accept="image/*" capture="environment" multiple hidden></label><button type="button" class="btn" id="oc-ajout">Ajouter l'objet</button><span class="small muted" id="oc-photo-etat">${(e._ocPhotos||[]).length ? `${e._ocPhotos.length} photo${e._ocPhotos.length>1?'s':''} prête${e._ocPhotos.length>1?'s':''}` : 'Photos facultatives, mais conseillées.'}</span></div>
+      </div>
+    </div>`;
+}
+
+function htmlEspaceClient(d, e){
+  const L = e.ligne, partagees = new Map(e.photos.map(x => [x.chemin, x])), photos = (d.photos||[]).filter(x => x.chemin);
+  return `<div class="grille">
+    <div class="col">
+      ${L._nouveau ? `<div class="suggest">L'espace de cette famille n'est pas encore ouvert. Préparez-le (fiche du logement dans « Appel et logement », étapes dans « Préparation »), puis ajoutez les personnes qui y auront accès.</div>` : ''}
+      <div class="card"><h3>Accès de la famille</h3>
+        <p class="small muted" style="margin:0">La personne concernée et ses proches se connectent avec leur adresse e-mail : ils reçoivent un code à 6 chiffres par e-mail.</p>
+        ${e.acces.length ? `<table>${e.acces.map(x => `<tr><td>${esc(x.email)}<br><span class="small muted">${x.role==='titulaire'?'Titulaire':'Proche'}${x.invite_le?` · invité le ${new Date(x.invite_le).toLocaleDateString('fr-FR')}`:' · pas encore invité'}</span></td><td class="n" style="white-space:nowrap"><button type="button" class="btn petit ${x.invite_le?'ghost':''}" data-inviter="${esc(x.email)}">${x.invite_le?'Renvoyer':'Inviter'}</button> <button type="button" class="btn ghost petit" data-retirer="${esc(x.email)}">Retirer</button></td></tr>`).join('')}</table>` : `<p class="small" style="margin:0">Aucun accès pour l'instant.</p>`}
+        <div class="grid2"><label>E-mail<input id="ac-email" type="email" inputmode="email" placeholder="prenom.nom@exemple.fr" value="${e.acces.length ? '' : esc(d.contact.email||'')}"></label>
+        <label>Rôle${seg('ac-role', [['titulaire','Titulaire'],['proche','Proche']], e.acces.some(x=>x.role==='titulaire') ? 'proche' : 'titulaire')}</label></div>
+        <div class="row"><button type="button" class="btn ghost" id="ac-ajout">Ajouter cet accès</button>
+        ${e.acces.some(x=>!x.invite_le) ? `<button type="button" class="btn" id="ac-inviter">Inviter ${e.acces.filter(x=>!x.invite_le).length>1?'les personnes pas encore invitées':'la personne pas encore invitée'}</button>` : ''}</div>
+      </div>
+      <div class="card"><h3>Photos visibles par la famille</h3>
+        <p class="small muted" style="margin:0">Cochez les photos à montrer et indiquez « avant » et « après » : la famille voit un comparateur avant/après. La photo choisie en couverture s'affiche en haut de son espace.</p>
+        ${photos.length ? `<div class="thumbs" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr))">${photos.map(x => { const p = partagees.get(x.chemin); return `<div class="partage ${p?'on':''}"><img data-chemin="${esc(x.chemin)}" alt="Photo du logement">
+          <label class="row" style="font-size:13px!important"><input type="checkbox" data-partage="${esc(x.chemin)}" ${p?'checked':''}> Visible</label>
+          ${p ? `<select data-moment="${esc(x.chemin)}" aria-label="Moment"><option value="">Moment…</option>${[['avant','Avant'],['pendant','Pendant'],['apres','Après']].map(([k,l]) => `<option value="${k}" ${p.moment===k?'selected':''}>${l}</option>`).join('')}</select>` : ''}
+          <label class="row" style="font-size:13px!important"><input type="radio" name="couverture" data-couv="${esc(x.chemin)}" ${L.couverture===x.chemin?'checked':''}> Couverture</label></div>`; }).join('')}</div>` : `<p class="small" style="margin:0">Aucune photo dans ce dossier (ajoutez-en dans « Sur place »).</p>`}
+      </div>
+    </div>
+    <div class="col">
+      ${L._nouveau ? '' : `<a class="btn ghost" href="/espace-client#apercu=${encodeURIComponent(d.id)}" target="_blank" rel="noopener">Voir l'espace comme la famille</a>`}
+      <div class="card"><h3>Interlocuteur affiché</h3>
+        <label>Nom<input data-esp="interlocuteur.nom" value="${esc(L.interlocuteur?.nom||'')}" placeholder="Prénom Nom"></label>
+        <label>Téléphone<input data-esp="interlocuteur.tel" type="tel" value="${esc(L.interlocuteur?.tel||'')}"></label>
+      </div>
+      <div class="card"><h3>Documents publiés</h3>
+        ${e.docs.length ? `<table>${e.docs.map(x => `<tr><td>${esc(x.nom)}<br><span class="small muted">${esc(TYPES_DOC[x.type]||'Document')} · ${new Date(x.date).toLocaleDateString('fr-FR')}</span></td><td class="n" style="white-space:nowrap"><button type="button" class="btn ghost petit" data-voir="${esc(x.chemin)}">Voir</button> <button type="button" class="btn danger petit" data-retdoc="${esc(x.id)}">Retirer</button></td></tr>`).join('')}</table>` : `<p class="small" style="margin:0">Aucun document publié.</p>`}
+        <button type="button" class="btn ghost" id="doc-devis">Publier le devis${d.signature?' signé':''} (PDF)</button>
+        <label>Type du document à ajouter${seg('doc-type', Object.entries(TYPES_DOC).filter(([k])=>k!=='devis' && k!=='bon_intervention'), espaces._type||'facture')}</label>
+        <label class="btn ghost" style="cursor:pointer">Ajouter un document (PDF ou photo)<input id="doc-fichier" type="file" accept="application/pdf,image/jpeg,image/png" hidden></label>
+      </div>
+    </div>
+  </div>`;
+}
+
+function htmlFiche(d, e){
+  const L = e.ligne, b = L.bien || {}, def = ficheParDefaut(d);
+  return `<div class="card"><h3>Fiche visible par la famille</h3>
+    <p class="small muted" style="margin:0">Ces informations s'affichent dans l'espace client (en-tête et « Le logement »).${L._nouveau ? ' L\'espace n\'est pas encore ouvert : rien n\'est visible tant qu\'aucun accès n\'est ajouté.' : ''}</p>
+    <div class="grid2"><label>Titre du dossier<input data-esp="titre" value="${esc(L.titre||'')}" placeholder="${esc(def.titre)}"></label><label>Accueil (« Bonjour, … »)<input data-esp="bien.famille" value="${esc(b.famille||'')}" placeholder="${esc(def.bien.famille || 'famille Martin')}"></label></div>
+    <div class="grid2"><label>N° de dossier<input data-esp="reference" value="${esc(L.reference||'')}" placeholder="${esc(def.reference)}"></label><label>Adresse affichée<input data-esp="adresse" value="${esc(L.adresse||'')}" placeholder="${esc(def.adresse)}"></label></div>
+    <div class="grid2">${BIEN.map(([k,l]) => `<label>${esc(l)}<input data-esp="bien.${k}" value="${esc(b[k]||'')}" placeholder="${esc(def.bien[k]||'')}"></label>`).join('')}</div>
+    <button class="btn ghost" type="button" id="fiche-remplir" style="align-self:flex-start">Remplir les champs vides depuis le dossier</button>
+    <b class="small" style="margin-top:4px">Contacts du dossier (notaire, syndic, gardien, proches…)</b>
+    ${(L.contacts||[]).map((c,i) => `<div class="grid2" style="grid-template-columns:1fr 1fr 1.4fr 32px;align-items:center"><input data-contact="${i}" data-champ="nom" value="${esc(c.nom||'')}" placeholder="Nom" aria-label="Nom"><input data-contact="${i}" data-champ="role" value="${esc(c.role||'')}" placeholder="Rôle" aria-label="Rôle"><input data-contact="${i}" data-champ="detail" value="${esc(c.detail||'')}" placeholder="Précision" aria-label="Précision"><button type="button" class="suppr" data-contact-suppr="${i}" aria-label="Retirer">×</button></div>`).join('')}
+    <button class="lien" type="button" id="contact-ajout" style="align-self:flex-start">+ Ajouter un contact</button>
+  </div>`;
+}
+
+/* ---------- Interactions des onglets liés à l'espace client ---------- */
+function bindEspace(d, box){
+  const e = espaces[d.id], L = e.ligne;
+  const val = sel => box.querySelector(sel);
+  const ouvrirSiNouveau = () => L._nouveau ? new Promise(r => { enregistrerEspace(d, true); setTimeout(r, 400); }) : Promise.resolve();
+  const redessiner = (complet) => { const y = window.scrollY; if(complet) render(); else renderEspace(d); window.scrollTo(0, y); };
+  box.querySelectorAll('[data-aller]').forEach(b => b.onclick = () => { tab = b.dataset.aller; render(); window.scrollTo(0,0); });
+
+  // Champs simples de la ligne espace_client (titre, fiche du logement, interlocuteur)
   box.querySelectorAll('[data-esp]').forEach(el => el.addEventListener('input', () => { setPath(L, el.dataset.esp, el.value.trim()); enregistrerEspace(d); }));
-  // Étapes : état, date, message
-  const etape = (cle) => { let x = L.etapes.find(y => y.cle===cle); if(!x){ x = { cle, etat:'a_venir', date:'', message:'' }; L.etapes.push(x); } return x; };
-  box.querySelectorAll('[data-seg]').forEach(g => g.querySelectorAll('button').forEach(b => b.onclick = () => {
-    const nom = g.dataset.seg;
-    g.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x===b)));
-    if(nom.startsWith('etape.')){ etape(nom.slice(6)).etat = b.dataset.v; enregistrerEspace(d); renderEspace(d); }
-    if(nom==='doc-type') espaces._type = b.dataset.v;
-  }));
+  const fr = val('#fiche-remplir'); if(fr) fr.onclick = () => { const def = ficheParDefaut(d); ['titre','reference','adresse'].forEach(k => { if(!L[k]) L[k] = def[k]; }); L.bien = {...def.bien, ...Object.fromEntries(Object.entries(L.bien||{}).filter(([,v]) => v))}; enregistrerEspace(d); redessiner(); };
+  box.querySelectorAll('[data-contact]').forEach(el => el.addEventListener('input', () => { L.contacts[+el.dataset.contact][el.dataset.champ] = el.value.trim(); enregistrerEspace(d); }));
+  box.querySelectorAll('[data-contact-suppr]').forEach(b => b.onclick = () => { L.contacts.splice(+b.dataset.contactSuppr, 1); enregistrerEspace(d); redessiner(); });
+  const ca = val('#contact-ajout'); if(ca) ca.onclick = () => { L.contacts = [...(L.contacts||[]), { nom:'', role:'', detail:'' }]; redessiner(); box.querySelector(`[data-contact="${L.contacts.length-1}"]`)?.focus(); };
+
+  // Prochain rendez-vous
+  box.querySelectorAll('[data-prochain]').forEach(el => el.addEventListener(el.type==='date' ? 'change' : 'input', () => { L.prochain = {...(L.prochain||{}), [el.dataset.prochain]: el.value.trim()}; enregistrerEspace(d); }));
+  const pe = val('#prochain-effacer'); if(pe) pe.onclick = () => { L.prochain = {}; enregistrerEspace(d); redessiner(); };
+
+  // Étapes (état, date, message à la famille)
+  const etape = cle => { let x = L.etapes.find(y => y.cle===cle); if(!x){ x = { cle, etat:'a_venir', date:'', message:'' }; L.etapes.push(x); } return x; };
+  box.querySelectorAll('[data-etape-etat]').forEach(el => el.onchange = () => { etape(el.dataset.etapeEtat).etat = el.value; enregistrerEspace(d); redessiner(true); });
   box.querySelectorAll('[data-etape-date]').forEach(el => el.addEventListener('change', () => { etape(el.dataset.etapeDate).date = el.value; enregistrerEspace(d); }));
   box.querySelectorAll('[data-etape-msg]').forEach(el => el.addEventListener('input', () => { etape(el.dataset.etapeMsg).message = el.value; enregistrerEspace(d); }));
+
+  // Tâches
+  L.taches = L.taches || [];
+  const SUITE = { a_faire:'en_cours', en_cours:'fait', fait:'a_faire' };
+  box.querySelectorAll('[data-tache-etat]').forEach(b => b.onclick = () => { const t = L.taches[+b.dataset.tacheEtat]; t.etat = SUITE[t.etat] || 'en_cours'; enregistrerEspace(d); redessiner(); });
+  box.querySelectorAll('[data-tache-qui]').forEach(b => b.onclick = () => { const t = L.taches[+b.dataset.tacheQui]; t.cote = t.cote==='famille' ? 'nous' : 'famille'; enregistrerEspace(d); redessiner(); });
+  box.querySelectorAll('[data-tache]').forEach(el => el.addEventListener(el.type==='date' ? 'change' : 'input', () => { L.taches[+el.dataset.tache][el.dataset.champ] = el.value; enregistrerEspace(d); }));
+  box.querySelectorAll('[data-tache-suppr]').forEach(b => b.onclick = () => { L.taches.splice(+b.dataset.tacheSuppr, 1); enregistrerEspace(d); redessiner(); });
+  box.querySelectorAll('[data-tache-ajout]').forEach(b => b.onclick = () => { L.taches.push({ phase: b.dataset.tacheAjout, libelle:'', etat:'a_faire', date:'', cote:'nous' }); redessiner(); box.querySelector(`[data-tache="${L.taches.length-1}"][data-champ="libelle"]`)?.focus(); });
+
+  // Pièces
+  box.querySelectorAll('[data-piece]').forEach(el => el.addEventListener(el.tagName==='SELECT' ? 'change' : 'input', () => {
+    const p = (L.pieces||[])[+el.dataset.piece]; if(!p) return;
+    p[el.dataset.champ] = el.type==='number' ? (el.value==='' ? null : parseFloat(el.value)) : el.value; enregistrerEspace(d);
+  }));
+  box.querySelectorAll('[data-piece-suppr]').forEach(b => b.onclick = () => { L.pieces.splice(+b.dataset.pieceSuppr, 1); enregistrerEspace(d); redessiner(); });
+  const pa = val('#piece-ajout'); if(pa) pa.onclick = () => { L.pieces = [...(L.pieces||[]), { nom:'', tri:'a_trier', conserves:0, dons:'', volume:null }]; redessiner(); box.querySelector(`[data-piece="${L.pieces.length-1}"][data-champ="nom"]`)?.focus(); };
+  const pt = val('#pieces-type'); if(pt) pt.onclick = () => { const n = d.taille + 1; L.pieces = ['Séjour','Cuisine', ...Array.from({length: Math.max(1, n)}, (_, i) => `Chambre ${i+1}`), 'Salle de bain', ...(d.diag.cave ? ['Cave'] : [])].map(nom => ({ nom, tri:'a_trier', conserves:0, dons:'', volume:null })); enregistrerEspace(d); redessiner(); };
+
+  // Journal
+  box.querySelectorAll('[data-jtype] button').forEach(b => b.onclick = () => { e._jType = b.dataset.v; box.querySelectorAll('[data-jtype] button').forEach(x => x.setAttribute('aria-pressed', String(x===b))); });
+  const ja = val('#j-ajout'); if(ja) ja.onclick = async () => {
+    const titre = val('#j-titre').value.trim(); if(!titre){ showToast('Indiquez un titre.'); return; }
+    await ouvrirSiNouveau(); ja.disabled = true;
+    const q = val('#j-quand').value ? new Date(val('#j-quand').value).toISOString() : new Date().toISOString();
+    const { data, error } = await sb.from('journal').insert({ dossier_id: d.id, type: e._jType || 'contact', titre, texte: val('#j-texte').value.trim(), quand: q }).select().single();
+    ja.disabled = false;
+    if(error){ showToast('Non ajouté : ' + error.message); return; }
+    e.journal = [data, ...(e.journal||[])].sort((a,b) => String(b.quand).localeCompare(String(a.quand))); tb.charge = false; redessiner(); showToast('Ajouté au journal.');
+  };
+  box.querySelectorAll('[data-j-edit]').forEach(b => b.onclick = () => { e._jEdit = b.dataset.jEdit; redessiner(); });
+  box.querySelectorAll('[data-j-annul]').forEach(b => b.onclick = () => { e._jEdit = null; redessiner(); });
+  box.querySelectorAll('[data-j-enreg]').forEach(b => b.onclick = async () => {
+    const titre = val('[data-jed="titre"]').value.trim(), texte = val('[data-jed="texte"]').value.trim(); if(!titre) return;
+    const { data, error } = await sb.from('journal').update({ titre, texte }).eq('id', b.dataset.jEnreg).select().single();
+    if(error){ showToast(error.message); return; }
+    e.journal = e.journal.map(j => j.id===data.id ? data : j); e._jEdit = null; redessiner();
+  });
+  box.querySelectorAll('[data-j-suppr]').forEach(b => b.onclick = async () => {
+    if(!b.dataset.ok){ b.dataset.ok = '1'; b.textContent = 'Confirmer'; return; }
+    const { error } = await sb.from('journal').delete().eq('id', b.dataset.jSuppr);
+    if(error){ showToast(error.message); return; }
+    e.journal = e.journal.filter(j => j.id !== b.dataset.jSuppr); e._jEdit = null; redessiner();
+  });
+
+  // Décisions
+  const ajChoix = () => { const i = val('#q-choix-in'), v = i.value.trim(); if(!v) return; e._choix = [...(e._choix||[]), v]; const q = val('#q-question').value; redessiner(); val('#q-question').value = q; val('#q-choix-in').focus(); };
+  const qc = val('#q-choix-ajout'); if(qc){ qc.onclick = ajChoix; val('#q-choix-in').onkeydown = ev => { if(ev.key==='Enter'){ ev.preventDefault(); ajChoix(); } }; }
+  box.querySelectorAll('[data-choix-suppr]').forEach(b => b.onclick = () => { const q = val('#q-question').value; e._choix.splice(+b.dataset.choixSuppr, 1); redessiner(); val('#q-question').value = q; });
+  const qe = val('#q-envoyer'); if(qe) qe.onclick = async () => {
+    const question = val('#q-question').value.trim(); if(!question){ showToast('Écrivez la question.'); return; }
+    await ouvrirSiNouveau(); qe.disabled = true;
+    const { data, error } = await sb.from('decisions').insert({ dossier_id: d.id, question, choix: e._choix || [] }).select().single();
+    qe.disabled = false;
+    if(error){ showToast('Question non envoyée : ' + error.message); return; }
+    await sb.from('journal').insert({ dossier_id: d.id, type: 'decision', titre: 'Question posée à la famille', texte: question });
+    e.decisions = [data, ...(e.decisions||[])]; e._choix = []; tb.charge = false;
+    const { data: j } = await sb.from('journal').select('*').eq('dossier_id', d.id).order('quand', { ascending:false }); if(j) e.journal = j;
+    redessiner(true); showToast('Question posée : la famille la voit dans son espace.');
+  };
+  const dp = val('#dp-ajout'); if(dp) dp.onclick = async () => {
+    const question = val('#dp-question').value.trim(); if(!question){ showToast('Décrivez la décision.'); return; }
+    await ouvrirSiNouveau();
+    const { data, error } = await sb.from('decisions').insert({ dossier_id: d.id, question, statut: 'validee', reponse: val('#dp-reponse').value.trim() || 'Oui', decide_par: val('#dp-par').value.trim() || null, decide_le: new Date().toISOString() }).select().single();
+    if(error){ showToast(error.message); return; }
+    e.decisions = [data, ...(e.decisions||[])]; redessiner(); showToast('Décision notée.');
+  };
+  box.querySelectorAll('[data-dec-suppr]').forEach(b => b.onclick = async () => {
+    if(!b.dataset.ok){ b.dataset.ok = '1'; b.textContent = '✓'; b.title = 'Toucher encore pour supprimer'; return; }
+    const { error } = await sb.from('decisions').delete().eq('id', b.dataset.decSuppr);
+    if(error){ showToast(error.message); return; }
+    e.decisions = e.decisions.filter(x => x.id !== b.dataset.decSuppr); redessiner(true);
+  });
+
   // Accès
-  val('#ac-ajout').onclick = async () => {
+  const acA = val('#ac-ajout'); if(acA) acA.onclick = async () => {
     const email = val('#ac-email').value.trim().toLowerCase();
     const role = val('[data-seg="ac-role"] [aria-pressed="true"]')?.dataset.v || 'proche';
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ showToast('Adresse e-mail invalide.'); return; }
     if(e.acces.some(x => x.email===email)){ showToast('Cette adresse a déjà accès.'); return; }
-    if(L._nouveau) await new Promise(r => { enregistrerEspace(d, true); setTimeout(r, 400); });
+    await ouvrirSiNouveau();
     const { data, error } = await sb.from('dossier_acces').insert({ dossier_id: d.id, email, role }).select().single();
     if(error){ showToast("L'accès n'a pas pu être ajouté : " + error.message); return; }
-    e.acces.push(data); renderEspace(d); showToast('Accès ajouté.');
+    e.acces.push(data); redessiner(); showToast('Accès ajouté.');
   };
+  box.querySelectorAll('[data-seg]').forEach(g => g.querySelectorAll('button').forEach(b => b.onclick = () => {
+    g.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x===b)));
+    if(g.dataset.seg==='doc-type') espaces._type = b.dataset.v;
+  }));
   const inviter = async (email) => {
     const { data: { session } } = await sb.auth.getSession();
-    if(L._nouveau) await new Promise(r => { enregistrerEspace(d, true); setTimeout(r, 400); });
+    await ouvrirSiNouveau();
     let rep, corps = {};
     try{
       rep = await fetch('/api/inviter', { method:'POST', headers:{ 'content-type':'application/json', authorization:`Bearer ${session?.access_token||''}` }, body: JSON.stringify({ dossier_id: d.id, email }) });
@@ -1064,53 +1448,48 @@ function bindEspace(d){
     const x = e.acces.find(y => y.email===email); if(x) x.invite_le = corps.invite_le;
     return true;
   };
-  box.querySelectorAll('[data-inviter]').forEach(b => b.onclick = async () => {
-    b.disabled = true; b.textContent = 'Envoi…';
-    if(await inviter(b.dataset.inviter)) showToast(`Invitation envoyée à ${b.dataset.inviter}.`);
-    renderEspace(d);
-  });
-  const bi = val('#ac-inviter'); if(bi) bi.onclick = async () => {
-    bi.disabled = true; bi.textContent = 'Envoi…'; let n = 0;
-    for(const x of e.acces.filter(y => !y.invite_le)){ if(await inviter(x.email)) n++; else break; }
-    if(n) showToast(n>1 ? `${n} invitations envoyées.` : 'Invitation envoyée.');
-    renderEspace(d);
-  };
+  box.querySelectorAll('[data-inviter]').forEach(b => b.onclick = async () => { b.disabled = true; b.textContent = 'Envoi…'; if(await inviter(b.dataset.inviter)) showToast(`Invitation envoyée à ${b.dataset.inviter}.`); redessiner(); });
+  const bi = val('#ac-inviter'); if(bi) bi.onclick = async () => { bi.disabled = true; bi.textContent = 'Envoi…'; let n = 0; for(const x of e.acces.filter(y => !y.invite_le)){ if(await inviter(x.email)) n++; else break; } if(n) showToast(n>1 ? `${n} invitations envoyées.` : 'Invitation envoyée.'); redessiner(); };
   box.querySelectorAll('[data-retirer]').forEach(b => b.onclick = async () => {
     if(!b.dataset.ok){ b.dataset.ok = '1'; b.textContent = 'Confirmer'; return; }
     const { error } = await sb.from('dossier_acces').delete().eq('dossier_id', d.id).eq('email', b.dataset.retirer);
     if(error){ showToast(error.message); return; }
-    e.acces = e.acces.filter(x => x.email !== b.dataset.retirer); renderEspace(d); showToast('Accès retiré.');
+    e.acces = e.acces.filter(x => x.email !== b.dataset.retirer); redessiner(); showToast('Accès retiré.');
   });
-  // Photos partagées
+
+  // Photos partagées, moment, couverture
   box.querySelectorAll('[data-partage]').forEach(cb => cb.onchange = async () => {
-    const chemin = cb.dataset.partage;
-    if(L._nouveau) await new Promise(r => { enregistrerEspace(d, true); setTimeout(r, 400); });
+    const chemin = cb.dataset.partage; await ouvrirSiNouveau();
     if(cb.checked){
       const { data, error } = await sb.from('photos_partagees').insert({ dossier_id: d.id, chemin, ordre: e.photos.length }).select().single();
-      if(error){ cb.checked = false; showToast("Photo non publiée : " + error.message); return; }
+      if(error){ cb.checked = false; showToast('Photo non publiée : ' + error.message); return; }
       e.photos.push(data);
     } else {
       const { error } = await sb.from('photos_partagees').delete().eq('dossier_id', d.id).eq('chemin', chemin);
       if(error){ cb.checked = true; showToast(error.message); return; }
       e.photos = e.photos.filter(x => x.chemin !== chemin);
     }
-    renderEspace(d);
+    redessiner();
   });
+  box.querySelectorAll('[data-moment]').forEach(s => s.onchange = async () => {
+    const { error } = await sb.from('photos_partagees').update({ moment: s.value || null }).eq('dossier_id', d.id).eq('chemin', s.dataset.moment);
+    if(error){ showToast(error.message); return; }
+    const p = e.photos.find(x => x.chemin===s.dataset.moment); if(p) p.moment = s.value || null;
+  });
+  box.querySelectorAll('[data-couv]').forEach(r => r.onchange = () => { L.couverture = r.dataset.couv; enregistrerEspace(d); showToast('Photo de couverture choisie.'); });
+
   // Documents
   const publier = async (chemin, type, nom) => {
-    if(L._nouveau) await new Promise(r => { enregistrerEspace(d, true); setTimeout(r, 400); });
+    await ouvrirSiNouveau();
     const { data, error } = await sb.from('documents').upsert({ dossier_id: d.id, chemin, type, nom, date: new Date().toISOString() }, { onConflict: 'dossier_id,chemin' }).select().single();
     if(error){ showToast('Document non publié : ' + error.message); return; }
-    e.docs = [...e.docs.filter(x => x.chemin !== chemin), data]; renderEspace(d); showToast('Document publié dans l\'espace client.');
+    e.docs = [...e.docs.filter(x => x.chemin !== chemin), data]; redessiner(); showToast('Document publié dans l\'espace client.');
   };
-  val('#doc-devis').onclick = async () => {
-    try{ showToast('Préparation du devis…'); const chemin = await deposerDevis(d); await publier(chemin, 'devis', `Devis ${devisNo(d)}${d.signature?' signé':''}`); }
-    catch(err){ showToast('Le devis n\'a pas pu être publié.'); }
-  };
-  val('#doc-fichier').onchange = async (ev) => {
+  const dd = val('#doc-devis'); if(dd) dd.onclick = async () => { try{ showToast('Préparation du devis…'); const chemin = await deposerDevis(d); await publier(chemin, 'devis', `Devis ${devisNo(d)}${d.signature?' signé':''}`); }catch(err){ showToast('Le devis n\'a pas pu être publié.'); } };
+  const df = val('#doc-fichier'); if(df) df.onchange = async (ev) => {
     const f = ev.target.files[0]; if(!f) return;
     if(f.size > 25*1024*1024){ showToast('Fichier trop lourd (25 Mo au plus).'); return; }
-    const propre = f.name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9._-]+/g,'-').slice(-80);
+    const propre = f.name.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-zA-Z0-9._-]+/g,'-').slice(-80);
     const chemin = `${d.id}/${Date.now().toString(36)}-${propre}`;
     const { error } = await sb.storage.from('documents').upload(chemin, f, { contentType: f.type });
     if(error){ showToast('Envoi impossible : ' + error.message); return; }
@@ -1127,47 +1506,70 @@ function bindEspace(d){
     const doc = e.docs.find(x => String(x.id) === b.dataset.retdoc);
     const { error } = await sb.from('documents').delete().eq('id', b.dataset.retdoc);
     if(error){ showToast(error.message); return; }
-    // Le PDF du devis reste dans le dossier ; les autres fichiers ajoutés ici sont supprimés.
     if(doc && doc.type !== 'devis') await sb.storage.from('documents').remove([doc.chemin]);
-    e.docs = e.docs.filter(x => x !== doc); renderEspace(d); showToast('Document retiré de l\'espace client.');
-  });  // Objets conservés
-  let ocPhoto = null;
+    e.docs = e.docs.filter(x => x !== doc); redessiner(); showToast('Document retiré de l\'espace client.');
+  });
+
+  // Objets conservés (jusqu'à 3 photos chacun)
+  const envoyerPhotoObjet = async (blob) => {
+    const chemin = `${d.id}/oc-${Date.now().toString(36)}${Math.random().toString(36).slice(2,5)}.jpg`;
+    const { error } = await sb.storage.from('photos').upload(chemin, blob, { contentType: 'image/jpeg' });
+    if(error) throw error;
+    urlsPhotos[chemin] = URL.createObjectURL(blob); return chemin;
+  };
   const ocInput = val('#oc-photo');
-  if(ocInput) ocInput.onchange = async () => { const f = ocInput.files?.[0]; if(!f) return; ocPhoto = await reduireImage(f); val('#oc-photo-etat').textContent = 'Photo prête : elle sera envoyée avec l\'objet.'; };
+  if(ocInput) ocInput.onchange = async () => {
+    const fs = [...(ocInput.files||[])].slice(0, 3 - (e._ocPhotos||[]).length);
+    e._ocPhotos = [...(e._ocPhotos||[]), ...(await Promise.all(fs.map(reduireImage)))].slice(0, 3);
+    val('#oc-photo-etat').textContent = `${e._ocPhotos.length} photo${e._ocPhotos.length>1?'s':''} prête${e._ocPhotos.length>1?'s':''} : ${e._ocPhotos.length>1?'elles seront envoyées':'elle sera envoyée'} avec l'objet.`;
+  };
   const ocAjout = val('#oc-ajout');
   if(ocAjout) ocAjout.onclick = async () => {
-    const nom = val('#oc-nom').value.trim(), destinataire = val('#oc-dest').value.trim();
-    if(!nom){ showToast('Indiquez l\'objet.'); return; }
+    const nom = val('#oc-nom').value.trim(); if(!nom){ showToast('Indiquez l\'objet.'); return; }
     if(!navigator.onLine){ showToast('Ajout impossible hors connexion.'); return; }
-    if(L._nouveau) await new Promise(r => { enregistrerEspace(d, true); setTimeout(r, 400); });
-    ocAjout.disabled = true;
-    let photo = null;
-    if(ocPhoto){
-      photo = `${d.id}/oc-${Date.now().toString(36)}${Math.random().toString(36).slice(2,5)}.jpg`;
-      const { error } = await sb.storage.from('photos').upload(photo, ocPhoto, { contentType: 'image/jpeg' });
-      if(error){ ocAjout.disabled = false; showToast('Photo non envoyée : ' + error.message); return; }
-      urlsPhotos[photo] = URL.createObjectURL(ocPhoto);
-    }
-    const { data, error } = await sb.from('objets_conserves').insert({ dossier_id: d.id, nom, destinataire, photo, ordre: e.objets.length }).select().single();
+    await ouvrirSiNouveau(); ocAjout.disabled = true;
+    let photos = [];
+    try{ for(const b of (e._ocPhotos||[])) photos.push(await envoyerPhotoObjet(b)); }
+    catch(err){ ocAjout.disabled = false; showToast('Photo non envoyée : ' + err.message); return; }
+    const { data, error } = await sb.from('objets_conserves').insert({ dossier_id: d.id, nom, piece: val('#oc-piece').value.trim(), destinataire: val('#oc-dest').value.trim(), photos, photo: photos[0] || null, ordre: (e.objets||[]).length }).select().single();
     ocAjout.disabled = false;
     if(error){ showToast('Objet non ajouté : ' + error.message); return; }
-    e.objets.push(data); ocPhoto = null; renderEspace(d); showToast('Objet ajouté.');
+    e.objets.push(data); e._ocPhotos = []; redessiner(true); showToast('Objet ajouté.');
   };
+  box.querySelectorAll('[data-oc-ph]').forEach(inp => inp.onchange = async () => {
+    const x = e.objets.find(y => y.id === inp.dataset.ocPh), f = inp.files?.[0]; if(!x || !f) return;
+    try{
+      const ch = await envoyerPhotoObjet(await reduireImage(f));
+      const photos = [...((x.photos||[]).length ? x.photos : [x.photo]).filter(Boolean), ch].slice(0, 3);
+      const { data, error } = await sb.from('objets_conserves').update({ photos, photo: photos[0] }).eq('id', x.id).select().single();
+      if(error) throw error;
+      Object.assign(x, data); redessiner(true);
+    }catch(err){ showToast('Photo non ajoutée : ' + (err.message||'')); }
+  });
+  box.querySelectorAll('[data-oc-ph-suppr]').forEach(b => b.onclick = async () => {
+    const x = e.objets.find(y => y.id === b.dataset.ocPhSuppr); if(!x) return;
+    const photos = ((x.photos||[]).length ? x.photos : [x.photo]).filter(c => c && c !== b.dataset.ch);
+    const { data, error } = await sb.from('objets_conserves').update({ photos, photo: photos[0] || null }).eq('id', x.id).select().single();
+    if(error){ showToast(error.message); return; }
+    await sb.storage.from('photos').remove([b.dataset.ch]);
+    Object.assign(x, data); redessiner(true);
+  });
   box.querySelectorAll('[data-oc]').forEach(inp => inp.addEventListener('change', async () => {
     const x = e.objets.find(y => y.id === inp.dataset.oc); if(!x) return;
     const champ = inp.dataset.ocChamp, v = inp.value.trim();
     if(champ === 'nom' && !v){ inp.value = x.nom; return; }
+    if((x[champ]||'') === v) return;
     const { data, error } = await sb.from('objets_conserves').update({ [champ]: v }).eq('id', x.id).select().single();
-    if(error){ showToast(error.message); inp.value = x[champ]; return; }
-    Object.assign(x, data); renderEspace(d);
+    if(error){ showToast(error.message); inp.value = x[champ]||''; return; }
+    Object.assign(x, data); redessiner(true);
   }));
   box.querySelectorAll('[data-oc-retirer]').forEach(b => b.onclick = async () => {
-    if(!b.dataset.ok){ b.dataset.ok = '1'; b.textContent = 'Confirmer'; return; }
+    if(!b.dataset.ok){ b.dataset.ok = '1'; b.textContent = '✓'; b.title = 'Toucher encore pour retirer'; return; }
     const x = e.objets.find(y => y.id === b.dataset.ocRetirer);
     const { error } = await sb.from('objets_conserves').delete().eq('id', x.id);
     if(error){ showToast(error.message); return; }
-    if(x.photo) await sb.storage.from('photos').remove([x.photo]);
-    e.objets = e.objets.filter(y => y !== x); renderEspace(d); showToast('Objet retiré.');
+    const chemins = [...new Set([...(x.photos||[]), x.photo].filter(Boolean))]; if(chemins.length) await sb.storage.from('photos').remove(chemins);
+    e.objets = e.objets.filter(y => y !== x); redessiner(true); showToast('Objet retiré.');
   });
   const ocPdf = val('#oc-pdf');
   if(ocPdf) ocPdf.onclick = async () => {
@@ -1177,8 +1579,8 @@ function bindEspace(d){
       const chemin = `${d.id}/objets-conserves.pdf`;
       const { error } = await sb.storage.from('documents').upload(chemin, blob, { contentType: 'application/pdf', upsert: true });
       if(error) throw error;
-      await publier(chemin, 'autre', 'Liste des objets conservés');
-    }catch(err){ showToast('La liste n\'a pas pu être publiée.'); }
+      await publier(chemin, 'autre', 'Listing des objets conservés');
+    }catch(err){ showToast('Le listing n\'a pas pu être publié.'); }
     ocPdf.disabled = false;
   };
 }
@@ -1243,7 +1645,7 @@ function bind(d){
   remplirVignettes();
   const bc = $('#b-copy'); if(bc) bc.onclick = async () => { const t = $('#quote').textContent; try{ await navigator.clipboard.writeText(t); showToast('Résumé copié.'); }catch(e){ const r=document.createRange(); r.selectNodeContents($('#quote')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); showToast('Texte sélectionné : copiez-le.'); } };
   const bd = $('#b-del'); if(bd) bd.onclick = () => {
-    if(bd.dataset.confirm){ removeDossier(d.id); view={name:'list'}; render(); }
+    if(bd.dataset.confirm){ removeDossier(d.id); view={name:'list'}; render(); window.scrollTo(0,0); }
     else { bd.dataset.confirm='1'; bd.textContent='Touchez encore pour confirmer la suppression'; }
   };
 }
@@ -1309,19 +1711,18 @@ function startNew(){ const d = newDossier(); d.formule = suggest(d); persist(d);
 
 
 /* ---------- Démarrage ---------- */
-$('#nav-list').onclick = () => { view={name:'list'}; render(); };
-$('#nav-new').onclick = startNew;
-$('#nav-set').onclick = () => { view={name:'settings'}; render(); };
-$('#nav-bilan').onclick = () => { view={name:'bilan'}; render(); window.scrollTo(0,0); };
+document.querySelectorAll('[data-nav]').forEach(b => b.onclick = () => { view = {name: b.dataset.nav}; if(b.dataset.nav==='accueil') tb.charge = false; render(); window.scrollTo(0,0); });
+['#nav-new', '#bnav-new'].forEach(s => { const b = $(s); if(b) b.onclick = startNew; });
 // Bons d'intervention et registre des déchets : module à part, qui réutilise le générateur PDF et les calculs du devis.
 bonsApi = creerBons({ sb, $, esc, eur, num, showToast, makePdf, wrap, tw, dataUrlBytes, imgSize, calc, devisNo, persist, header, majBandeau, rerender,
   soc: () => ({...DEFAULTS.soc, ...(S.soc||{})}), dossiers: () => dossiers,
   setView: (v, t) => { view = v; if(t) tab = t; render(); } });
-const navReg = $('#nav-registre'); if(navReg) navReg.onclick = () => { view={name:'registre'}; render(); window.scrollTo(0,0); };
 document.querySelector('nav.bottom').hidden = false;
+const side = document.getElementById('side'); if(side){ side.hidden = false; document.getElementById('shell')?.classList.remove('sans-menu'); }
+const moi = document.getElementById('side-moi'); if(moi) moi.textContent = utilisateur?.email ? `Connecté : ${utilisateur.email}` : '';
 // Lien direct vers un dossier (ex. depuis l'e-mail d'une demande du site : /admin#dossier=<référence>).
 const cible = new URLSearchParams(location.hash.slice(1)).get('dossier');
-const ouvrirCible = () => { if(cible && dossiers[cible] && view.name==='list'){ view = {name:'dossier', id:cible}; tab='appel'; history.replaceState(null, '', '/admin'); return true; } return false; };
+const ouvrirCible = () => { if(cible && dossiers[cible] && view.name==='accueil'){ view = {name:'dossier', id:cible}; tab='appel'; history.replaceState(null, '', '/admin'); return true; } return false; };
 loadLocal(); ouvrirCible(); render();
 (async () => {
   await compterPhotosEnAttente(); majBandeau();
