@@ -7,6 +7,7 @@
 import { CGV_PARTICULIERS, CGV_PRO, texte as texteCgv } from '../config/cgv';
 import { creerBons } from './bons.js';
 import { PHASES, parcoursPour, completerParcours, infosManquantes, prochaineTache } from './parcours.js';
+import { documentsDuDossier, champsParDefaut, dessinerDocument, DOC_DE_TACHE } from './courriers.js';
 
 export function demarrerAppli({ sb, utilisateur, actions }) {
 const $ = (s, el=document) => el.querySelector(s);
@@ -518,6 +519,67 @@ function bindOrganismes(d){
   const oc = $('#org-carnet'); if(oc) oc.onclick = () => { view = { name:'carnet' }; render(); window.scrollTo(0,0); };
 }
 
+/* ---------- Documents types (courriers et attestations qui se remplissent seuls) ---------- */
+const ctxCourriers = { makePdf: (...a) => makePdf(...a), wrap: (...a) => wrap(...a), soc: () => ({...DEFAULTS.soc, ...(S.soc||{})}), ficheCarnet: id => ficheCarnet(id), adresseCarnet: c => adresseCarnet(c),
+  dateEtape: (d, cle) => espaces[d.id]?.ligne?.etapes?.find(x => x.cle===cle)?.date || '' };
+function valeursDoc(d, doc){
+  const def = champsParDefaut(doc, d, ctxCourriers), saisi = d.courriers?.[doc.cle] || {};
+  return { champs: def, v: Object.fromEntries(def.map(([k,,val]) => [k, saisi[k] ?? val])), modifie: Object.keys(saisi).some(k => !k.startsWith('_')) };
+}
+function htmlCourriers(d){
+  const docs = documentsDuDossier(d, ctxCourriers);
+  const sel = docs.find(x => x.cle===view.doc) || (view.doc==='aucune-resiliation' ? null : docs[0]);
+  const groupes = [...new Set(docs.map(x => x.groupe))];
+  const nbResil = docs.filter(x => x.type==='resiliation').length;
+  let editeur = '';
+  if(sel){
+    const { champs, v, modifie } = valeursDoc(d, sel), fait = d.courriers?.[sel.cle]?._fait;
+    editeur = `<div class="card"><h3>${esc(sel.titre)}</h3>
+      <p class="small muted" style="margin:0">${esc(sel.desc)} Les champs entre crochets sont à compléter ; tout le texte reste modifiable.</p>
+      ${champs.map(([k, l, , multi]) => `<label>${esc(l)}${multi ? `<textarea data-cr="${k}" rows="${k==='corps' ? 12 : 4}">${esc(v[k])}</textarea>` : `<input data-cr="${k}" value="${esc(v[k])}">`}</label>`).join('')}
+      <div class="row"><button class="btn" type="button" id="cr-pdf">Télécharger le PDF</button>${sel.publiable ? `<button class="btn ghost" type="button" id="cr-publier">Déposer dans l'espace client</button>` : ''}${modifie ? '<button class="btn ghost" type="button" id="cr-reset">Revenir au texte d\'origine</button>' : ''}</div>
+      ${fait ? `<p class="small good" style="margin:0">PDF préparé le ${esc(new Date(fait).toLocaleDateString('fr-FR'))}.</p>` : ''}
+    </div>`;
+  }
+  return `<div class="grille docs">
+    <div class="col">
+      ${groupes.map(g => `<div class="pan"><div class="pan-h"><h3>${esc(g)}</h3></div><ul class="liste">${docs.filter(x => x.groupe===g).map(x => `<li style="cursor:pointer;${sel && x.cle===sel.cle ? 'background:#EEF3F9' : ''}" data-doc="${esc(x.cle)}"><div><b>${esc(x.titre)}</b><span>${d.courriers?.[x.cle]?._fait ? 'PDF préparé le ' + esc(new Date(d.courriers[x.cle]._fait).toLocaleDateString('fr-FR')) : esc(x.desc)}</span></div></li>`).join('')}</ul></div>`).join('')}
+      ${!nbResil ? `<div class="suggest">Pour préparer les lettres de résiliation, ajoutez les fournisseurs (énergie, eau, internet, assurance) dans « Organismes et démarches », onglet Appel et logement. <button class="lien" type="button" data-aller-appel2>Y aller</button></div>` : ''}
+    </div>
+    <div class="col">${editeur || '<div class="card"><p class="muted" style="margin:0">Aucun organisme à résilier pour l\'instant : ajoutez-les dans l\'onglet Appel et logement.</p></div>'}</div>
+  </div>`;
+}
+function bindCourriers(d){
+  const docs = documentsDuDossier(d, ctxCourriers);
+  const sel = docs.find(x => x.cle===view.doc) || (view.doc==='aucune-resiliation' ? null : docs[0]);
+  app.querySelectorAll('[data-doc]').forEach(li => li.onclick = () => { view.doc = li.dataset.doc; render(); });
+  const al = app.querySelector('[data-aller-appel2]'); if(al) al.onclick = () => { tab = 'appel'; render(); window.scrollTo(0,0); };
+  if(!sel) return;
+  d.courriers = d.courriers || {};
+  app.querySelectorAll('[data-cr]').forEach(el => el.addEventListener('input', () => { d.courriers[sel.cle] = {...(d.courriers[sel.cle]||{}), [el.dataset.cr]: el.value}; persist(d); }));
+  const lire = () => valeursDoc(d, sel).v;
+  const nomFichier = () => `${sel.titre.replace(/[^\p{L}\p{N} ]+/gu, ' ').replace(/\s+/g, ' ').trim()} - ${(d.contact.nom||'dossier').replace(/[^\p{L}\p{N} ]+/gu, '')}.pdf`;
+  $('#cr-pdf').onclick = () => {
+    const blob = dessinerDocument(sel, lire(), ctxCourriers, d);
+    const u = URL.createObjectURL(blob), a = document.createElement('a'); a.href = u; a.download = nomFichier(); document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000);
+    d.courriers[sel.cle] = {...(d.courriers[sel.cle]||{}), _fait: new Date().toISOString()}; persist(d); showToast('PDF téléchargé.');
+  };
+  const pb = $('#cr-publier'); if(pb) pb.onclick = async () => {
+    if(!navigator.onLine){ showToast('Pas de réseau : réessayez plus tard.'); return; }
+    pb.disabled = true;
+    try{
+      const blob = dessinerDocument(sel, lire(), ctxCourriers, d);
+      const chemin = `${d.id}/${sel.type}-${Date.now().toString(36)}.pdf`;
+      const up = await sb.storage.from('documents').upload(chemin, blob, { contentType: 'application/pdf' }); if(up.error) throw up.error;
+      const { error } = await sb.from('documents').insert({ dossier_id: d.id, chemin, type: sel.type==='compteurs' ? 'etat_des_lieux' : 'autre', nom: sel.titre, date: new Date().toISOString() });
+      if(error) throw error;
+      delete espaces[d.id]; showToast('Document déposé dans l\'espace client.');
+    }catch(err){ showToast('Dépôt impossible : ' + (err.message||'')); }
+    pb.disabled = false;
+  };
+  const rs = $('#cr-reset'); if(rs) rs.onclick = () => { const f = d.courriers[sel.cle]?._fait; d.courriers[sel.cle] = f ? { _fait: f } : {}; if(!f) delete d.courriers[sel.cle]; persist(d); render(); };
+}
+
 /* ---------- Parcours guidé : infos du premier appel, prochaine étape ---------- */
 const ECHEANCES = ['Compromis ou vente', 'Entrée en résidence', 'Fin de bail', 'Rendez-vous chez le notaire', 'Déménagement', 'Autre'];
 const SOURCES = ['Bouche-à-oreille', 'Notaire', 'Agence immobilière', 'Résidence ou EHPAD', 'Site internet', 'Recherche Google', 'Réseaux sociaux', 'Autre'];
@@ -544,7 +606,7 @@ function bandeauProchaine(d, e){
 }
 
 /* ---------- Fiche dossier : en-tête, étapes, onglets ---------- */
-const ONGLETS = [['synthese','Synthèse'],['appel','Appel et logement'],['diag','Sur place'],['devis','Devis'],['prepa','Préparation'],['journal','Journal et décisions'],['objets','Objets conservés'],['bons','Interventions'],['suivi','Suivi et paiement'],['espace','Espace client']];
+const ONGLETS = [['synthese','Synthèse'],['appel','Appel et logement'],['diag','Sur place'],['devis','Devis'],['prepa','Préparation'],['courriers','Documents types'],['journal','Journal et décisions'],['objets','Objets conservés'],['bons','Interventions'],['suivi','Suivi et paiement'],['espace','Espace client']];
 const ONGLETS_ESPACE = ['synthese','prepa','journal','objets','espace'];
 function enteteDossier(d, c){
   const e = espaces[d.id]?.ligne ? espaces[d.id] : null;
@@ -764,11 +826,13 @@ function renderDossier(){
     <label>Ce que j'ai appris sur ce chantier<textarea data-f="suivi.notes" placeholder="Ce qui a pris plus de temps que prévu, ce qu'il faudra demander au prochain diagnostic…">${esc(s.notes)}</textarea></label>
   </div>`; }
   if(tab==='bons') body = `<div id="bons-onglet" style="display:flex;flex-direction:column;gap:18px"></div>`;
+  if(tab==='courriers') body = htmlCourriers(d);
   if(ONGLETS_ESPACE.includes(tab)) body = `<div id="espace" style="display:flex;flex-direction:column;gap:18px">${espaces[d.id]?.ligne ? '' : `<div class="card"><p class="muted" style="margin:0">${navigator.onLine ? 'Chargement…' : 'Hors ligne : cet onglet se consulte avec du réseau. Les onglets Appel, Sur place, Devis et Suivi restent utilisables.'}</p></div>`}</div>`;
   const avecResume = ['appel','diag','devis','suivi'].includes(tab);
   app.innerHTML = enteteDossier(d, c) + (avecResume ? resume + `<div class="deux-col">${body}</div>` : body);
   bind(d);
   if(tab==='appel') bindOrganismes(d);
+  if(tab==='courriers') bindCourriers(d);
   $('#fil-liste').onclick = () => { view = {name:'list'}; render(); window.scrollTo(0,0); };
   $('#b-vers-bons').onclick = () => { tab = 'bons'; render(); window.scrollTo(0,0); };
   const ap = app.querySelector('[data-aller-prepa]'); if(ap) ap.onclick = () => { tab = 'prepa'; render(); window.scrollTo(0,0); };
@@ -1325,7 +1389,7 @@ function htmlPrepa(d, e){
       ${PHASES.map(([cle, nom]) => { const famille = cle !== 'appel'; const x = L.etapes.find(y => y.cle===cle) || { etat:'a_venir', date:'', message:'' }; const tp = taches.filter(t => t.phase===cle); const reste = tp.filter(t => t.oblig && t.etat!=='fait').length; return `<div class="phase-b">
         <div class="phase-b-h"><b>${esc(nom)}${famille ? '' : ' <span class="small muted">(interne)</span>'} <span class="small muted">· ${tp.filter(t => t.etat==='fait').length}/${tp.length}${reste ? ` · <span class="warn">${reste} obligatoire${reste>1?'s':''}</span>` : ''}</span></b>${famille ? `<select data-etape-etat="${cle}" aria-label="État de l'étape ${esc(nom)}">${ETATS.map(([k,l]) => `<option value="${k}" ${x.etat===k?'selected':''}>${l}</option>`).join('')}</select><input type="date" data-etape-date="${cle}" value="${esc(x.date||'')}" aria-label="Date de l'étape ${esc(nom)}">` : '<span></span><span></span>'}</div>
         ${famille ? `<div class="phase-msg"><textarea data-etape-msg="${cle}" placeholder="Message pour la famille (facultatif), ex. : Le tri est terminé, les dons partent mardi.">${esc(x.message||'')}</textarea></div>` : ''}
-        <ul class="taches">${tp.map(t => `<li class="${t.etat}${t.oblig ? ' oblig' : ''}"><button type="button" class="case" data-tache-etat="${t.i}" aria-label="État : ${t.etat==='fait'?'fait':t.etat==='en_cours'?'en cours':'à faire'}">${t.etat==='fait' ? coche : ''}</button><input class="lib" data-tache="${t.i}" data-champ="libelle" value="${esc(t.libelle||'')}" placeholder="Tâche" aria-label="Tâche"><span class="reperes"><button type="button" class="ob ${t.oblig?'on':''}" data-tache-oblig="${t.i}" title="${t.oblig?'Obligatoire':'Facultative'}" aria-label="Obligatoire : ${t.oblig?'oui':'non'}">★</button><button type="button" class="vis ${t.interne || !famille ?'':'on'}" data-tache-vis="${t.i}" title="${t.interne || !famille ? 'Interne : la famille ne la voit pas' : 'Visible par la famille'}" aria-label="${t.interne || !famille ? 'Interne' : 'Visible par la famille'}" ${famille ? '' : 'disabled'}>${t.interne || !famille ? '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.1A10 10 0 0 1 12 5c7 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.6 6.6A17 17 0 0 0 2 12s3 7 10 7a10 10 0 0 0 5.4-1.6"/></svg>' : '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>'}</button></span><button type="button" class="qui ${t.cote==='famille'?'famille':''}" data-tache-qui="${t.i}" title="Qui s'en charge">${t.cote==='famille' ? 'Famille' : 'Nous'}</button><input type="date" data-tache="${t.i}" data-champ="date" value="${esc(t.date||'')}" aria-label="Date"><button type="button" class="suppr" data-tache-suppr="${t.i}" aria-label="Supprimer la tâche">×</button></li>`).join('')}
+        <ul class="taches">${tp.map(t => `<li class="${t.etat}${t.oblig ? ' oblig' : ''}"><button type="button" class="case" data-tache-etat="${t.i}" aria-label="État : ${t.etat==='fait'?'fait':t.etat==='en_cours'?'en cours':'à faire'}">${t.etat==='fait' ? coche : ''}</button><input class="lib" data-tache="${t.i}" data-champ="libelle" value="${esc(t.libelle||'')}" placeholder="Tâche" aria-label="Tâche"><span class="reperes">${DOC_DE_TACHE[t.modele] ? `<button type="button" class="vis on" data-vers-doc="${DOC_DE_TACHE[t.modele]}" title="Préparer le document" aria-label="Préparer le document"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg></button>` : ''}<button type="button" class="ob ${t.oblig?'on':''}" data-tache-oblig="${t.i}" title="${t.oblig?'Obligatoire':'Facultative'}" aria-label="Obligatoire : ${t.oblig?'oui':'non'}">★</button><button type="button" class="vis ${t.interne || !famille ?'':'on'}" data-tache-vis="${t.i}" title="${t.interne || !famille ? 'Interne : la famille ne la voit pas' : 'Visible par la famille'}" aria-label="${t.interne || !famille ? 'Interne' : 'Visible par la famille'}" ${famille ? '' : 'disabled'}>${t.interne || !famille ? '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.1A10 10 0 0 1 12 5c7 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.6 6.6A17 17 0 0 0 2 12s3 7 10 7a10 10 0 0 0 5.4-1.6"/></svg>' : '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>'}</button></span><button type="button" class="qui ${t.cote==='famille'?'famille':''}" data-tache-qui="${t.i}" title="Qui s'en charge">${t.cote==='famille' ? 'Famille' : 'Nous'}</button><input type="date" data-tache="${t.i}" data-champ="date" value="${esc(t.date||'')}" aria-label="Date"><button type="button" class="suppr" data-tache-suppr="${t.i}" aria-label="Supprimer la tâche">×</button></li>`).join('')}
           <li style="display:block"><button type="button" class="ajout" data-tache-ajout="${cle}">+ Ajouter une tâche</button></li></ul>
       </div>`; }).join('')}
     </div>
@@ -1479,6 +1543,7 @@ function bindEspace(d, box){
   });
   box.querySelectorAll('[data-tache-oblig]').forEach(b => b.onclick = () => { const t = L.taches[+b.dataset.tacheOblig]; t.oblig = !t.oblig; enregistrerEspace(d); redessiner(true); });
   box.querySelectorAll('[data-tache-vis]').forEach(b => b.onclick = () => { const t = L.taches[+b.dataset.tacheVis]; t.interne = !t.interne; enregistrerEspace(d); redessiner(); });
+  box.querySelectorAll('[data-vers-doc]').forEach(b => b.onclick = () => { const doc = documentsDuDossier(d, ctxCourriers).find(x => x.type===b.dataset.versDoc); view.doc = doc?.cle || (b.dataset.versDoc==='resiliation' ? 'aucune-resiliation' : null); tab = 'courriers'; render(); window.scrollTo(0,0); });
   const pc = val('#parcours-completer'); if(pc) pc.onclick = () => { const n = completerParcours(L.taches, d.formule); if(n){ enregistrerEspace(d); redessiner(true); } showToast(n ? `${n} tâche${n>1?'s':''} du parcours type ajoutée${n>1?'s':''}.` : 'Le parcours type est déjà complet.'); };
   box.querySelectorAll('[data-etape-date]').forEach(el => el.addEventListener('change', () => { etape(el.dataset.etapeDate).date = el.value; enregistrerEspace(d); }));
   box.querySelectorAll('[data-etape-msg]').forEach(el => el.addEventListener('input', () => { etape(el.dataset.etapeMsg).message = el.value; enregistrerEspace(d); }));
