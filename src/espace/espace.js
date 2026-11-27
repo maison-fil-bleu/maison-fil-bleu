@@ -1,6 +1,6 @@
 /**
  * Espace client Maison Fil Bleu.
- * Connexion : e-mail seul, puis lien reçu par e-mail. Une famille ne lit que les tables
+ * Connexion : e-mail seul, puis code à 6 chiffres (ou lien) reçu par e-mail. Une famille ne lit que les tables
  * espace_client, photos_partagees et documents de ses propres dossiers (règles d'accès Supabase).
  */
 import { createClient } from '@supabase/supabase-js';
@@ -82,7 +82,7 @@ const dateFr = (d) => { if (!d) return ''; const x = new Date(d.length === 10 ? 
 const telLien = (t) => { const n = String(t || '').replace(/[^\d+]/g, ''); return n.length >= 10 && !/\[/.test(t) ? `tel:${n.startsWith('0') ? '+33' + n.slice(1) : n}` : null; };
 
 export function demarrerEspace(sb, racine, contact = {}, apercu = null) {
-  let session = null, dossiers = [], courant = null;
+  let session = null, dossiers = [], courant = null, parCode = false;
 
   const bandeau = () => apercu ? `<div class="ec-apercu" role="note"><b>Aperçu administrateur</b> · Vous voyez exactement ce que voit la famille. Les boutons de validation et de signature sont désactivés.</div>` : '';
   function afficher(html) { racine.innerHTML = bandeau() + html; }
@@ -91,16 +91,16 @@ export function demarrerEspace(sb, racine, contact = {}, apercu = null) {
     el.hidden = !texte; el.className = 'ec-msg' + (alerte ? ' alerte' : ''); el.textContent = texte;
   }
 
-  /* ---------- Connexion ---------- */
-  function ecranConnexion(info) {
+  /* ---------- Connexion : e-mail, puis code à 6 chiffres (ou lien) reçu par e-mail ---------- */
+  function ecranConnexion(info, emailConnu = '') {
     afficher(`<h1>Suivez votre dossier, avec vos proches.</h1>
       <p class="lead">Les étapes, les photos et les documents de votre accompagnement, au même endroit. Votre espace est ouvert par votre interlocuteur après le diagnostic.</p>
       <form class="ec-carte" id="ec-form" novalidate>
         <label for="ec-email">Votre adresse e-mail</label>
-        <input id="ec-email" type="email" autocomplete="email" inputmode="email" required placeholder="prenom.nom@exemple.fr">
-        <button class="btn" type="submit">Recevoir mon lien de connexion</button>
+        <input id="ec-email" type="email" autocomplete="email" inputmode="email" required placeholder="prenom.nom@exemple.fr" value="${esc(emailConnu)}">
+        <button class="btn" type="submit">Recevoir mon code de connexion</button>
         <div id="ec-msg" class="ec-msg" role="status" hidden></div>
-        <p class="p" style="font-size:14px;margin:0">Pas de mot de passe à retenir : vous recevez un lien par e-mail, à ouvrir sur cet appareil.</p>
+        <p class="p" style="font-size:14px;margin:0">Pas de mot de passe à retenir : vous recevez par e-mail un code à 6 chiffres, à saisir ici.</p>
       </form>`);
     if (info) message(info.texte, info.alerte);
     racine.querySelector('#ec-form').onsubmit = async (e) => {
@@ -109,15 +109,58 @@ export function demarrerEspace(sb, racine, contact = {}, apercu = null) {
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { message('Saisissez une adresse e-mail valide.', true); return; }
       const bouton = racine.querySelector('#ec-form button'); bouton.disabled = true;
       message('Envoi en cours…');
-      const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: location.origin + '/espace-client' } });
+      const erreur = await envoyerCode(email);
       bouton.disabled = false;
-      const inconnue = error && /Signups not allowed|not found|not allowed/i.test(String(error.message));
-      if (error && !inconnue) {
-        message(/rate limit|security purposes|too many/i.test(String(error.message)) ? 'Trop de demandes rapprochées : patientez quelques minutes avant de réessayer.' : "L'envoi n'a pas pu se faire. Vérifiez votre connexion internet et réessayez.", true);
-        return;
+      if (erreur) { message(erreur, true); return; }
+      ecranCode(email);
+    };
+  }
+
+  // Renvoie un message d'erreur à afficher, ou null si l'envoi est parti (ou l'adresse inconnue : même réponse).
+  async function envoyerCode(email) {
+    const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: location.origin + '/espace-client' } });
+    const inconnue = error && /Signups not allowed|not found|not allowed/i.test(String(error.message));
+    if (!error || inconnue) return null;
+    return /rate limit|security purposes|too many/i.test(String(error.message)) ? 'Trop de demandes rapprochées : patientez quelques minutes avant de réessayer.' : "L'envoi n'a pas pu se faire. Vérifiez votre connexion internet et réessayez.";
+  }
+
+  function ecranCode(email) {
+    afficher(`<h1>Saisissez votre code.</h1>
+      <form class="ec-carte" id="ec-code-form" novalidate>
+        <p class="p" style="margin:0">Si l'adresse <strong>${esc(email)}</strong> est rattachée à un dossier, un e-mail vient d'y être envoyé avec un code à 6 chiffres. Pensez à vérifier les courriers indésirables.</p>
+        <label for="ec-code">Code reçu par e-mail</label>
+        <input id="ec-code" class="ec-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="6" required placeholder="000000">
+        <button class="btn" type="submit">Ouvrir mon espace</button>
+        <div id="ec-msg" class="ec-msg" role="status" hidden></div>
+        <p class="p" style="font-size:14px;margin:0">Le code est valable une heure. Vous pouvez aussi cliquer sur le bouton de l'e-mail, depuis cet appareil.</p>
+        <div class="ec-contact"><button type="button" class="ec-lien" id="ec-renvoyer">Renvoyer un code</button><button type="button" class="ec-lien" id="ec-autre">Changer d'adresse</button></div>
+      </form>`);
+    const champ = racine.querySelector('#ec-code');
+    champ.focus();
+    champ.oninput = () => { champ.value = champ.value.replace(/\D/g, '').slice(0, 6); if (champ.value.length === 6) racine.querySelector('#ec-code-form').requestSubmit(); };
+    racine.querySelector('#ec-autre').onclick = () => ecranConnexion(null, email);
+    racine.querySelector('#ec-renvoyer').onclick = async (e) => {
+      e.target.disabled = true; message('Envoi en cours…');
+      const erreur = await envoyerCode(email);
+      e.target.disabled = false;
+      message(erreur || 'Un nouveau code vient d\'être envoyé. Seul le dernier code reçu fonctionne.', !!erreur);
+    };
+    let enCours = false;
+    racine.querySelector('#ec-code-form').onsubmit = async (e) => {
+      e.preventDefault();
+      if (enCours) return;
+      const token = champ.value.trim();
+      if (!/^\d{6}$/.test(token)) { message('Le code compte 6 chiffres.', true); return; }
+      enCours = true; parCode = true; message('Vérification…');
+      const { data, error } = await sb.auth.verifyOtp({ email, token, type: 'email' });
+      enCours = false;
+      if (error || !data?.session) {
+        parCode = false;
+        message(/rate limit|too many/i.test(String(error?.message)) ? 'Trop d\'essais : patientez quelques minutes.' : 'Ce code est incorrect ou a expiré. Vérifiez-le, ou demandez un nouveau code.', true);
+        champ.select(); return;
       }
-      // Même réponse que l'adresse soit rattachée à un dossier ou non.
-      message(`Si cette adresse est rattachée à un dossier, un lien de connexion vient d'y être envoyé. Ouvrez-le sur cet appareil (pensez à vérifier les courriers indésirables). Votre espace sera ouvert par votre interlocuteur après le diagnostic.`);
+      session = data.session;
+      try { await charger(); } catch { ecranConnexion({ texte: "Votre espace n'a pas pu se charger. Vérifiez votre connexion internet, puis réessayez.", alerte: true }); }
     };
   }
 
@@ -227,7 +270,7 @@ export function demarrerEspace(sb, racine, contact = {}, apercu = null) {
   }
   function lierBas() {
     const b = racine.querySelector('#ec-deco');
-    if (b) b.onclick = async () => { await sb.auth.signOut(); session = null; ecranConnexion({ texte: 'Vous êtes déconnecté.' }); };
+    if (b) b.onclick = async () => { await sb.auth.signOut(); session = null; parCode = false; ecranConnexion({ texte: 'Vous êtes déconnecté.' }); };
   }
 
   /* ---------- Démarrage ---------- */
@@ -244,7 +287,7 @@ export function demarrerEspace(sb, racine, contact = {}, apercu = null) {
       ecranConnexion({ texte: "Votre espace n'a pas pu se charger. Vérifiez votre connexion internet, puis réessayez.", alerte: true });
     }
   })();
-  if (!apercu) sb.auth.onAuthStateChange((evt, s) => { if (evt === 'SIGNED_IN' && !session && s) { session = s; charger().catch(() => {}); } });
+  if (!apercu) sb.auth.onAuthStateChange((evt, s) => { if (evt === 'SIGNED_IN' && !session && !parCode && s) { session = s; charger().catch(() => {}); } });
 }
 
 // Démarrage automatique sur la page /espace-client.

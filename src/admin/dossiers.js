@@ -978,13 +978,13 @@ function renderEspace(d){
   ${L._nouveau ? '' : `<a class="btn ghost" href="/espace-client#apercu=${encodeURIComponent(d.id)}" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">Voir l'espace comme la famille</a>`}
   ${L._nouveau ? `<div class="suggest">L'espace de cette famille n'est pas encore ouvert. Préparez-le ci-dessous, puis ajoutez les personnes qui y auront accès.</div>` : ''}
   <div class="card"><h3>Accès</h3>
-    <p class="small muted" style="margin:0">La personne concernée et ses proches. Ils se connectent avec leur seule adresse e-mail, en recevant un lien.</p>
+    <p class="small muted" style="margin:0">La personne concernée et ses proches. Ils se connectent avec leur seule adresse e-mail : ils reçoivent un code à 6 chiffres (et un lien) par e-mail.</p>
     ${e.acces.length ? `<table>${e.acces.map(x => `<tr><td>${esc(x.email)}<br><span class="small muted">${x.role==='titulaire'?'Titulaire':'Proche'}${x.invite_le?` · invité le ${new Date(x.invite_le).toLocaleDateString('fr-FR')}`:' · pas encore invité'}</span></td><td class="n" style="white-space:nowrap"><button type="button" class="btn ${x.invite_le?'ghost':''}" data-inviter="${esc(x.email)}" style="padding:8px 12px">${x.invite_le?'Renvoyer':'Inviter'}</button> <button type="button" class="btn ghost" data-retirer="${esc(x.email)}" style="padding:8px 12px">Retirer</button></td></tr>`).join('')}</table>` : `<p class="small" style="margin:0">Aucun accès pour l'instant.</p>`}
     <div class="grid2"><label>E-mail<input id="ac-email" type="email" inputmode="email" placeholder="prenom.nom@exemple.fr" value="${e.acces.length ? '' : esc(d.contact.email||'')}"></label>
     <label>Rôle${seg('ac-role', [['titulaire','Titulaire'],['proche','Proche']], e.acces.some(x=>x.role==='titulaire') ? 'proche' : 'titulaire')}</label></div>
     <button type="button" class="btn ghost" id="ac-ajout">Ajouter cet accès</button>
     ${e.acces.some(x=>!x.invite_le) ? `<button type="button" class="btn" id="ac-inviter">Inviter ${e.acces.filter(x=>!x.invite_le).length>1?'les personnes pas encore invitées':'la personne pas encore invitée'}</button>` : ''}
-    <p class="small muted" style="margin:0">L'invitation envoie un e-mail avec un lien de connexion vers l'espace client du site. Vérifiez d'abord les étapes, photos et documents ci-dessous.</p>
+    <p class="small muted" style="margin:0">L'invitation envoie un e-mail avec un code de connexion pour l'espace client du site. Vérifiez d'abord les étapes, photos et documents ci-dessous.</p>
   </div>
   <div class="card"><h3>Interlocuteur affiché</h3>
     <div class="grid2"><label>Nom<input data-esp="interlocuteur.nom" value="${esc(L.interlocuteur?.nom||'')}" placeholder="Prénom Nom"></label>

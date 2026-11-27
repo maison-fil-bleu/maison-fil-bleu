@@ -400,7 +400,7 @@ function finHtml(b) {
       <canvas class="pad" data-pad="client" aria-label="Signature du client"></canvas>
       <div class="row"><button class="btn ghost" data-effacer="client" style="flex:1">Effacer</button><button class="btn" id="bi-signer-client" style="flex:2">Valider la signature du client</button></div>
       <details ${dist ? 'open' : ''}><summary class="small" style="cursor:pointer">Le client n'est pas sur place ?</summary>
-        <p class="small muted">Il relit et signe depuis son espace client. Le lien de connexion lui est envoyé par e-mail (dès le retour du réseau si vous êtes hors ligne).</p>
+        <p class="small muted">Il relit et signe depuis son espace client. Son code de connexion lui est envoyé par e-mail (dès le retour du réseau si vous êtes hors ligne).</p>
         ${dist ? `<div class="suggest ${dist.inviteLe ? 'good' : dist.erreur ? 'bad' : ''}">${dist.inviteLe ? `Lien envoyé à ${esc(dist.email)} le ${esc(heureFr(dist.inviteLe))}. En attente de sa signature.` : dist.erreur ? `Envoi impossible pour ${esc(dist.email)} : ${esc(dist.erreur)}` : `Envoi à ${esc(dist.email)} prévu au retour du réseau.`}</div>` : ''}
         <label>E-mail du client<input id="bi-email-distance" type="email" inputmode="email" value="${esc(dist?.email || b.client?.email || '')}"></label>
         <button class="btn ghost" id="bi-distance">${dist ? 'Renvoyer le lien de signature' : 'Envoyer le lien de signature'}</button>
