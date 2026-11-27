@@ -975,6 +975,7 @@ function renderEspace(d){
   const partagees = new Set(e.photos.map(x => x.chemin));
   const photos = (d.photos||[]).filter(x => x.chemin);
   box.innerHTML = `
+  ${L._nouveau ? '' : `<a class="btn ghost" href="/espace-client#apercu=${encodeURIComponent(d.id)}" target="_blank" rel="noopener" style="text-align:center;text-decoration:none">Voir l'espace comme la famille</a>`}
   ${L._nouveau ? `<div class="suggest">L'espace de cette famille n'est pas encore ouvert. Préparez-le ci-dessous, puis ajoutez les personnes qui y auront accès.</div>` : ''}
   <div class="card"><h3>Accès</h3>
     <p class="small muted" style="margin:0">La personne concernée et ses proches. Ils se connectent avec leur seule adresse e-mail, en recevant un lien.</p>

@@ -6,7 +6,9 @@
 import { createClient } from '@supabase/supabase-js';
 import { SUPABASE_URL, SUPABASE_CLE_PUBLIQUE } from '../config/supabase';
 
-export function creerClient() {
+export function creerClient(apercu = false) {
+  // Aperçu administrateur : on réutilise la session du back-office (même site), en lecture seule.
+  if (apercu) return createClient(SUPABASE_URL, SUPABASE_CLE_PUBLIQUE, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, flowType: 'pkce' } });
   return createClient(SUPABASE_URL, SUPABASE_CLE_PUBLIQUE, {
     // Session propre à l'espace client (distincte du back-office sur le même site).
     auth: { storageKey: 'fb-espace-client', persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' },
@@ -79,10 +81,11 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 const dateFr = (d) => { if (!d) return ''; const x = new Date(d.length === 10 ? d + 'T12:00:00' : d); return isNaN(x) ? '' : x.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }); };
 const telLien = (t) => { const n = String(t || '').replace(/[^\d+]/g, ''); return n.length >= 10 && !/\[/.test(t) ? `tel:${n.startsWith('0') ? '+33' + n.slice(1) : n}` : null; };
 
-export function demarrerEspace(sb, racine, contact = {}) {
+export function demarrerEspace(sb, racine, contact = {}, apercu = null) {
   let session = null, dossiers = [], courant = null;
 
-  function afficher(html) { racine.innerHTML = html; }
+  const bandeau = () => apercu ? `<div class="ec-apercu" role="note"><b>Aperçu administrateur</b> · Vous voyez exactement ce que voit la famille. Les boutons de validation et de signature sont désactivés.</div>` : '';
+  function afficher(html) { racine.innerHTML = bandeau() + html; }
   function message(texte, alerte) {
     const el = racine.querySelector('#ec-msg'); if (!el) return;
     el.hidden = !texte; el.className = 'ec-msg' + (alerte ? ' alerte' : ''); el.textContent = texte;
@@ -120,7 +123,9 @@ export function demarrerEspace(sb, racine, contact = {}) {
 
   /* ---------- Chargement des dossiers ---------- */
   async function charger() {
-    const { data, error } = await sb.from('espace_client').select('dossier_id, formule, ville, interlocuteur, etapes, updated_at').order('updated_at', { ascending: false });
+    let q = sb.from('espace_client').select('dossier_id, formule, ville, interlocuteur, etapes, updated_at').order('updated_at', { ascending: false });
+    if (apercu) q = q.eq('dossier_id', apercu);
+    const { data, error } = await q;
     if (error) throw error;
     dossiers = data || [];
     if (!dossiers.length) return ecranSansDossier();
@@ -128,6 +133,7 @@ export function demarrerEspace(sb, racine, contact = {}) {
     await afficherDossier();
   }
   function ecranSansDossier() {
+    if (apercu) return afficher(`<h1>Aperçu indisponible.</h1><div class="ec-carte sable"><p class="p" style="margin:0">L'espace de ce dossier n'est pas encore enregistré, ou votre session du back-office a expiré. Enregistrez l'onglet « 5 · Espace client » dans l'appli, reconnectez-vous si besoin, puis rouvrez l'aperçu.</p></div>`);
     afficher(`<h1>Votre espace n'est pas encore ouvert.</h1>
       <div class="ec-carte sable"><p class="p" style="margin:0">Votre espace sera ouvert par votre interlocuteur après le diagnostic. Vous recevrez alors un e-mail pour vous connecter.</p>
       ${contactHtml(null)}</div>
@@ -140,7 +146,7 @@ export function demarrerEspace(sb, racine, contact = {}) {
     const [{ data: photos }, { data: docs }, { data: aSigner }, { data: objets }] = await Promise.all([
       sb.from('photos_partagees').select('chemin, legende, ordre').eq('dossier_id', courant).order('ordre'),
       sb.from('documents').select('id, chemin, type, nom, date').eq('dossier_id', courant).order('date', { ascending: false }),
-      sb.rpc('bon_a_signer').then((r) => r, () => ({ data: [] })),
+      (apercu ? sb.from('bons').select('id, dossier_id, numero, marque, data').eq('dossier_id', courant).not('signe_porteur_le', 'is', null).is('signe_client_le', null).then((r) => ({ data: (r.data || []).filter((x) => x.data?.signatures?.distance).map((x) => ({ ...x, resume: x.data })) }), () => ({ data: [] })) : sb.rpc('bon_a_signer').then((r) => r, () => ({ data: [] }))),
       sb.from('objets_conserves').select('id, nom, destinataire, note, photo, valide_le, valide_par').eq('dossier_id', courant).order('ordre').order('created_at').then((r) => r, () => ({ data: [] })),
     ]);
     const listeObjets = Array.isArray(objets) ? objets : [];
@@ -176,7 +182,8 @@ export function demarrerEspace(sb, racine, contact = {}) {
       <div class="ec-carte sable"><h2>Votre interlocuteur</h2>${contactHtml(d.interlocuteur)}</div>
       ${basHtml()}`);
     racine.querySelectorAll('[data-dossier]').forEach((b) => b.onclick = () => { courant = b.dataset.dossier; afficherDossier(); });
-    racine.querySelectorAll('.ec-bon').forEach((c) => lierBon(sb, c, () => afficherDossier()));
+    if (apercu) racine.querySelectorAll('.ec-bon button, .ec-bon input, .ec-bon canvas, #ec-valider').forEach((el) => { el.disabled = true; el.style.pointerEvents = 'none'; el.style.opacity = '.5'; });
+    else racine.querySelectorAll('.ec-bon').forEach((c) => lierBon(sb, c, () => afficherDossier()));
     // Objets conservés : photos (liens signés temporaires) et validation de la liste.
     const cheminsObjets = listeObjets.map((o) => o.photo).filter(Boolean);
     if (cheminsObjets.length) {
@@ -186,7 +193,7 @@ export function demarrerEspace(sb, racine, contact = {}) {
       }));
     }
     const bv = racine.querySelector('#ec-valider');
-    if (bv) bv.onclick = async () => {
+    if (bv && !apercu) bv.onclick = async () => {
       bv.disabled = true;
       const { error } = await sb.rpc('valider_objets_conserves', { p_dossier: courant });
       const m = racine.querySelector('#ec-msg-objets');
@@ -215,6 +222,7 @@ export function demarrerEspace(sb, racine, contact = {}) {
       <div class="ec-contact">${lien ? `<a class="btn" href="${esc(lien)}">Appeler ${esc(tel)}</a>` : ''}<a class="btn2" href="/contact#formulaire">Nous écrire</a></div>`;
   }
   function basHtml() {
+    if (apercu) return `<div class="ec-bas"><span>Aperçu du dossier ${esc(apercu)}</span><button type="button" class="ec-lien" onclick="window.close()">Fermer l'aperçu</button></div>`;
     return `<div class="ec-bas"><span>Connecté : ${esc(session?.user?.email || '')}</span><button type="button" class="ec-lien" id="ec-deco">Se déconnecter</button></div>`;
   }
   function lierBas() {
@@ -228,6 +236,7 @@ export function demarrerEspace(sb, racine, contact = {}) {
     try {
       const { data } = await sb.auth.getSession();
       session = data.session;
+      if (!session && apercu) return ecranSansDossier();
       if (!session) return ecranConnexion(erreurUrl ? { texte: 'Ce lien de connexion a expiré ou a déjà servi. Demandez-en un nouveau ci-dessous.', alerte: true } : null);
       if (location.search.includes('code=')) history.replaceState(null, '', '/espace-client');
       await charger();
@@ -235,9 +244,10 @@ export function demarrerEspace(sb, racine, contact = {}) {
       ecranConnexion({ texte: "Votre espace n'a pas pu se charger. Vérifiez votre connexion internet, puis réessayez.", alerte: true });
     }
   })();
-  sb.auth.onAuthStateChange((evt, s) => { if (evt === 'SIGNED_IN' && !session && s) { session = s; charger().catch(() => {}); } });
+  if (!apercu) sb.auth.onAuthStateChange((evt, s) => { if (evt === 'SIGNED_IN' && !session && s) { session = s; charger().catch(() => {}); } });
 }
 
 // Démarrage automatique sur la page /espace-client.
 const racine = typeof document !== 'undefined' && document.getElementById('ec-app');
-if (racine && !window.__FB_TEST_ESPACE) demarrerEspace(creerClient(), racine, window.__FB_CONTACT || {});
+const apercuId = typeof location !== 'undefined' ? (new URLSearchParams(location.hash.slice(1)).get('apercu') || '').replace(/[^a-z0-9]/gi, '') || null : null;
+if (racine && !window.__FB_TEST_ESPACE) demarrerEspace(creerClient(!!apercuId), racine, window.__FB_CONTACT || {}, apercuId);

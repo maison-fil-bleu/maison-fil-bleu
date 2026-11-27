@@ -15,7 +15,7 @@ const tel = lienTel(SITE.telephone);
       <span class="hd-top-txt">{SITE.zone} · Diagnostic offert</span>
       <nav aria-label="Liens secondaires" class="hd-top-nav">
         <a href="/notre-methode" aria-current={courant('/notre-methode')}>Notre méthode</a>
-        <a href="/espace-client">Espace client</a>
+        <a href="/espace-client" class="hd-ec"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="1.5"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></svg>Espace client</a>
         <a href={tel ?? '/contact'} class="hd-tel">{SITE.telephone}</a>
       </nav>
     </div>
@@ -53,6 +53,7 @@ const tel = lienTel(SITE.telephone);
         <a href="/contact" class="btn hd-cta">Nous contacter</a>
       </div>
 
+      <a href="/espace-client" class="hd-ec-m" aria-label="Espace client"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="1.5"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></svg><span>Espace client</span></a>
       <details class="fb-burger fb-dd" data-menu>
         <summary aria-label="Menu">
           <svg class="ic-ouvrir" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#15233A" stroke-width="1.6" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
@@ -68,7 +69,7 @@ const tel = lienTel(SITE.telephone);
             <a href="/estimation" class="hd-m-l" aria-current={courant('/estimation')}>Tarifs</a>
             <a href="/notre-methode" class="hd-m-l" aria-current={courant('/notre-methode')}>Notre méthode</a>
             <a href="/conseils" class="hd-m-l" aria-current={courant('/conseils')}>Conseils</a>
-            <a href="/espace-client" class="hd-m-l hd-m-gris">Espace client</a>
+            <a href="/espace-client" class="hd-m-ec"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="1.5"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></svg>Mon espace client</a>
             <a href="/contact" class="btn hd-m-cta">Nous contacter</a>
           </nav>
           <a href="/pro" class="hd-m-pro">
@@ -97,6 +98,8 @@ const tel = lienTel(SITE.telephone);
   .hd-top-nav{display:flex;align-items:center;gap:26px}
   .hd-top-nav a{color:var(--gris);text-decoration:none}
   .hd-top-nav a:hover{color:var(--nuit);text-decoration:underline}
+  .hd-top-nav .hd-ec{display:inline-flex;align-items:center;gap:7px;color:#fff;background:var(--nuit);padding:6px 13px;font-weight:500;letter-spacing:.4px}
+  .hd-top-nav .hd-ec:hover{color:#fff;background:var(--bleu);text-decoration:none}
   .hd-top-nav .hd-tel{color:var(--nuit);font-weight:500}
 
   /* Bandeau principal */
@@ -130,6 +133,7 @@ const tel = lienTel(SITE.telephone);
 
   /* Hamburger (sous 960 px) */
   .fb-burger{display:none;position:relative}
+  .hd-ec-m{display:none}
   .fb-burger>summary{width:46px;height:46px;border:1px solid var(--filet);display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--ivoire)}
   .fb-burger .ic-fermer{display:none}
   .fb-burger[open] .ic-fermer{display:block}
@@ -138,6 +142,8 @@ const tel = lienTel(SITE.telephone);
   .hd-m-in{display:flex;flex-direction:column;padding:8px 22px 18px}
   .hd-m-l{display:block;padding:14px 0;color:var(--encre);text-decoration:none;border-bottom:1px solid var(--sable)}
   .hd-m-gris{color:var(--gris)}
+  .hd-m-ec{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:16px;padding:14px;border:1px solid var(--nuit);color:var(--nuit);text-decoration:none}
+  .hd-m-ec:hover{background:var(--sable)}
   .hd-m-cat{display:block;padding:14px 0 4px;color:var(--laiton-texte);font-size:11px;letter-spacing:2.2px}
   .hd-m-f{display:block;padding:10px 0 10px 16px;color:var(--encre);text-decoration:none;font-family:var(--serif);font-size:20px;font-weight:600;text-transform:none;letter-spacing:0}
   .hd-m-f.last{border-bottom:1px solid var(--sable);padding-bottom:14px}
@@ -176,6 +182,9 @@ const tel = lienTel(SITE.telephone);
   @media (max-width:960px){
     .fb-nav{display:none!important}
     .fb-burger{display:block}
+    .hd-ec-m{display:flex;align-items:center;gap:7px;height:46px;padding:0 13px;margin-left:auto;margin-right:-20px;border:1px solid var(--filet);color:var(--nuit);text-decoration:none;font-size:11.5px;font-weight:500;letter-spacing:1.2px;text-transform:uppercase;background:var(--ivoire)}
+    .hd-ec-m:hover{background:var(--sable)}
     .hd-bar{height:76px}
   }
+  @media (max-width:400px){ .hd-ec-m span{display:none} .hd-ec-m{padding:0 13px} }
 </style>
