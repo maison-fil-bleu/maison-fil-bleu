@@ -322,27 +322,34 @@ function setNav(){
   const cle = ['list','dossier','bon'].includes(view.name) ? 'list' : view.name;
   document.querySelectorAll('[data-nav]').forEach(b => b.setAttribute('aria-current', b.dataset.nav===cle ? 'page' : 'false'));
 }
-function render(){ setNav(); if(view.name!=='bon') bonsApi?.quitter(); if(view.name==='accueil') renderAccueil(); else if(view.name==='list') renderList(); else if(view.name==='dossier') renderDossier(); else if(view.name==='bon') bonsApi.ecran(view.id); else if(view.name==='registre') bonsApi.registre(); else if(view.name==='bilan') renderBilan(); else if(view.name==='carnet') renderCarnet(); else renderSettings(); }
+function render(){ setNav(); if(view.name!=='bon') bonsApi?.quitter(); if(view.name==='accueil') renderAccueil(); else if(view.name==='list') renderList(); else if(view.name==='dossier') renderDossier(); else if(view.name==='bon') bonsApi.ecran(view.id); else if(view.name==='registre') bonsApi.registre(); else if(view.name==='bilan') renderBilan(); else if(view.name==='carnet') renderCarnet(); else if(view.name==='agenda') renderAgenda(); else renderSettings(); }
 
 /* ---------- Tableau de bord ---------- */
 // Données légères chargées pour l'accueil : rendez-vous et tâches (espace_client), attentes des familles, activité.
-const tb = { charge: false, enCours: false, espaces: [], decisions: [], objets: [], bons: [], journal: [] };
+const tb = { charge: false, enCours: false, espaces: [], decisions: [], objets: [], bons: [], journal: [], agenda: [] };
 async function chargerTableau(){
   if(tb.enCours || !navigator.onLine) return;
   tb.enCours = true;
   const lire = p => p.then(r => r.data || [], () => []);
-  const [es, de, ob, bo, jo] = await Promise.all([
+  const depuis = new Date(Date.now() - 62*86400e3).toISOString();
+  const [es, de, ob, bo, jo, ag] = await Promise.all([
     lire(sb.from('espace_client').select('dossier_id, prochain, etapes, taches, titre')),
     lire(sb.from('decisions').select('id, dossier_id, question, posee_le').eq('statut', 'attente')),
     lire(sb.from('objets_conserves').select('dossier_id, valide_le').is('valide_le', null)),
     lire(sb.from('bons').select('id, dossier_id, numero, data').not('signe_porteur_le', 'is', null).is('signe_client_le', null)),
     lire(sb.from('journal').select('dossier_id, quand, type, titre').order('quand', { ascending:false }).limit(8)),
+    lire(sb.from('agenda').select('*').gte('debut', depuis).order('debut')),
   ]);
-  Object.assign(tb, { charge: true, enCours: false, espaces: es, decisions: de, objets: ob, bons: bo.filter(b => b.data?.signatures?.distance), journal: jo });
-  if(view.name==='accueil') rerender();
+  Object.assign(tb, { charge: true, enCours: false, espaces: es, decisions: de, objets: ob, bons: bo.filter(b => b.data?.signatures?.distance), journal: jo, agenda: ag });
+  if(view.name==='accueil' || view.name==='agenda') rerender();
 }
 function evenementsAgenda(){
   const ev = [], j0 = isoJour(auj());
+  (tb.agenda||[]).forEach(a => { const x = new Date(a.debut); if(isNaN(x)) return; ev.push({ date: isoJour(x), heure: a.journee ? '' : heureDe(a.debut), type: 'agenda', lib: 'Rendez-vous', titre: a.titre, id: a.dossier_id && dossiers[a.dossier_id] ? a.dossier_id : null, detail: a.lieu || '', lieu: a.lieu || '', agendaId: a.id, debut: a.debut, fin: a.fin, journee: a.journee }); });
+  Object.values(dossiers).forEach(d => {
+    if(d.rdvDiag){ const x = new Date(d.rdvDiag); if(!isNaN(x)) ev.push({ date: isoJour(x), heure: heureDe(d.rdvDiag), type: 'diag', lib: 'Diagnostic', titre: 'Diagnostic sur place', id: d.id, detail: d.adr?.label || d.ville || '', lieu: d.adr?.label || '', debut: x.toISOString() }); }
+    if(d.echeance?.date && !['Terminé','Perdu'].includes(d.statut)) ev.push({ date: d.echeance.date, type: 'echeance', lib: 'Échéance', titre: d.echeance.nature || 'Échéance', id: d.id });
+  });
   tb.espaces.forEach(e => {
     if(!dossiers[e.dossier_id]) return;
     const p = e.prochain || {};
@@ -383,10 +390,10 @@ function renderAccueil(){
   <div class="grille">
     <div class="col">
       <div class="pan"><div class="pan-h"><h3>Prochains rendez-vous et échéances</h3><span class="small muted">14 jours</span></div>
-        ${!navigator.onLine && !tb.charge ? '<p class="pan-vide">Hors ligne : l\'agenda s\'affichera au retour du réseau.</p>' : prochains.length ? `<ol class="jour">${prochains.map(e => `<li><time>${esc(jourCourt(e.date))}${e.heure ? `<br><span class="small muted">${esc(e.heure)}</span>` : ''}</time><span class="tag ${e.retard ? 'appel' : e.type}">${esc(e.lib)}</span><div><b>${esc(nomDossier(e.id))} · ${esc(e.titre)}</b>${e.detail ? `<span>${esc(e.detail)}</span>` : ''}</div><button class="btn ghost petit" type="button" data-ouvrir="${esc(e.id)}" data-onglet="${e.type==='rdv'||e.type==='tache'||e.type==='etape' ? 'prepa' : 'synthese'}">Ouvrir</button></li>`).join('')}</ol>` : `<p class="pan-vide">${tb.charge ? 'Rien de prévu dans les 14 jours. Les dates se saisissent dans l\'onglet « Préparation » de chaque dossier.' : 'Chargement…'}</p>`}
+        ${!navigator.onLine && !tb.charge ? '<p class="pan-vide">Hors ligne : l\'agenda s\'affichera au retour du réseau.</p>' : prochains.length ? `<ol class="jour">${prochains.map(e => `<li><time>${esc(jourCourt(e.date))}${e.heure ? `<br><span class="small muted">${esc(e.heure)}</span>` : ''}</time><span class="tag ${e.retard ? 'appel' : e.type}">${esc(e.lib)}</span><div><b>${e.id ? esc(nomDossier(e.id))+' · ' : ''}${esc(e.titre)}</b>${e.detail ? `<span>${esc(e.detail)}</span>` : ''}</div>${e.id ? `<button class="btn ghost petit" type="button" data-ouvrir="${esc(e.id)}" data-onglet="${['rdv','tache','etape'].includes(e.type) ? 'prepa' : e.type==='diag' ? 'appel' : 'synthese'}">Ouvrir</button>` : '<button class="btn ghost petit" type="button" data-vers-agenda>Agenda</button>'}</li>`).join('')}</ol>` : `<p class="pan-vide">${tb.charge ? 'Rien de prévu dans les 14 jours. Les dates se saisissent dans l\'onglet « Préparation » de chaque dossier.' : 'Chargement…'}</p>`}
       </div>
-      <div class="pan"><div class="pan-h"><h3>Cette semaine</h3></div>
-        <div class="semaine">${jours.map(x => { const k = isoJour(x), evs = semaine.filter(e => e.date===k); return `<div class="j ${k===isoJour(j0)?'auj':''}"><span>${esc(x.toLocaleDateString('fr-FR',{weekday:'short', day:'numeric'}))}</span>${evs.map(e => `<button type="button" class="ev ${e.type}" data-ouvrir="${esc(e.id)}" data-onglet="prepa"><b>${esc(e.titre)}</b>${esc(nomDossier(e.id))}</button>`).join('')}</div>`; }).join('')}</div>
+      <div class="pan"><div class="pan-h"><h3>Cette semaine</h3><button class="lien" type="button" data-vers-agenda>Agenda complet</button></div>
+        <div class="semaine">${jours.map(x => { const k = isoJour(x), evs = semaine.filter(e => e.date===k); return `<div class="j ${k===isoJour(j0)?'auj':''}"><span>${esc(x.toLocaleDateString('fr-FR',{weekday:'short', day:'numeric'}))}</span>${evs.map(e => `<button type="button" class="ev ${e.type}" ${e.id ? `data-ouvrir="${esc(e.id)}" data-onglet="prepa"` : 'data-vers-agenda'}><b>${e.heure ? esc(e.heure)+' ' : ''}${esc(e.titre)}</b>${e.id ? esc(nomDossier(e.id)) : esc(e.detail||'')}</button>`).join('')}</div>`; }).join('')}</div>
       </div>
     </div>
     <div class="col">
@@ -402,8 +409,127 @@ function renderAccueil(){
     </div>
   </div>`;
   app.querySelectorAll('[data-ouvrir]').forEach(b => b.onclick = () => ouvrirDossier(b.dataset.ouvrir, b.dataset.onglet));
+  app.querySelectorAll('[data-vers-agenda]').forEach(b => b.onclick = () => { view = { name:'agenda' }; render(); window.scrollTo(0,0); });
   const qa = $('#q-accueil'); qa.onkeydown = e => { if(e.key==='Enter'){ view = {name:'list', q: qa.value}; render(); } };
   qa.oninput = () => { if(qa.value.length >= 2){ view = {name:'list', q: qa.value}; render(); const i = $('#q'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); } };
+}
+
+/* ---------- Agenda : rendez-vous saisis + dates des dossiers (prochain rendez-vous, étapes, tâches) ---------- */
+const MOIS_FR = d => d.toLocaleDateString('fr-FR', { month:'long', year:'numeric' });
+const lundiDe = x => { const y = new Date(x); y.setHours(0,0,0,0); y.setDate(y.getDate() - ((y.getDay()+6)%7)); return y; };
+const ajoutJours = (x, n) => { const y = new Date(x); y.setDate(y.getDate()+n); return y; };
+const heureDe = s => { const x = new Date(s); return isNaN(x) ? '' : x.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' }); };
+const TYPES_EV = { agenda:'Rendez-vous', rdv:'Rendez-vous famille', etape:'Étape', tache:'Tâche', diag:'Diagnostic', echeance:'Échéance' };
+
+function renderAgenda(){
+  if(!tb.charge) chargerTableau();
+  const mode = view.mode || 'mois', ref = view.ref ? new Date(view.ref+'T12:00:00') : auj();
+  const ev = evenementsAgenda(true);
+  const parJour = k => ev.filter(e => e.date === k);
+  const chip = e => `<button type="button" class="ev ${e.type}" ${e.agendaId ? `data-ag="${esc(e.agendaId)}"` : e.id ? `data-ouvrir="${esc(e.id)}"` : ''} title="${esc(TYPES_EV[e.type]||'')}${e.heure ? ' · '+esc(e.heure) : ''}"><b>${e.heure ? esc(e.heure)+' ' : ''}${esc(e.titre)}</b>${e.id ? esc(nomDossier(e.id)) : esc(e.detail||'')}</button>`;
+  let titre = '', corps = '';
+  if(mode === 'mois'){
+    const debut = new Date(ref.getFullYear(), ref.getMonth(), 1), l0 = lundiDe(debut);
+    const nbSem = Math.ceil(((debut.getDay()+6)%7 + new Date(ref.getFullYear(), ref.getMonth()+1, 0).getDate()) / 7);
+    titre = MOIS_FR(debut).replace(/^./, c => c.toUpperCase());
+    corps = `<div class="mois"><div class="mois-t">${['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'].map(j => `<span>${j}</span>`).join('')}</div>
+      <div class="mois-g">${Array.from({length: nbSem*7}, (_, i) => { const x = ajoutJours(l0, i), k = isoJour(x), evs = parJour(k);
+        return `<div class="mj ${x.getMonth()!==ref.getMonth() ? 'hors' : ''} ${k===isoJour(auj()) ? 'auj' : ''}" data-jour="${k}"><span>${x.getDate()}</span>${evs.slice(0,3).map(chip).join('')}${evs.length>3 ? `<button type="button" class="lien small" data-voir-jour="${k}">+ ${evs.length-3} autre${evs.length>4?'s':''}</button>` : ''}</div>`; }).join('')}</div></div>`;
+  } else if(mode === 'semaine'){
+    const l0 = lundiDe(ref), fin = ajoutJours(l0, 6);
+    titre = `Semaine du ${l0.toLocaleDateString('fr-FR', { day:'numeric', month:'long' })} au ${fin.toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' })}`;
+    corps = `<div class="sem">${Array.from({length:7}, (_, i) => { const x = ajoutJours(l0, i), k = isoJour(x), evs = parJour(k);
+      return `<div class="sj ${k===isoJour(auj()) ? 'auj' : ''}" data-jour="${k}"><span>${esc(x.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric' }))}</span>${evs.map(chip).join('') || '<em class="small muted">—</em>'}</div>`; }).join('')}</div>`;
+  } else {
+    const j0 = isoJour(auj()), fin = isoJour(ajoutJours(auj(), 90));
+    const proch = ev.filter(e => e.date >= j0 && e.date <= fin);
+    const jours = [...new Set(proch.map(e => e.date))];
+    titre = 'Les 90 prochains jours';
+    corps = jours.length ? `<div class="pan">${jours.map(k => `<div class="lj"><b>${esc(jourCourt(k))}</b><div>${proch.filter(e => e.date===k).map(e => `<div class="lj-e">${chip(e)}<span class="small muted">${esc(TYPES_EV[e.type]||'')}${e.lieu ? ' · '+esc(e.lieu) : ''}</span></div>`).join('')}</div></div>`).join('')}</div>` : `<div class="card"><p class="muted" style="margin:0">Rien de prévu dans les 90 prochains jours.</p></div>`;
+  }
+  const ed = view.edit ? (view.edit === 'nouveau' ? { titre:'', debut: (view.jour || isoJour(auj())) + 'T09:00', fin:'', journee:false, lieu:'', notes:'', dossier_id: view.dossierAg || '' } : (tb.agenda||[]).find(a => a.id === view.edit)) : null;
+  const local = s => { if(!s) return ''; const x = new Date(s); if(isNaN(x)) return String(s).slice(0,16); x.setMinutes(x.getMinutes() - x.getTimezoneOffset()); return x.toISOString().slice(0,16); };
+  app.innerHTML = `<header class="pg-h"><div><span class="sur">Agenda</span><h1>${esc(titre)}</h1></div>
+    <div class="row"><button class="btn ghost petit" type="button" data-nav-ag="-1" aria-label="Précédent">‹</button><button class="btn ghost petit" type="button" data-nav-ag="0">Aujourd'hui</button><button class="btn ghost petit" type="button" data-nav-ag="1" aria-label="Suivant">›</button>
+    ${seg('ag-mode', [['mois','Mois'],['semaine','Semaine'],['liste','Liste']], mode)}
+    <button class="btn ghost" type="button" id="ag-ics">Exporter vers le téléphone</button><button class="btn" type="button" id="ag-nouveau">Nouveau rendez-vous</button></div></header>
+  ${ed ? `<div class="card"><h3>${view.edit==='nouveau' ? 'Nouveau rendez-vous' : 'Modifier le rendez-vous'}</h3>
+    <label>Titre<input id="ag-titre" value="${esc(ed.titre)}" placeholder="Ex. : Diagnostic chez Mme Roux, rendez-vous chez le notaire…" maxlength="160"></label>
+    <div class="grid2"><label>Début<input id="ag-debut" type="datetime-local" value="${esc(local(ed.debut))}"></label><label>Fin (facultatif)<input id="ag-fin" type="datetime-local" value="${esc(local(ed.fin))}"></label></div>
+    <label class="row"><input type="checkbox" id="ag-journee" ${ed.journee ? 'checked' : ''}> Toute la journée</label>
+    <div class="grid2"><label>Lieu<input id="ag-lieu" value="${esc(ed.lieu||'')}" placeholder="Adresse"></label>
+      <label>Dossier (facultatif)<select id="ag-dossier"><option value="">Aucun</option>${Object.values(dossiers).sort((a,b) => (a.contact.nom||'').localeCompare(b.contact.nom||'')).map(d => `<option value="${esc(d.id)}" ${ed.dossier_id===d.id?'selected':''}>${esc(d.contact.nom||'Sans nom')} · ${esc(d.ville||'')}</option>`).join('')}</select></label></div>
+    <label>Notes<textarea id="ag-notes" maxlength="1000">${esc(ed.notes||'')}</textarea></label>
+    <label class="row"><input type="checkbox" id="ag-famille"> Afficher aussi comme « prochain rendez-vous » dans l'espace client du dossier</label>
+    <div class="row"><button class="btn" type="button" id="ag-enreg">Enregistrer</button><button class="btn ghost" type="button" id="ag-annul">Annuler</button>${view.edit!=='nouveau' ? '<button class="btn danger" type="button" id="ag-suppr" style="margin-left:auto">Supprimer</button>' : ''}</div>
+  </div>` : ''}
+  ${!navigator.onLine && !tb.charge ? '<div class="suggest warn">Hors ligne : l\'agenda s\'affichera au retour du réseau.</div>' : ''}
+  ${corps}
+  <p class="small muted" style="margin:0"><span class="ev agenda" style="display:inline-flex;padding:2px 8px">Rendez-vous</span> <span class="ev rdv" style="display:inline-flex;padding:2px 8px">Rendez-vous famille</span> <span class="ev etape" style="display:inline-flex;padding:2px 8px">Étape</span> <span class="ev tache" style="display:inline-flex;padding:2px 8px">Tâche</span> <span class="ev echeance" style="display:inline-flex;padding:2px 8px">Échéance</span> · Touchez un jour pour y ajouter un rendez-vous.</p>`;
+
+  // Navigation
+  app.querySelectorAll('[data-nav-ag]').forEach(b => b.onclick = () => {
+    const n = +b.dataset.navAg; let x = new Date(ref);
+    if(n === 0) x = auj(); else if(mode === 'mois') x = new Date(ref.getFullYear(), ref.getMonth()+n, 1); else x = ajoutJours(ref, 7*n);
+    view.ref = isoJour(x); renderAgenda();
+  });
+  app.querySelectorAll('[data-seg="ag-mode"] button').forEach(b => b.onclick = () => { view.mode = b.dataset.v; renderAgenda(); });
+  app.querySelectorAll('[data-ouvrir]').forEach(b => b.onclick = ev2 => { ev2.stopPropagation(); ouvrirDossier(b.dataset.ouvrir, 'prepa'); });
+  app.querySelectorAll('[data-ag]').forEach(b => b.onclick = ev2 => { ev2.stopPropagation(); view.edit = b.dataset.ag; renderAgenda(); window.scrollTo(0,0); });
+  app.querySelectorAll('[data-voir-jour]').forEach(b => b.onclick = ev2 => { ev2.stopPropagation(); view.mode = 'semaine'; view.ref = b.dataset.voirJour; renderAgenda(); });
+  app.querySelectorAll('[data-jour]').forEach(c => c.onclick = () => { view.edit = 'nouveau'; view.jour = c.dataset.jour; renderAgenda(); window.scrollTo(0,0); app.querySelector('#ag-titre')?.focus(); });
+  $('#ag-nouveau').onclick = () => { view.edit = 'nouveau'; view.jour = null; renderAgenda(); window.scrollTo(0,0); app.querySelector('#ag-titre')?.focus(); };
+  $('#ag-ics').onclick = () => exporterIcs(ev);
+  const an = $('#ag-annul'); if(an) an.onclick = () => { view.edit = null; renderAgenda(); };
+  const en = $('#ag-enreg'); if(en) en.onclick = async () => {
+    const titre = $('#ag-titre').value.trim(), debut = $('#ag-debut').value, fin = $('#ag-fin').value;
+    if(!titre || !debut){ showToast('Indiquez un titre et une date de début.'); return; }
+    if(fin && fin < debut){ showToast('La fin doit être après le début.'); return; }
+    if(!navigator.onLine){ showToast('Pas de réseau : réessayez plus tard.'); return; }
+    const ligne = { titre, debut: new Date(debut).toISOString(), fin: fin ? new Date(fin).toISOString() : null, journee: $('#ag-journee').checked, lieu: $('#ag-lieu').value.trim(), notes: $('#ag-notes').value.trim(), dossier_id: $('#ag-dossier').value || null };
+    en.disabled = true;
+    const r = view.edit === 'nouveau' ? await sb.from('agenda').insert(ligne).select().single() : await sb.from('agenda').update(ligne).eq('id', view.edit).select().single();
+    en.disabled = false;
+    if(r.error){ showToast('Non enregistré : ' + r.error.message); return; }
+    tb.agenda = [...(tb.agenda||[]).filter(a => a.id !== r.data.id), r.data];
+    if($('#ag-famille').checked && ligne.dossier_id){
+      const d = dossiers[ligne.dossier_id], x = new Date(debut);
+      const prochain = { date: isoJour(x), horaire: ligne.journee ? 'toute la journée' : heureDe(x) + (fin ? ' à ' + heureDe(new Date(fin)) : ''), titre, detail: ligne.lieu ? ligne.lieu : '' };
+      const { error } = await sb.from('espace_client').upsert({ dossier_id: d.id, formule: d.formule, ville: d.ville, prochain });
+      if(error) showToast('Rendez-vous enregistré, mais pas affiché dans l\'espace client : ' + error.message);
+      delete espaces[d.id]; tb.charge = false;
+    }
+    view.edit = null; renderAgenda(); showToast('Rendez-vous enregistré.');
+  };
+  const sp = $('#ag-suppr'); if(sp) sp.onclick = async () => {
+    if(!sp.dataset.ok){ sp.dataset.ok = '1'; sp.textContent = 'Toucher encore pour supprimer'; return; }
+    const { error } = await sb.from('agenda').delete().eq('id', view.edit);
+    if(error){ showToast(error.message); return; }
+    tb.agenda = (tb.agenda||[]).filter(a => a.id !== view.edit); view.edit = null; renderAgenda(); showToast('Rendez-vous supprimé.');
+  };
+}
+
+/* Export .ics : à ouvrir sur le téléphone pour ajouter les rendez-vous à son agenda (Apple ou Google). */
+function exporterIcs(ev){
+  const j0 = isoJour(ajoutJours(auj(), -30)), fin = isoJour(ajoutJours(auj(), 180));
+  const echap = s => String(s||'').replace(/\\/g,'\\\\').replace(/\n/g,'\\n').replace(/[,;]/g, m => '\\'+m);
+  const fmtJ = k => k.replace(/-/g,'');
+  const fmtH = x => { const p = n => String(n).padStart(2,'0'); return `${x.getFullYear()}${p(x.getMonth()+1)}${p(x.getDate())}T${p(x.getHours())}${p(x.getMinutes())}00`; };
+  const lignes = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Maison Fil Bleu//Fil Bleu Dossiers//FR','CALSCALE:GREGORIAN','X-WR-CALNAME:Fil Bleu'];
+  ev.filter(e => e.date >= j0 && e.date <= fin && e.type !== 'tache').forEach((e, i) => {
+    lignes.push('BEGIN:VEVENT', `UID:fb-${e.agendaId || (e.id||'x')+'-'+e.type+'-'+e.date+'-'+i}@maisonfilbleu.fr`, `DTSTAMP:${fmtH(new Date())}`);
+    if(e.debut && !e.journee){ lignes.push(`DTSTART:${fmtH(new Date(e.debut))}`, `DTEND:${fmtH(e.fin ? new Date(e.fin) : new Date(new Date(e.debut).getTime()+3600e3))}`); }
+    else { const k2 = isoJour(ajoutJours(new Date(e.date+'T12:00:00'), 1)); lignes.push(`DTSTART;VALUE=DATE:${fmtJ(e.date)}`, `DTEND;VALUE=DATE:${fmtJ(k2)}`); }
+    lignes.push(`SUMMARY:${echap((e.id ? nomDossier(e.id)+' · ' : '') + e.titre)}`);
+    const desc = [TYPES_EV[e.type], e.heure && !e.debut ? 'Horaire : '+e.heure : '', e.detail].filter(Boolean).join(' · ');
+    if(desc) lignes.push(`DESCRIPTION:${echap(desc)}`);
+    if(e.lieu) lignes.push(`LOCATION:${echap(e.lieu)}`);
+    lignes.push('END:VEVENT');
+  });
+  lignes.push('END:VCALENDAR');
+  const u = URL.createObjectURL(new Blob([lignes.join('\r\n')], { type:'text/calendar' }));
+  const a = document.createElement('a'); a.href = u; a.download = 'agenda-fil-bleu.ics'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000);
+  showToast('Fichier d\'agenda téléchargé : ouvrez-le sur votre téléphone pour l\'ajouter à votre calendrier.');
 }
 
 /* ---------- Liste des dossiers ---------- */
@@ -1859,7 +1985,7 @@ function renderSettings(){
   const grid = (k,l) => `<label>${esc(l)}<div class="grid2" style="grid-template-columns:repeat(4,1fr)">${getPath(S,k).map((v,i)=>`<input type="number" inputmode="decimal" data-s="${k}.${i}" value="${v}" aria-label="${esc(l)} ${TAILLES[i]}">`).join('')}</div></label>`;
   const so = {...DEFAULTS.soc, ...(S.soc||{})};
   const tf = (k,l) => `<label>${esc(l)}<input data-st="${k}" value="${esc(so[k])}"></label>`;
-  app.innerHTML = header('Réglages') + `<button class="btn ghost" type="button" id="b-carnet" style="align-self:flex-start">Carnet d'adresses</button>
+  app.innerHTML = header('Réglages') + `<div class="row"><button class="btn ghost" type="button" id="b-carnet">Carnet d'adresses</button><button class="btn ghost" type="button" id="b-registre">Registre des bons</button></div>
   <div class="card"><h3>Société (mentions du devis PDF)</h3><label>Commune du siège (point de départ des distances)<select data-st="siegeVille">${Object.keys(COORDS).filter(k=>COORDS[k]).map(v=>`<option ${v===so.siegeVille?'selected':''}>${esc(v)}</option>`).join('')}</select></label>${tf('adresse','Adresse du siège')}<div class="grid2">${tf('siret','SIRET')}${tf('rcs','RCS')}${tf('tva','N° de TVA')}${tf('tel','Téléphone')}</div>${tf('email','E-mail')}${tf('mediateur','Médiateur de la consommation')}${tf('signataire','Signataire pour la société')}</div>
   <div class="card"><h3>Prix TTC (1-2 p. / 3 p. / 4 p. / 5 p.+)</h3>${grid('grids.L','Clés en main')}${grid('grids.T','Nouveau départ')}${grid('grids.S','Succession')}
   <div class="grid2">${f('m3Sup','Volume en plus, €/m³ TTC','1')}${f('residence','Recherche de résidence','1')}${f('gardiennage','Gardiennage, €/mois','1')}${f('urgence','Urgence, %','1')}</div>
@@ -1885,6 +2011,7 @@ function renderSettings(){
     showToast(`${liste.length} dossier${liste.length>1?'s':''} exporté${liste.length>1?'s':''}.`);
   };
   $('#b-carnet').onclick = () => { view = { name:'carnet' }; render(); window.scrollTo(0,0); };
+  $('#b-registre').onclick = () => { view = { name:'registre' }; render(); window.scrollTo(0,0); };
   $('#b-mdp').onclick = () => actions.motDePasse();
   $('#b-deco').onclick = () => actions.deconnexion();
   app.querySelectorAll('[data-s]').forEach(el => el.addEventListener('change', () => { setPath(S, el.dataset.s, parseFloat(el.value)||0); persistSettings(); showToast('Réglage enregistré.'); }));

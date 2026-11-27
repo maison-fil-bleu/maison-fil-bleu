@@ -276,6 +276,25 @@ do $$ begin
 end $$;
 reset role;
 
+-- ---------- 12. Agenda : réservé aux administrateurs ----------
+insert into public.agenda (dossier_id, titre, debut) values ('dA', 'Diagnostic A', now());
+set local role authenticated;
+set local request.jwt.claims = '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000a","email":"famille.a@essai.test","aal":"aal1"}';
+do $$ begin
+  if (select count(*) from public.agenda) <> 0 then raise exception 'ÉCHEC 12a : la famille lit l''agenda'; end if;
+  begin insert into public.agenda (titre, debut) values ('Intrus', now()); raise exception 'ÉCHEC 12b : la famille écrit dans l''agenda';
+  exception when insufficient_privilege then null; end;
+end $$;
+reset role;
+set local role authenticated;
+set local request.jwt.claims = '{"role":"authenticated","sub":"00000000-0000-0000-0000-000000000001","email":"admin@essai.test","aal":"aal2"}';
+do $$ begin
+  if (select count(*) from public.agenda) < 1 then raise exception 'ÉCHEC 12c : l''administrateur ne lit pas l''agenda'; end if;
+  begin insert into public.agenda (titre, debut, fin) values ('Mauvais', now(), now() - interval '1 hour'); raise exception 'ÉCHEC 12d : fin avant début acceptée';
+  exception when check_violation then null; end;
+end $$;
+reset role;
+
 rollback;
 
 select 'TOUS LES TESTS D''ACCÈS SONT PASSÉS' as resultat;
