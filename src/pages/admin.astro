@@ -9,11 +9,12 @@ const ic = {
   dossiers: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
   registre: '<path d="M7 3h10l3 3v15H4V3h3z"/><path d="M8 9h8M8 13h8M8 17h5"/>',
   bilan: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  carnet: '<path d="M5 3h13a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H5z"/><path d="M5 3v18M9 8h6M9 12h6"/><path d="M3 7h2M3 12h2M3 17h2"/>',
   reglages: '<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14 3h-4l-.6 2.7a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2L10 21h4l.6-2.7a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
 };
 const svg = (k: keyof typeof ic, s = 20) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ic[k]}</svg>`;
-const menu: [string, keyof typeof ic, string][] = [['accueil', 'accueil', 'Tableau de bord'], ['list', 'dossiers', 'Dossiers'], ['registre', 'registre', 'Registre des bons'], ['bilan', 'bilan', 'Bilan'], ['settings', 'reglages', 'Réglages']];
+const menu: [string, keyof typeof ic, string][] = [['accueil', 'accueil', 'Tableau de bord'], ['list', 'dossiers', 'Dossiers'], ['carnet', 'carnet', 'Carnet d\'adresses'], ['registre', 'registre', 'Registre des bons'], ['bilan', 'bilan', 'Bilan'], ['settings', 'reglages', 'Réglages']];
 ---
 <!doctype html>
 <html lang="fr">

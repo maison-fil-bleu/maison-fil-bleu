@@ -143,6 +143,7 @@ async function chargerDistant(){
   if(reg?.data){ S = {...structuredClone(DEFAULTS), ...reg.data}; localSet(K_REGL, S); }
   else { await sb.from('reglages').upsert({ id: 1, data: S }); }
   try{ await bonsApi?.charger(); }catch(e){}
+  try{ await chargerCarnet(); }catch(e){}
 }
 async function persistSettings(){
   localSet(K_REGL, S);
@@ -320,7 +321,7 @@ function setNav(){
   const cle = ['list','dossier','bon'].includes(view.name) ? 'list' : view.name;
   document.querySelectorAll('[data-nav]').forEach(b => b.setAttribute('aria-current', b.dataset.nav===cle ? 'page' : 'false'));
 }
-function render(){ setNav(); if(view.name!=='bon') bonsApi?.quitter(); if(view.name==='accueil') renderAccueil(); else if(view.name==='list') renderList(); else if(view.name==='dossier') renderDossier(); else if(view.name==='bon') bonsApi.ecran(view.id); else if(view.name==='registre') bonsApi.registre(); else if(view.name==='bilan') renderBilan(); else renderSettings(); }
+function render(){ setNav(); if(view.name!=='bon') bonsApi?.quitter(); if(view.name==='accueil') renderAccueil(); else if(view.name==='list') renderList(); else if(view.name==='dossier') renderDossier(); else if(view.name==='bon') bonsApi.ecran(view.id); else if(view.name==='registre') bonsApi.registre(); else if(view.name==='bilan') renderBilan(); else if(view.name==='carnet') renderCarnet(); else renderSettings(); }
 
 /* ---------- Tableau de bord ---------- */
 // Données légères chargées pour l'accueil : rendez-vous et tâches (espace_client), attentes des familles, activité.
@@ -426,6 +427,95 @@ function renderList(){
   $('#q').oninput = e => { view.q = e.target.value; const pos = e.target.selectionStart; renderList(); const i=$('#q'); i.focus(); i.setSelectionRange(pos,pos); };
   app.querySelectorAll('[data-filtre]').forEach(b => b.onclick = () => { view.filtre = b.dataset.filtre; renderList(); });
   app.querySelectorAll('[data-id]').forEach(b => { b.onclick = () => ouvrirDossier(b.dataset.id); b.onkeydown = e => { if(e.key==='Enter') ouvrirDossier(b.dataset.id); }; });
+}
+
+/* ---------- Carnet d'adresses (organismes réutilisés pour les démarches et les courriers) ---------- */
+const CAT_CARNET = { energie:'Énergie', eau:'Eau', internet:'Internet et téléphone', assurance:'Assurance', banque:'Banque', administration:'Administration', mairie:'Mairie', syndic:'Syndic', notaire:'Notaire', agence:'Agence immobilière', residence:'Résidence ou EHPAD', association:'Association', ressourcerie:'Ressourcerie', decheterie:'Déchèterie', demenageur:'Déménageur', stockage:'Box de stockage', artisan:'Artisan', autre:'Autre' };
+const K_CARNET = 'fb-cache-carnet';
+let carnet = localGet(K_CARNET) || [];
+async function chargerCarnet(){
+  const { data, error } = await sb.from('carnet').select('*').order('nom');
+  if(!error && data){ carnet = data; localSet(K_CARNET, carnet); }
+}
+const ficheCarnet = id => carnet.find(c => c.id === id);
+const adresseCarnet = c => [c.service, c.adresse, [c.code_postal, c.ville].filter(Boolean).join(' ')].filter(Boolean).join('\n');
+
+function renderCarnet(){
+  const q = (view.q||'').toLowerCase(), cat = view.cat || '';
+  const trouves = carnet.filter(c => !q || [c.nom, c.service, c.ville, c.notes, CAT_CARNET[c.categorie]].join(' ').toLowerCase().includes(q));
+  const liste = trouves.filter(c => !cat || c.categorie===cat).sort((a,b) => a.nom.localeCompare(b.nom, 'fr'));
+  const cats = Object.keys(CAT_CARNET).filter(k => trouves.some(c => c.categorie===k));
+  const ed = view.edit === 'nouveau' ? { categorie: cat || 'energie', nom:'', service:'', adresse:'', code_postal:'', ville:'', telephone:'', email:'', site:'', notes:'' } : ficheCarnet(view.edit);
+  const champ = (k, l, ph = '', type = 'text') => `<label>${esc(l)}<input data-cf="${k}" type="${type}" value="${esc(ed?.[k]||'')}" placeholder="${esc(ph)}"></label>`;
+  app.innerHTML = `<header class="pg-h"><div><span class="sur">${carnet.length} fiche${carnet.length>1?'s':''}</span><h1>Carnet d'adresses</h1></div>
+    <div class="row"><label class="cherche" aria-label="Rechercher">${'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>'}<input id="q-carnet" type="search" placeholder="Organisme, ville, service…" value="${esc(view.q||'')}"></label>
+    <button class="btn" type="button" id="cf-nouveau">Ajouter une fiche</button></div></header>
+  ${ed ? `<div class="card"><h3>${view.edit==='nouveau' ? 'Nouvelle fiche' : 'Modifier : ' + esc(ed.nom)}</h3>
+    <div class="grid2"><label>Catégorie<select data-cf="categorie">${Object.entries(CAT_CARNET).map(([k,l]) => `<option value="${k}" ${ed.categorie===k?'selected':''}>${esc(l)}</option>`).join('')}</select></label>${champ('nom','Nom','Ex. : Mairie de Marseille 6e-8e')}</div>
+    <div class="grid2">${champ('service','Service ou destinataire','Ex. : Service résiliation')}${champ('adresse','Adresse','N°, rue, boîte postale')}</div>
+    <div class="grid2" style="grid-template-columns:1fr 2fr">${champ('code_postal','Code postal')}${champ('ville','Ville')}</div>
+    <div class="grid2">${champ('telephone','Téléphone','', 'tel')}${champ('email','E-mail','', 'email')}</div>
+    ${champ('site','Site internet','Ex. : edf.fr')}
+    <label>Notes<textarea data-cf="notes" placeholder="Pièces à joindre, délais, contact précis…">${esc(ed.notes||'')}</textarea></label>
+    <div class="row"><button class="btn" type="button" id="cf-enreg">Enregistrer</button><button class="btn ghost" type="button" id="cf-annul">Annuler</button>${view.edit!=='nouveau' ? '<button class="btn danger" type="button" id="cf-suppr" style="margin-left:auto">Supprimer la fiche</button>' : ''}</div>
+  </div>` : ''}
+  <div class="pipeline" role="group" aria-label="Filtrer par catégorie"><button type="button" data-cat="" aria-pressed="${!cat}"><span>Toutes</span><b>${trouves.length}</b></button>${cats.map(k => `<button type="button" data-cat="${k}" aria-pressed="${cat===k}"><span>${esc(CAT_CARNET[k])}</span><b>${trouves.filter(c => c.categorie===k).length}</b></button>`).join('')}</div>
+  ${!navigator.onLine ? '<div class="suggest warn">Hors ligne : le carnet se consulte, mais les modifications attendront le retour du réseau.</div>' : ''}
+  ${liste.length ? `<div class="pan tab"><table><thead><tr><th>Organisme</th><th>Catégorie</th><th>Adresse</th><th>Contact</th><th></th></tr></thead><tbody>
+    ${liste.map(c => `<tr class="clic" data-cf-edit="${esc(c.id)}"><td><b>${esc(c.nom)}</b>${c.service ? `<br><span class="small muted">${esc(c.service)}</span>` : ''}</td><td><span class="badge">${esc(CAT_CARNET[c.categorie]||'Autre')}</span></td>
+      <td class="small">${c.adresse || c.ville ? esc([c.adresse, [c.code_postal, c.ville].filter(Boolean).join(' ')].filter(Boolean).join(', ')) : '<span class="warn">Adresse à compléter</span>'}</td>
+      <td class="small">${[c.telephone, c.email].filter(Boolean).map(esc).join('<br>') || (c.site ? esc(c.site) : '—')}</td><td class="dr"><span class="lien">Modifier</span></td></tr>`).join('')}
+  </tbody></table></div>` : `<div class="card"><p class="muted" style="margin:0">${carnet.length ? 'Aucune fiche ne correspond.' : (navigator.onLine ? 'Chargement du carnet…' : 'Carnet indisponible hors ligne.')}</p></div>`}`;
+  if(!carnet.length && navigator.onLine) chargerCarnet().then(() => { if(view.name==='carnet' && carnet.length) renderCarnet(); });
+  $('#q-carnet').oninput = e => { view.q = e.target.value; const pos = e.target.selectionStart; renderCarnet(); const i = $('#q-carnet'); i.focus(); i.setSelectionRange(pos,pos); };
+  $('#cf-nouveau').onclick = () => { view.edit = 'nouveau'; renderCarnet(); window.scrollTo(0,0); app.querySelector('[data-cf="nom"]')?.focus(); };
+  app.querySelectorAll('[data-cat]').forEach(b => b.onclick = () => { view.cat = b.dataset.cat; renderCarnet(); });
+  app.querySelectorAll('[data-cf-edit]').forEach(r => r.onclick = () => { view.edit = r.dataset.cfEdit; renderCarnet(); window.scrollTo(0,0); });
+  const an = $('#cf-annul'); if(an) an.onclick = () => { view.edit = null; renderCarnet(); };
+  const en = $('#cf-enreg'); if(en) en.onclick = async () => {
+    const v = {}; app.querySelectorAll('[data-cf]').forEach(el => v[el.dataset.cf] = el.value.trim());
+    if(!v.nom){ showToast('Indiquez le nom.'); return; }
+    if(!navigator.onLine){ showToast('Pas de réseau : réessayez plus tard.'); return; }
+    en.disabled = true;
+    const r = view.edit === 'nouveau' ? await sb.from('carnet').insert(v).select().single() : await sb.from('carnet').update(v).eq('id', view.edit).select().single();
+    en.disabled = false;
+    if(r.error){ showToast('Non enregistré : ' + r.error.message); return; }
+    carnet = [...carnet.filter(c => c.id !== r.data.id), r.data]; localSet(K_CARNET, carnet);
+    const dr = view.retour && dossiers[view.retour];
+    if(dr && view.edit === 'nouveau'){ dr.organismes = [...(dr.organismes||[]), { id: r.data.id, nom: r.data.nom, ref: '' }]; persist(dr); view = { name:'dossier', id: dr.id }; tab = 'appel'; render(); showToast('Fiche créée et ajoutée au dossier.'); return; }
+    view.edit = null; renderCarnet(); showToast('Fiche enregistrée.');
+  };
+  const sp = $('#cf-suppr'); if(sp) sp.onclick = async () => {
+    if(!sp.dataset.ok){ sp.dataset.ok = '1'; sp.textContent = 'Toucher encore pour supprimer'; return; }
+    const { error } = await sb.from('carnet').delete().eq('id', view.edit);
+    if(error){ showToast(error.message); return; }
+    carnet = carnet.filter(c => c.id !== view.edit); localSet(K_CARNET, carnet); view.edit = null; renderCarnet(); showToast('Fiche supprimée.');
+  };
+}
+
+/* Organismes d'un dossier : fiches du carnet + référence du contrat (n° client, PDL, police…). */
+function carteOrganismes(d){
+  const org = d.organismes || [];
+  return `<div class="card"><h3>Organismes et démarches du dossier</h3>
+    <p class="small muted" style="margin:0">Fournisseurs, assureurs, mairie, syndic, notaire… choisis dans le carnet d'adresses. La référence (n° client, n° de contrat, PDL) servira aux courriers types.</p>
+    ${org.length ? `<table>${org.map((o, i) => { const c = ficheCarnet(o.id); return `<tr><td><b>${esc(c?.nom || o.nom || 'Fiche supprimée du carnet')}</b><br><span class="small muted">${esc(CAT_CARNET[c?.categorie]||'')}${c && !c.adresse ? ' · <span class="warn">adresse à compléter dans le carnet</span>' : ''}</span></td>
+      <td style="width:42%"><input data-org="${i}" data-champ="ref" value="${esc(o.ref||'')}" placeholder="N° client, de contrat, PDL…" aria-label="Référence"></td><td class="n"><button type="button" class="suppr" data-org-suppr="${i}" aria-label="Retirer">×</button></td></tr>`; }).join('')}</table>` : ''}
+    <div class="row"><input id="org-choix" list="org-liste" placeholder="${carnet.length ? 'Tapez un nom : EDF, Orange, mairie…' : 'Carnet en cours de chargement…'}" style="flex:1;min-width:200px"><datalist id="org-liste">${carnet.map(c => `<option value="${esc(c.nom)}">${esc(CAT_CARNET[c.categorie]||'')}</option>`).join('')}</datalist>
+      <button class="btn ghost" type="button" id="org-ajout">Ajouter au dossier</button></div>
+    <button class="lien" type="button" id="org-carnet" style="align-self:flex-start">Ouvrir le carnet d'adresses</button>
+  </div>`;
+}
+function bindOrganismes(d){
+  app.querySelectorAll('[data-org]').forEach(el => el.addEventListener('input', () => { d.organismes[+el.dataset.org][el.dataset.champ] = el.value.trim(); persist(d); }));
+  app.querySelectorAll('[data-org-suppr]').forEach(b => b.onclick = () => { d.organismes.splice(+b.dataset.orgSuppr, 1); persist(d); rerender(); });
+  const aj = $('#org-ajout'); if(aj) aj.onclick = () => {
+    const nom = $('#org-choix').value.trim(); if(!nom) return;
+    const c = carnet.find(x => x.nom.toLowerCase() === nom.toLowerCase());
+    if(!c){ view = { name:'carnet', edit:'nouveau', retour: d.id }; render(); const i = app.querySelector('[data-cf="nom"]'); if(i){ i.value = nom; i.focus(); } showToast('Créez la fiche, puis revenez au dossier.'); return; }
+    if((d.organismes||[]).some(o => o.id === c.id)){ showToast('Déjà dans le dossier.'); return; }
+    d.organismes = [...(d.organismes||[]), { id: c.id, nom: c.nom, ref: '' }]; persist(d); const y = window.scrollY; render(); window.scrollTo(0,y);
+  };
+  const oc = $('#org-carnet'); if(oc) oc.onclick = () => { view = { name:'carnet' }; render(); window.scrollTo(0,0); };
 }
 
 /* ---------- Parcours guidé : infos du premier appel, prochaine étape ---------- */
@@ -538,6 +628,7 @@ function renderDossier(){
     <label>Client${seg('client',[['particulier','Particulier'],['agence','Agence ou pro']],d.client)}</label>
   </div>
   ${cartePremierAppel(d)}
+  ${carteOrganismes(d)}
   <div class="card"><h3>Situation</h3>
     ${seg('situation', Object.entries(SITU), d.situation)}
     <div class="suggest">Formule conseillée : <b>${FORM[suggest(d)]}</b>${d.formule!==suggest(d)?` · formule choisie : <b>${FORM[d.formule]}</b>`:''}</div>
@@ -677,6 +768,7 @@ function renderDossier(){
   const avecResume = ['appel','diag','devis','suivi'].includes(tab);
   app.innerHTML = enteteDossier(d, c) + (avecResume ? resume + `<div class="deux-col">${body}</div>` : body);
   bind(d);
+  if(tab==='appel') bindOrganismes(d);
   $('#fil-liste').onclick = () => { view = {name:'list'}; render(); window.scrollTo(0,0); };
   $('#b-vers-bons').onclick = () => { tab = 'bons'; render(); window.scrollTo(0,0); };
   const ap = app.querySelector('[data-aller-prepa]'); if(ap) ap.onclick = () => { tab = 'prepa'; render(); window.scrollTo(0,0); };
@@ -715,7 +807,7 @@ function renderBilan(){
   const envoyes = all.filter(d => d.statut==='Devis envoyé'), signes = all.filter(d => ['Signé','Terminé'].includes(d.statut));
   const perdus = all.filter(d => d.statut==='Perdu');
   const tSign = (signes.length+perdus.length) ? signes.length/(signes.length+perdus.length) : null;
-  app.innerHTML = header('Bilan') + `<h1>Bilan</h1>
+  app.innerHTML = header('Bilan') + `
   <div class="card"><h3>Les deux chiffres décisifs</h3>
     <div class="kpis">
       <div class="kpi"><b>${vM3!=null?num(vM3,2):'—'}</b><span>h/m³ réels en débarras (${nV} chantier${nV>1?'s':''}) · prévu ${num(S.rythmeM3,2)}</span></div>
@@ -1702,7 +1794,7 @@ function renderSettings(){
   const grid = (k,l) => `<label>${esc(l)}<div class="grid2" style="grid-template-columns:repeat(4,1fr)">${getPath(S,k).map((v,i)=>`<input type="number" inputmode="decimal" data-s="${k}.${i}" value="${v}" aria-label="${esc(l)} ${TAILLES[i]}">`).join('')}</div></label>`;
   const so = {...DEFAULTS.soc, ...(S.soc||{})};
   const tf = (k,l) => `<label>${esc(l)}<input data-st="${k}" value="${esc(so[k])}"></label>`;
-  app.innerHTML = header('Réglages') + `<h1>Réglages</h1>
+  app.innerHTML = header('Réglages') + `<button class="btn ghost" type="button" id="b-carnet" style="align-self:flex-start">Carnet d'adresses</button>
   <div class="card"><h3>Société (mentions du devis PDF)</h3><label>Commune du siège (point de départ des distances)<select data-st="siegeVille">${Object.keys(COORDS).filter(k=>COORDS[k]).map(v=>`<option ${v===so.siegeVille?'selected':''}>${esc(v)}</option>`).join('')}</select></label>${tf('adresse','Adresse du siège')}<div class="grid2">${tf('siret','SIRET')}${tf('rcs','RCS')}${tf('tva','N° de TVA')}${tf('tel','Téléphone')}</div>${tf('email','E-mail')}${tf('mediateur','Médiateur de la consommation')}${tf('signataire','Signataire pour la société')}</div>
   <div class="card"><h3>Prix TTC (1-2 p. / 3 p. / 4 p. / 5 p.+)</h3>${grid('grids.L','Clés en main')}${grid('grids.T','Nouveau départ')}${grid('grids.S','Succession')}
   <div class="grid2">${f('m3Sup','Volume en plus, €/m³ TTC','1')}${f('residence','Recherche de résidence','1')}${f('gardiennage','Gardiennage, €/mois','1')}${f('urgence','Urgence, %','1')}</div>
@@ -1727,6 +1819,7 @@ function renderSettings(){
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000);
     showToast(`${liste.length} dossier${liste.length>1?'s':''} exporté${liste.length>1?'s':''}.`);
   };
+  $('#b-carnet').onclick = () => { view = { name:'carnet' }; render(); window.scrollTo(0,0); };
   $('#b-mdp').onclick = () => actions.motDePasse();
   $('#b-deco').onclick = () => actions.deconnexion();
   app.querySelectorAll('[data-s]').forEach(el => el.addEventListener('change', () => { setPath(S, el.dataset.s, parseFloat(el.value)||0); persistSettings(); showToast('Réglage enregistré.'); }));

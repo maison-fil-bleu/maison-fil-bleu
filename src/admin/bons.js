@@ -661,8 +661,7 @@ function registre() {
   const lignes = moisReg ? toutes.filter((l) => l.date.startsWith(moisReg)) : toutes;
   const nomMois = (m) => new Date(m + '-15').toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
   const tv = lignes.reduce((a, l) => a + (Number(l.volume) || 0), 0), tc = lignes.reduce((a, l) => a + (Number(l.cout) || 0), 0);
-  app.innerHTML = `${ctx.header('Registre')}
-    <h1>Registre des déchets</h1>
+  app.innerHTML = `${ctx.header('Registre des déchets', 'Registre')}
     <p class="small muted" style="margin:0">Tiré des bons d'intervention signés, en ordre chronologique. Un bon rectifié est remplacé par son rectificatif.</p>
     <div class="card"><div class="grid2"><label>Mois<select id="reg-mois"><option value="">Tous les mois</option>${mois.map((m) => `<option value="${m}" ${m === moisReg ? 'selected' : ''}>${esc(nomMois(m))}</option>`).join('')}</select></label>
       <div style="display:flex;align-items:flex-end"><button class="btn" id="reg-csv" style="width:100%" ${lignes.length ? '' : 'disabled'}>Exporter en CSV</button></div></div>
