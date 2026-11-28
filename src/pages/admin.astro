@@ -73,6 +73,11 @@ body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:
 .side-sync.attente{color:#F2D49B}.side-sync.attente i{background:#E0A75A}
 .side-sync.horsligne{color:#F0B4B4}.side-sync.horsligne i{background:#E58585}
 .side-moi{color:#8C97A8;overflow-wrap:anywhere}
+.side-actualiser{align-self:flex-start;border:1px solid rgba(255,255,255,.18);border-radius:5px;background:none;color:#C9D1DD;font:inherit;font-size:12px;padding:4px 9px;cursor:pointer}
+.side-actualiser:hover{background:rgba(255,255,255,.08);color:#fff}
+.side-actualiser[aria-busy="true"]{opacity:.55;cursor:progress}
+#etat-reseau.erreur{background:#FBE9E7;color:#9A2F22;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+#etat-reseau button{border:1px solid currentColor;border-radius:5px;background:none;color:inherit;font:inherit;font-size:12.5px;padding:3px 10px;cursor:pointer}
 .zone{min-width:0;padding:24px 32px 64px;padding-right:max(32px,env(safe-area-inset-right,0px))}
 main{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
 .shell.sans-menu main{max-width:560px;padding-top:6vh}
@@ -404,6 +409,7 @@ body.bi-large main{max-width:980px}
   .side nav button em{position:absolute;margin:-18px 0 0 18px;font-size:10px;padding:0 5px}
   .side-marque div,.side nav button span,.side-bas .side-moi,.side-nouveau span{display:none}
   .side-sync{font-size:0;gap:0}
+  .side-actualiser{align-self:center;font-size:15px;padding:4px 8px}.side-actualiser span{display:none}
   .side-nouveau{width:48px}
   .side nav button{justify-content:center;padding:12px}
   .zone{padding:18px 18px 64px}
@@ -458,6 +464,7 @@ body.bi-large main{max-width:980px}
     </nav>
     <div class="side-bas">
       <span class="side-sync" id="side-sync"><i></i><span>Synchronisé</span></span>
+      <button class="side-actualiser" id="side-actualiser" type="button" title="Recharger les dossiers depuis le serveur">↻ <span>Actualiser</span></button>
       <span class="side-moi" id="side-moi"></span>
     </div>
   </aside>

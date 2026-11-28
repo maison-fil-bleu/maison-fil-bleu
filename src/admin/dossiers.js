@@ -215,14 +215,23 @@ async function remplirVignettes(){
 }
 
 /* ---------- Bandeau d'état (hors ligne, en attente) ---------- */
+let erreurSync = '';          // dernière erreur de rechargement (affichée tant qu'elle n'est pas résolue)
+let derniereSync = 0;         // heure du dernier rechargement réussi
 function majBandeau(){
   const el = document.getElementById('etat-reseau'); if(!el) return;
   const n = nbEnAttente();
+  el.classList.toggle('erreur', navigator.onLine && !!erreurSync);
   if(!navigator.onLine){ el.hidden = false; el.textContent = `Hors ligne : vos modifications sont gardées sur l'appareil${n?` (${n} en attente)`:''} et partiront au retour du réseau.`; }
+  else if(erreurSync){ el.hidden = false; el.innerHTML = `<span>${esc(erreurSync)}</span><button type="button" data-actualiser>Réessayer</button>`; }
   else if(n){ el.hidden = false; el.textContent = `${n} modification${n>1?'s':''} en attente d'envoi…`; }
   else el.hidden = true;
   const sy = document.getElementById('side-sync');
-  if(sy){ sy.className = 'side-sync' + (!navigator.onLine ? ' horsligne' : n ? ' attente' : ''); sy.lastElementChild.textContent = !navigator.onLine ? 'Hors ligne' : n ? `${n} en attente d'envoi` : 'Synchronisé'; sy.title = sy.lastElementChild.textContent; }
+  if(sy){
+    const txt = !navigator.onLine ? 'Hors ligne' : erreurSync ? 'Échec de synchro' : n ? `${n} en attente d'envoi` : 'Synchronisé';
+    sy.className = 'side-sync' + (!navigator.onLine || erreurSync ? ' horsligne' : n ? ' attente' : '');
+    sy.lastElementChild.textContent = txt;
+    sy.title = txt + (derniereSync ? ` · dernière mise à jour à ${new Date(derniereSync).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}` : '');
+  }
 }
 
 /* ---------- Nouveau dossier ---------- */
@@ -2318,17 +2327,46 @@ const moi = document.getElementById('side-moi'); if(moi) moi.textContent = utili
 const cible = new URLSearchParams(location.hash.slice(1)).get('dossier');
 const ouvrirCible = () => { if(cible && dossiers[cible] && view.name==='accueil'){ view = {name:'dossier', id:cible}; tab='appel'; history.replaceState(null, '', '/admin'); return true; } return false; };
 loadLocal(); ouvrirCible(); render();
+/* ---------- Rechargement depuis le serveur ----------
+   L'envoi des modifications en attente et le rechargement des dossiers sont indépendants : un échec
+   d'envoi (photo, bon…) n'empêche plus de voir les nouveaux dossiers. Un échec de rechargement reste
+   affiché dans le bandeau (avec « Réessayer ») au lieu d'un message de 2 secondes. */
+let actualisationEnCours = null;
+function actualiser({ manuel = false, demarrage = false } = {}){
+  if(actualisationEnCours) return actualisationEnCours;
+  actualisationEnCours = (async () => {
+    const bouton = document.getElementById('side-actualiser'); bouton?.setAttribute('aria-busy', 'true');
+    if(!navigator.onLine){ majBandeau(); if(manuel) showToast('Hors ligne : impossible de recharger pour le moment.'); return; }
+    const avant = new Set(Object.keys(dossiers));
+    try{ await viderFile(); }catch(e){ console.warn('Envoi des modifications en attente :', e); }
+    try{
+      await chargerDistant();
+      erreurSync = ''; derniereSync = Date.now(); tb.charge = false;
+    }catch(e){
+      console.warn('Rechargement des dossiers :', e);
+      erreurSync = "Les dossiers n'ont pas pu être rechargés depuis le serveur : ceux affichés sont ceux gardés sur l'appareil et peuvent dater.";
+      if(demarrage) render();
+      return;
+    }
+    const nouveaux = Object.keys(dossiers).filter(id => !avant.has(id));
+    if(demarrage){ ouvrirCible(); render(); if(cible && !dossiers[cible]) showToast("Ce dossier n'existe pas (ou plus)."); }
+    else rerender();
+    if(nouveaux.length && avant.size) showToast(nouveaux.length > 1 ? `${nouveaux.length} nouveaux dossiers.` : `Nouveau dossier : ${nomDossier(nouveaux[0])}.`);
+    else if(manuel) showToast('Dossiers à jour.');
+  })().finally(() => { actualisationEnCours = null; document.getElementById('side-actualiser')?.removeAttribute('aria-busy'); majBandeau(); });
+  return actualisationEnCours;
+}
 (async () => {
   await compterPhotosEnAttente(); majBandeau();
-  try{ await viderFile(); await chargerDistant(); ouvrirCible(); render(); if(cible && !dossiers[cible]) showToast("Ce dossier n'existe pas (ou plus)."); }
-  catch(e){ showToast("Pas de réseau : dossiers de l'appareil affichés."); }
-  majBandeau();
+  await actualiser({ demarrage: true });
 })();
-addEventListener('online', async () => { majBandeau(); await viderFile(); try{ await chargerDistant(); rerender(); }catch(e){} });
+document.getElementById('side-actualiser')?.addEventListener('click', () => actualiser({ manuel: true }));
+document.getElementById('etat-reseau')?.addEventListener('click', e => { if(e.target.closest('[data-actualiser]')) actualiser({ manuel: true }); });
+addEventListener('online', () => { majBandeau(); actualiser(); });
 addEventListener('offline', majBandeau);
-document.addEventListener('visibilitychange', async () => {
-  if(document.visibilityState !== 'visible' || !navigator.onLine || Object.keys(saveTimers).length) return;
-  try{ await viderFile(); await chargerDistant(); rerender(); }catch(e){}
-});
+const actualisationPossible = () => document.visibilityState === 'visible' && navigator.onLine && !Object.keys(saveTimers).length;
+document.addEventListener('visibilitychange', () => { if(actualisationPossible()) actualiser(); });
+// Toutes les 2 minutes tant que l'appli est au premier plan (sans gêner une saisie : rerender attend).
+setInterval(() => { if(actualisationPossible() && Date.now() - derniereSync > 100e3) actualiser(); }, 120e3);
 return { viderCache(){ [K_CACHE, K_FILE, K_SUPPR, K_REGL].forEach(k => { try{ localStorage.removeItem(k); }catch(e){} }); bonsApi?.viderCache(); } };
 }
