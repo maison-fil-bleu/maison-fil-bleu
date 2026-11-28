@@ -576,7 +576,7 @@ function dessinerCourriels(){
   <div class="pipeline" role="group" aria-label="Filtrer">${[['nouveau','À traiter'],['range','Rangés'],['traite','Traités'],['','Tous']].map(([k,l]) => `<button type="button" data-fc="${k}" aria-pressed="${filtre===k}"><span>${l}</span></button>`).join('')}</div>
   ${sel ? carteCourriel(sel) : ''}
   ${liste.length ? `<div class="pan tab"><table><thead><tr><th>Reçu</th><th>De</th><th>Objet</th><th>Dossier</th><th>Statut</th></tr></thead><tbody>
-    ${liste.map(c => `<tr class="clic ${c.id===view.ouvert ? 'attente' : ''}" data-co="${esc(c.id)}"><td class="muted" style="white-space:nowrap">${esc(quandFr(c.recu_le))}</td><td><b>${esc(nomDe(c))}</b>${c.de_nom ? `<br><span class="small muted">${esc(c.de)}</span>` : ''}</td><td>${esc(c.sujet || '(sans objet)')}<br><span class="small muted">${esc((c.texte||'').replace(/\s+/g,' ').slice(0, 110))}</span></td><td>${c.dossier_id && dossiers[c.dossier_id] ? esc(nomDossier(c.dossier_id)) : '<span class="muted">—</span>'}</td><td><span class="badge ${STATUT_C[c.statut]?.[1]||''}">${STATUT_C[c.statut]?.[0]||''}</span></td></tr>`).join('')}
+    ${liste.map(c => `<tr class="clic ${c.id===view.ouvert ? 'attente' : ''}" data-co="${esc(c.id)}"><td class="muted" style="white-space:nowrap">${esc(quandFr(c.recu_le))}</td><td>${c.sens==='envoye' ? `<span class="badge cours">Envoyé</span> à ${esc(c.destinataires||'')}` : `<b>${esc(nomDe(c))}</b>${c.de_nom ? `<br><span class="small muted">${esc(c.de)}</span>` : ''}`}</td><td>${esc(c.sujet || '(sans objet)')}<br><span class="small muted">${esc((c.texte||'').replace(/\s+/g,' ').slice(0, 110))}</span></td><td>${c.dossier_id && dossiers[c.dossier_id] ? esc(nomDossier(c.dossier_id)) : '<span class="muted">—</span>'}</td><td><span class="badge ${STATUT_C[c.statut]?.[1]||''}">${STATUT_C[c.statut]?.[0]||''}</span></td></tr>`).join('')}
   </tbody></table></div>` : `<div class="card"><p class="muted" style="margin:0">${filtre==='nouveau' ? 'Aucun courriel à traiter. Les messages reçus sur contact@ apparaissent ici ; ceux des familles connues sont rangés directement dans leur dossier.' : 'Aucun courriel.'}</p></div>`}`;
   app.querySelectorAll('[data-fc]').forEach(b => b.onclick = () => { view.filtre = b.dataset.fc; view.ouvert = null; renderCourriels(); });
   app.querySelectorAll('[data-co]').forEach(r => r.onclick = () => { view.ouvert = view.ouvert === r.dataset.co ? null : r.dataset.co; dessinerCourriels(); window.scrollTo(0,0); });
@@ -592,15 +592,17 @@ function carteCourriel(c){
       <button class="btn ghost" type="button" id="co-ranger">Ranger dans ce dossier</button></div>
     <div class="row">
       ${c.dossier_id && dossiers[c.dossier_id] ? `<button class="btn ghost" type="button" id="co-ouvrir">Ouvrir le dossier</button>` : `<button class="btn" type="button" id="co-creer">Créer un dossier avec ce courriel</button>`}
-      <a class="btn ghost" href="mailto:${esc(c.de)}?subject=${encodeURIComponent('Re: ' + (c.sujet||''))}">Répondre</a>
+      ${c.sens !== 'envoye' ? `<button class="btn" type="button" data-rep-ouvrir="${esc(c.id)}">Répondre</button>` : ''}
       ${c.statut !== 'traite' ? '<button class="btn ghost" type="button" id="co-traite">Marquer comme traité</button>' : ''}
       ${c.statut !== 'ignore' ? '<button class="btn ghost" type="button" id="co-ignorer">Ignorer</button>' : ''}
       <button class="lien" type="button" id="co-fermer" style="margin-left:auto">Fermer</button>
     </div>
+    ${c.sens !== 'envoye' ? editeurReponse(c) + `<a class="lien small" href="mailto:${esc(c.de)}?subject=${encodeURIComponent('Re: ' + (c.sujet||''))}" style="align-self:flex-start">Répondre plutôt depuis ma messagerie</a>` : `<p class="small muted" style="margin:0">Envoyé à ${esc(c.destinataires||'')}.</p>`}
   </div>`;
 }
 function lierCarteCourriel(c){
   $('#co-fermer').onclick = () => { view.ouvert = null; dessinerCourriels(); };
+  lierReponses(app, [c], () => { view.ouvert = null; renderCourriels(); });
   $('#co-ranger').onclick = async () => { const id = $('#co-dossier').value; if(!id){ showToast('Choisissez un dossier.'); return; } if(await majCourriel(c, { dossier_id: id, statut: 'range' })){ showToast('Courriel rangé dans le dossier.'); dessinerCourriels(); } };
   const tr = $('#co-traite'); if(tr) tr.onclick = async () => { if(await majCourriel(c, { statut: 'traite' })){ view.ouvert = null; showToast('Marqué comme traité.'); dessinerCourriels(); } };
   const ig = $('#co-ignorer'); if(ig) ig.onclick = async () => { if(await majCourriel(c, { statut: 'ignore' })){ view.ouvert = null; dessinerCourriels(); } };
@@ -616,6 +618,50 @@ function lierCarteCourriel(c){
   };
 }
 
+
+/* Réponse à un courriel depuis l'appli (copie cachée vers Gmail, trace dans le dossier). */
+function signatureReponse(c){
+  const so = {...DEFAULTS.soc, ...(S.soc||{})}, pro = String(c.adresse||'').startsWith('pro@');
+  const nom = so.signataire && !/\[/.test(so.signataire) ? so.signataire.replace(/,.*$/, '') : '';
+  return `Bien cordialement,\n${nom ? nom + '\n' : ''}${pro ? 'Fil Bleu Pro' : 'Maison Fil Bleu'}`;
+}
+function editeurReponse(c){
+  const sujet = /^re\s*:/i.test(c.sujet||'') ? c.sujet : 'Re: ' + (c.sujet || '');
+  return `<div class="reponse" data-rep="${esc(c.id)}" hidden>
+    <label>À<input value="${esc(c.de_nom ? `${c.de_nom} <${c.de}>` : c.de)}" disabled></label>
+    <label>Objet<input data-rep-sujet value="${esc(sujet)}" maxlength="300"></label>
+    <label>Votre réponse<textarea data-rep-texte rows="9">Bonjour,\n\n\n\n${esc(signatureReponse(c))}</textarea></label>
+    <p class="small muted" style="margin:0">Envoyée depuis ${esc(String(c.adresse||'').startsWith('pro@') ? 'pro@' : 'contact@')}maisonfilbleu.fr, dans la même conversation, avec le message d'origine en dessous. Une copie est gardée dans votre Gmail.</p>
+    <div class="row"><button class="btn" type="button" data-rep-envoyer>Envoyer la réponse</button><button class="btn ghost" type="button" data-rep-annuler>Annuler</button></div>
+  </div>`;
+}
+function lierReponses(racine, liste, apres){
+  racine.querySelectorAll('[data-rep-ouvrir]').forEach(b => b.onclick = () => {
+    const box = racine.querySelector(`[data-rep="${CSS.escape(b.dataset.repOuvrir)}"]`); if(!box) return;
+    box.hidden = false; b.hidden = true;
+    const ta = box.querySelector('[data-rep-texte]'); ta.focus(); ta.setSelectionRange(9, 9);
+  });
+  racine.querySelectorAll('[data-rep]').forEach(box => {
+    const c = liste.find(x => x.id === box.dataset.rep); if(!c) return;
+    box.querySelector('[data-rep-annuler]').onclick = () => { box.hidden = true; const o = racine.querySelector(`[data-rep-ouvrir="${CSS.escape(c.id)}"]`); if(o) o.hidden = false; };
+    box.querySelector('[data-rep-envoyer]').onclick = async (ev) => {
+      const sujet = box.querySelector('[data-rep-sujet]').value.trim(), texte = box.querySelector('[data-rep-texte]').value.trim();
+      if(!sujet || texte.replace(/\s+/g,' ').length < 20){ showToast('Écrivez votre réponse.'); return; }
+      if(!navigator.onLine){ showToast('Pas de réseau : la réponse partira quand vous serez connecté.'); return; }
+      ev.target.disabled = true; ev.target.textContent = 'Envoi…';
+      let rep, corps = {};
+      try{
+        const { data: { session } } = await sb.auth.getSession();
+        rep = await fetch('/api/repondre', { method:'POST', headers:{ 'content-type':'application/json', authorization:`Bearer ${session?.access_token||''}` }, body: JSON.stringify({ courriel_id: c.id, sujet, texte }) });
+        corps = await rep.json().catch(() => ({}));
+      }catch(err){ rep = null; }
+      if(!rep?.ok){ ev.target.disabled = false; ev.target.textContent = 'Envoyer la réponse'; showToast(corps.erreur || "Pas de réseau : la réponse n'est pas partie."); return; }
+      c.statut = 'traite'; tb.courriels = (tb.courriels||[]).filter(x => x.id !== c.id); majBadgeCourriels();
+      showToast(corps.copie ? 'Réponse envoyée (copie dans votre Gmail).' : 'Réponse envoyée.'); apres();
+    };
+  });
+}
+
 /* Onglet « Courriels » de la fiche dossier (interne, jamais visible par la famille). */
 function htmlCourrielsDossier(d){
   return `<div id="courriels-dossier"><div class="card"><p class="muted" style="margin:0">${navigator.onLine ? 'Chargement des courriels…' : 'Hors ligne : les courriels se consultent avec du réseau.'}</p></div></div>`;
@@ -626,10 +672,11 @@ async function chargerCourrielsDossier(d){
   if(!$('#courriels-dossier')) return;
   if(error){ box.innerHTML = `<div class="card"><p style="margin:0">${esc(error.message)}</p></div>`; return; }
   box.innerHTML = (data||[]).length ? `<div class="pan"><div class="pan-h"><h3>Courriels du dossier</h3><span class="small muted">interne · ${data.length} message${data.length>1?'s':''}</span></div>
-    ${data.map(c => `<details class="phase-b"><summary style="padding:12px 18px;cursor:pointer;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap"><span class="muted small" style="min-width:120px">${esc(quandFr(c.recu_le))}</span><b>${esc(c.sujet || '(sans objet)')}</b><span class="small muted">${esc(c.de_nom || c.de)}</span></summary>
+    ${data.map(c => `<details class="phase-b"><summary style="padding:12px 18px;cursor:pointer;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap"><span class="muted small" style="min-width:120px">${esc(quandFr(c.recu_le))}</span>${c.sens==='envoye' ? '<span class="badge cours">Envoyé</span>' : '<span class="badge">Reçu</span>'}<b>${esc(c.sujet || '(sans objet)')}</b><span class="small muted">${c.sens==='envoye' ? 'à ' + esc(c.destinataires||'') : esc(c.de_nom || c.de)}</span></summary>
       <div class="pan-c"><pre class="quote">${esc(c.texte||'')}</pre>${(c.pieces||[]).length ? `<p class="small muted" style="margin:0">Pièces jointes (dans Gmail) : ${c.pieces.map(p => esc(p.nom)).join(', ')}</p>` : ''}
-      <div class="row"><a class="btn ghost petit" href="mailto:${esc(c.de)}?subject=${encodeURIComponent('Re: ' + (c.sujet||''))}">Répondre</a><button class="lien" type="button" data-co-detacher="${esc(c.id)}">Retirer de ce dossier</button></div></div></details>`).join('')}</div>`
+      ${c.sens==='envoye' ? '' : `<div class="row"><button class="btn petit" type="button" data-rep-ouvrir="${esc(c.id)}">Répondre</button><button class="lien" type="button" data-co-detacher="${esc(c.id)}">Retirer de ce dossier</button></div>${editeurReponse(c)}`}</div></details>`).join('')}</div>`
     : `<div class="card"><p class="muted" style="margin:0">Aucun courriel pour ce dossier. Les e-mails reçus de ${esc(d.contact.email || 'la famille')} sur contact@ y sont rangés automatiquement.</p></div>`;
+  lierReponses(box, data || [], () => chargerCourrielsDossier(d));
   box.querySelectorAll('[data-co-detacher]').forEach(b => b.onclick = async () => {
     const { error: e2 } = await sb.from('courriels').update({ dossier_id: null, statut: 'nouveau' }).eq('id', b.dataset.coDetacher);
     if(e2){ showToast(e2.message); return; }

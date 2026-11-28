@@ -5,9 +5,11 @@
  * Sécurité :
  *   - l'appelant doit être un administrateur avec sa double authentification ;
  *   - chaque destinataire doit avoir accès au dossier (dossier_acces) ou être le contact du dossier ;
- *   - 10 destinataires au plus, texte limité ; envoi par Resend (RESEND_API_KEY, NOTIF_FROM).
+ *   - 10 destinataires au plus, texte limité ; envoi par Resend (RESEND_API_KEY, NOTIF_FROM) ;
+ *   - copie cachée vers Gmail (COPIE_ENVOIS) et trace dans l'onglet Courriels du dossier.
  */
 import { json, estAdmin, serveur } from '../_lib/commun.js';
+import { envoyer, tracer } from '../_lib/courriel.js';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -47,12 +49,10 @@ export async function onRequestPost({ request, env }) {
 
   const marque = dossier.data?.formule === 'P' ? 'Fil Bleu Pro' : 'Maison Fil Bleu';
   const site = env.URL_SITE || new URL(request.url).origin;
-  const envois = await Promise.all(dest.map((to) => fetch('https://api.resend.com/emails', {
-    method: 'POST', headers: { authorization: `Bearer ${env.RESEND_API_KEY}`, 'content-type': 'application/json' },
-    body: JSON.stringify({ from: env.NOTIF_FROM, to: [to], reply_to: env.NOTIF_REPONSE || undefined, subject: sujet, text: `${texte}\n\nVotre espace client : ${site}/espace-client`, html: html(texte, `${site}/espace-client`, marque) }),
-  }).then((r) => r.ok, () => false)));
+  const envois = await Promise.all(dest.map((to) => envoyer(env, { from: env.NOTIF_FROM, to, sujet, texte: `${texte}\n\nVotre espace client : ${site}/espace-client`, html: html(texte, `${site}/espace-client`, marque) })));
   const ok = dest.filter((_, i) => envois[i]);
   if (!ok.length) return json(502, { erreur: "L'e-mail n'a pas pu partir. Réessayez dans un instant." });
+  await tracer(sb, { dossierId, from: env.NOTIF_FROM, to: ok, sujet, texte }).catch(() => {});
   return json(200, { ok: true, envoyes: ok, echecs: dest.filter((_, i) => !envois[i]) });
 }
 export const onRequest = () => json(405, { erreur: 'Méthode non autorisée.' });

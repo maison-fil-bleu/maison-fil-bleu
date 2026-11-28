@@ -302,6 +302,8 @@ do $$ begin
   if (select statut from public.courriels where message_id = 'm-2') <> 'nouveau' then raise exception 'ÉCHEC 13b : courriel inconnu rattaché'; end if;
   begin insert into public.courriels (de, message_id) values ('x@y.test', 'm-1'); raise exception 'ÉCHEC 13c : doublon de message accepté';
   exception when unique_violation then null; end;
+  insert into public.courriels (de, sens, sujet) values ('famille.a@essai.test', 'envoye', 'Réponse');
+  if (select dossier_id from public.courriels where sens = 'envoye' and sujet = 'Réponse') is not null then raise exception 'ÉCHEC 13e : courriel envoyé rattaché automatiquement'; end if;
 end $$;
 set local role authenticated;
 set local request.jwt.claims = '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000a","email":"famille.a@essai.test","aal":"aal1"}';
