@@ -322,25 +322,27 @@ function setNav(){
   const cle = ['list','dossier','bon'].includes(view.name) ? 'list' : view.name;
   document.querySelectorAll('[data-nav]').forEach(b => b.setAttribute('aria-current', b.dataset.nav===cle ? 'page' : 'false'));
 }
-function render(){ setNav(); if(view.name!=='bon') bonsApi?.quitter(); if(view.name==='accueil') renderAccueil(); else if(view.name==='list') renderList(); else if(view.name==='dossier') renderDossier(); else if(view.name==='bon') bonsApi.ecran(view.id); else if(view.name==='registre') bonsApi.registre(); else if(view.name==='bilan') renderBilan(); else if(view.name==='carnet') renderCarnet(); else if(view.name==='agenda') renderAgenda(); else renderSettings(); }
+function render(){ setNav(); if(view.name!=='bon') bonsApi?.quitter(); if(view.name==='accueil') renderAccueil(); else if(view.name==='list') renderList(); else if(view.name==='dossier') renderDossier(); else if(view.name==='bon') bonsApi.ecran(view.id); else if(view.name==='registre') bonsApi.registre(); else if(view.name==='bilan') renderBilan(); else if(view.name==='carnet') renderCarnet(); else if(view.name==='agenda') renderAgenda(); else if(view.name==='courriels') renderCourriels(); else renderSettings(); }
 
 /* ---------- Tableau de bord ---------- */
 // Données légères chargées pour l'accueil : rendez-vous et tâches (espace_client), attentes des familles, activité.
-const tb = { charge: false, enCours: false, espaces: [], decisions: [], objets: [], bons: [], journal: [], agenda: [] };
+const tb = { charge: false, enCours: false, espaces: [], decisions: [], objets: [], bons: [], journal: [], agenda: [], courriels: [] };
 async function chargerTableau(){
   if(tb.enCours || !navigator.onLine) return;
   tb.enCours = true;
   const lire = p => p.then(r => r.data || [], () => []);
   const depuis = new Date(Date.now() - 62*86400e3).toISOString();
-  const [es, de, ob, bo, jo, ag] = await Promise.all([
+  const [es, de, ob, bo, jo, ag, co] = await Promise.all([
     lire(sb.from('espace_client').select('dossier_id, prochain, etapes, taches, titre')),
     lire(sb.from('decisions').select('id, dossier_id, question, posee_le').eq('statut', 'attente')),
     lire(sb.from('objets_conserves').select('dossier_id, valide_le').is('valide_le', null)),
     lire(sb.from('bons').select('id, dossier_id, numero, data').not('signe_porteur_le', 'is', null).is('signe_client_le', null)),
     lire(sb.from('journal').select('dossier_id, quand, type, titre').order('quand', { ascending:false }).limit(8)),
     lire(sb.from('agenda').select('*').gte('debut', depuis).order('debut')),
+    lire(sb.from('courriels').select('id, recu_le, de, de_nom, sujet').eq('statut', 'nouveau').order('recu_le', { ascending:false }).limit(30)),
   ]);
-  Object.assign(tb, { charge: true, enCours: false, espaces: es, decisions: de, objets: ob, bons: bo.filter(b => b.data?.signatures?.distance), journal: jo, agenda: ag });
+  Object.assign(tb, { charge: true, enCours: false, espaces: es, decisions: de, objets: ob, bons: bo.filter(b => b.data?.signatures?.distance), journal: jo, agenda: ag, courriels: co });
+  majBadgeCourriels();
   if(view.name==='accueil' || view.name==='agenda') rerender();
 }
 function evenementsAgenda(){
@@ -400,6 +402,7 @@ function renderAccueil(){
       <div class="pan"><div class="pan-h"><h3>En attente des familles</h3>${attentes.length ? `<span class="badge attente">${attentes.length}</span>` : ''}</div>
         ${attentes.length ? `<ul class="liste">${attentes.slice(0,8).map(a => `<li><div><b>${esc(nomDossier(a.id))}</b><span>${esc(a.txt)}</span></div><button class="lien" type="button" data-ouvrir="${esc(a.id)}" data-onglet="${a.t}">Voir</button></li>`).join('')}</ul>` : `<p class="pan-vide">${tb.charge ? 'Rien en attente : aucune signature ni réponse demandée aux familles.' : 'Chargement…'}</p>`}
       </div>
+      ${(tb.courriels||[]).length ? `<div class="pan"><div class="pan-h"><h3>Courriels à traiter</h3><span class="badge attente">${tb.courriels.length}</span></div><ul class="liste">${tb.courriels.slice(0,5).map(c => `<li><div><b>${esc(c.de_nom || c.de)}</b><span>${esc(c.sujet || '(sans objet)')} · ${esc(quandFr(c.recu_le))}</span></div><button class="lien" type="button" data-courriel="${esc(c.id)}">Voir</button></li>`).join('')}</ul></div>` : ''}
       <div class="pan"><div class="pan-h"><h3>Nouvelles demandes et appels</h3>${appels.length ? `<span class="badge bad">${appels.length}</span>` : ''}</div>
         ${appels.length ? `<ul class="liste">${appels.slice(0,6).map(d => `<li><div><b>${esc(d.contact.nom || 'Sans nom')}${d.ville ? ' · '+esc(d.ville) : ''}</b><span>${esc(FORM[d.formule])} · reçu le ${esc(dateCourte(d.created))}${d.contact.tel ? ' · '+esc(d.contact.tel) : ''}</span></div>${telLien(d.contact.tel) ? `<a class="btn petit" href="${telLien(d.contact.tel)}">Appeler</a>` : ''}<button class="lien" type="button" data-ouvrir="${esc(d.id)}" data-onglet="appel">Traiter</button></li>`).join('')}</ul>` : '<p class="pan-vide">Aucun appel à traiter.</p>'}
       </div>
@@ -410,6 +413,7 @@ function renderAccueil(){
   </div>`;
   app.querySelectorAll('[data-ouvrir]').forEach(b => b.onclick = () => ouvrirDossier(b.dataset.ouvrir, b.dataset.onglet));
   app.querySelectorAll('[data-vers-agenda]').forEach(b => b.onclick = () => { view = { name:'agenda' }; render(); window.scrollTo(0,0); });
+  app.querySelectorAll('[data-courriel]').forEach(b => b.onclick = () => { view = { name:'courriels', filtre:'nouveau', ouvert: b.dataset.courriel }; render(); window.scrollTo(0,0); });
   const qa = $('#q-accueil'); qa.onkeydown = e => { if(e.key==='Enter'){ view = {name:'list', q: qa.value}; render(); } };
   qa.oninput = () => { if(qa.value.length >= 2){ view = {name:'list', q: qa.value}; render(); const i = $('#q'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); } };
 }
@@ -530,6 +534,107 @@ function exporterIcs(ev){
   const u = URL.createObjectURL(new Blob([lignes.join('\r\n')], { type:'text/calendar' }));
   const a = document.createElement('a'); a.href = u; a.download = 'agenda-fil-bleu.ics'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000);
   showToast('Fichier d\'agenda téléchargé : ouvrez-le sur votre téléphone pour l\'ajouter à votre calendrier.');
+}
+
+/* ---------- Courriels reçus sur contact@ et pro@ (copiés par le Worker « fil-bleu-courriels ») ---------- */
+const STATUT_C = { nouveau:['À traiter','attente'], range:['Rangé','cours'], traite:['Traité','ok'], ignore:['Ignoré',''] };
+function majBadgeCourriels(){
+  const n = (tb.courriels||[]).length;
+  document.querySelectorAll('[data-nav="courriels"]').forEach(b => { let em = b.querySelector('em'); if(!n){ em?.remove(); return; } if(!em){ em = document.createElement('em'); b.appendChild(em); } em.textContent = n; });
+}
+// Dossiers proposés pour un courriel : même adresse que le contact ou qu'un accès, ou même nom de domaine qu'un organisme lié.
+function dossiersProposes(c){
+  const de = (c.de||'').toLowerCase(), dom = de.split('@')[1] || '';
+  return Object.values(dossiers).filter(d => {
+    if((d.contact?.email||'').toLowerCase() === de) return true;
+    return (d.organismes||[]).some(o => { const f = ficheCarnet(o.id); return f?.email && (f.email.toLowerCase() === de || (dom && f.email.toLowerCase().endsWith('@'+dom))); });
+  });
+}
+async function majCourriel(c, champs){
+  const { data, error } = await sb.from('courriels').update(champs).eq('id', c.id).select().single();
+  if(error){ showToast(error.message); return null; }
+  Object.assign(c, data); tb.courriels = (tb.courriels||[]).filter(x => x.id !== c.id || data.statut === 'nouveau'); majBadgeCourriels();
+  return data;
+}
+function renderCourriels(){
+  const filtre = view.filtre ?? 'nouveau';
+  app.innerHTML = `${header('Courriels', 'contact@ et pro@')}<div class="card"><p class="muted" style="margin:0">${navigator.onLine ? 'Chargement…' : 'Hors ligne : les courriels se consultent avec du réseau.'}</p></div>`;
+  if(!navigator.onLine) return;
+  let q = sb.from('courriels').select('*').order('recu_le', { ascending:false }).limit(200);
+  if(filtre) q = q.eq('statut', filtre);
+  q.then(({ data, error }) => {
+    if(view.name !== 'courriels') return;
+    if(error){ app.innerHTML = header('Courriels') + `<div class="card"><p style="margin:0">Impossible de charger les courriels : ${esc(error.message)}</p></div>`; return; }
+    view.liste = data || [];
+    dessinerCourriels();
+  });
+}
+function dessinerCourriels(){
+  const liste = view.liste || [], filtre = view.filtre ?? 'nouveau', sel = liste.find(c => c.id === view.ouvert);
+  const nomDe = c => c.de_nom ? `${c.de_nom}` : c.de;
+  app.innerHTML = `${header('Courriels', 'contact@ et pro@')}
+  <div class="pipeline" role="group" aria-label="Filtrer">${[['nouveau','À traiter'],['range','Rangés'],['traite','Traités'],['','Tous']].map(([k,l]) => `<button type="button" data-fc="${k}" aria-pressed="${filtre===k}"><span>${l}</span></button>`).join('')}</div>
+  ${sel ? carteCourriel(sel) : ''}
+  ${liste.length ? `<div class="pan tab"><table><thead><tr><th>Reçu</th><th>De</th><th>Objet</th><th>Dossier</th><th>Statut</th></tr></thead><tbody>
+    ${liste.map(c => `<tr class="clic ${c.id===view.ouvert ? 'attente' : ''}" data-co="${esc(c.id)}"><td class="muted" style="white-space:nowrap">${esc(quandFr(c.recu_le))}</td><td><b>${esc(nomDe(c))}</b>${c.de_nom ? `<br><span class="small muted">${esc(c.de)}</span>` : ''}</td><td>${esc(c.sujet || '(sans objet)')}<br><span class="small muted">${esc((c.texte||'').replace(/\s+/g,' ').slice(0, 110))}</span></td><td>${c.dossier_id && dossiers[c.dossier_id] ? esc(nomDossier(c.dossier_id)) : '<span class="muted">—</span>'}</td><td><span class="badge ${STATUT_C[c.statut]?.[1]||''}">${STATUT_C[c.statut]?.[0]||''}</span></td></tr>`).join('')}
+  </tbody></table></div>` : `<div class="card"><p class="muted" style="margin:0">${filtre==='nouveau' ? 'Aucun courriel à traiter. Les messages reçus sur contact@ apparaissent ici ; ceux des familles connues sont rangés directement dans leur dossier.' : 'Aucun courriel.'}</p></div>`}`;
+  app.querySelectorAll('[data-fc]').forEach(b => b.onclick = () => { view.filtre = b.dataset.fc; view.ouvert = null; renderCourriels(); });
+  app.querySelectorAll('[data-co]').forEach(r => r.onclick = () => { view.ouvert = view.ouvert === r.dataset.co ? null : r.dataset.co; dessinerCourriels(); window.scrollTo(0,0); });
+  if(sel) lierCarteCourriel(sel);
+}
+function carteCourriel(c){
+  const prop = dossiersProposes(c).filter(d => d.id !== c.dossier_id);
+  return `<div class="card"><h3>${esc(c.sujet || '(sans objet)')}</h3>
+    <p class="small muted" style="margin:0">De <b>${esc(c.de_nom || c.de)}</b>${c.de_nom ? ` &lt;${esc(c.de)}&gt;` : ''} · reçu le ${esc(new Date(c.recu_le).toLocaleString('fr-FR', { dateStyle:'long', timeStyle:'short' }))}${c.adresse ? ` sur ${esc(c.adresse)}` : ''}</p>
+    <pre class="quote" style="max-height:340px;overflow:auto">${esc(c.texte || '')}</pre>
+    ${(c.pieces||[]).length ? `<p class="small muted" style="margin:0">Pièces jointes (dans Gmail) : ${c.pieces.map(p => esc(p.nom)).join(', ')}</p>` : ''}
+    <div class="grid2" style="align-items:end"><label>Dossier<select id="co-dossier"><option value="">Non rattaché</option>${prop.length ? `<optgroup label="Proposés">${prop.map(d => `<option value="${esc(d.id)}">${esc(d.contact.nom||'Sans nom')} · ${esc(d.ville||'')}</option>`).join('')}</optgroup>` : ''}<optgroup label="Tous les dossiers">${Object.values(dossiers).sort((a,b) => (a.contact.nom||'').localeCompare(b.contact.nom||'')).map(d => `<option value="${esc(d.id)}" ${c.dossier_id===d.id?'selected':''}>${esc(d.contact.nom||'Sans nom')} · ${esc(d.ville||'')}</option>`).join('')}</optgroup></select></label>
+      <button class="btn ghost" type="button" id="co-ranger">Ranger dans ce dossier</button></div>
+    <div class="row">
+      ${c.dossier_id && dossiers[c.dossier_id] ? `<button class="btn ghost" type="button" id="co-ouvrir">Ouvrir le dossier</button>` : `<button class="btn" type="button" id="co-creer">Créer un dossier avec ce courriel</button>`}
+      <a class="btn ghost" href="mailto:${esc(c.de)}?subject=${encodeURIComponent('Re: ' + (c.sujet||''))}">Répondre</a>
+      ${c.statut !== 'traite' ? '<button class="btn ghost" type="button" id="co-traite">Marquer comme traité</button>' : ''}
+      ${c.statut !== 'ignore' ? '<button class="btn ghost" type="button" id="co-ignorer">Ignorer</button>' : ''}
+      <button class="lien" type="button" id="co-fermer" style="margin-left:auto">Fermer</button>
+    </div>
+  </div>`;
+}
+function lierCarteCourriel(c){
+  $('#co-fermer').onclick = () => { view.ouvert = null; dessinerCourriels(); };
+  $('#co-ranger').onclick = async () => { const id = $('#co-dossier').value; if(!id){ showToast('Choisissez un dossier.'); return; } if(await majCourriel(c, { dossier_id: id, statut: 'range' })){ showToast('Courriel rangé dans le dossier.'); dessinerCourriels(); } };
+  const tr = $('#co-traite'); if(tr) tr.onclick = async () => { if(await majCourriel(c, { statut: 'traite' })){ view.ouvert = null; showToast('Marqué comme traité.'); dessinerCourriels(); } };
+  const ig = $('#co-ignorer'); if(ig) ig.onclick = async () => { if(await majCourriel(c, { statut: 'ignore' })){ view.ouvert = null; dessinerCourriels(); } };
+  const ou = $('#co-ouvrir'); if(ou) ou.onclick = () => ouvrirDossier(c.dossier_id, 'courriels');
+  const cr = $('#co-creer'); if(cr) cr.onclick = async () => {
+    const d = newDossier(); d.formule = suggest(d);
+    d.contact.nom = c.de_nom || ''; d.contact.email = c.de;
+    const tel = (c.texte||'').match(/(?:\+33\s?|0)[1-9](?:[\s.-]?\d{2}){4}/); if(tel) d.contact.tel = tel[0];
+    d.notes = `Demande reçue par e-mail le ${new Date(c.recu_le).toLocaleDateString('fr-FR')} : « ${c.sujet || ''} »\n\n${(c.texte||'').slice(0, 1500)}`;
+    persist(d);
+    await majCourriel(c, { dossier_id: d.id, statut: 'range' });
+    view = { name:'dossier', id: d.id }; tab = 'appel'; render(); window.scrollTo(0,0); showToast('Dossier créé à partir du courriel : complétez le premier appel.');
+  };
+}
+
+/* Onglet « Courriels » de la fiche dossier (interne, jamais visible par la famille). */
+function htmlCourrielsDossier(d){
+  return `<div id="courriels-dossier"><div class="card"><p class="muted" style="margin:0">${navigator.onLine ? 'Chargement des courriels…' : 'Hors ligne : les courriels se consultent avec du réseau.'}</p></div></div>`;
+}
+async function chargerCourrielsDossier(d){
+  const box = $('#courriels-dossier'); if(!box || !navigator.onLine) return;
+  const { data, error } = await sb.from('courriels').select('*').eq('dossier_id', d.id).order('recu_le', { ascending:false });
+  if(!$('#courriels-dossier')) return;
+  if(error){ box.innerHTML = `<div class="card"><p style="margin:0">${esc(error.message)}</p></div>`; return; }
+  box.innerHTML = (data||[]).length ? `<div class="pan"><div class="pan-h"><h3>Courriels du dossier</h3><span class="small muted">interne · ${data.length} message${data.length>1?'s':''}</span></div>
+    ${data.map(c => `<details class="phase-b"><summary style="padding:12px 18px;cursor:pointer;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap"><span class="muted small" style="min-width:120px">${esc(quandFr(c.recu_le))}</span><b>${esc(c.sujet || '(sans objet)')}</b><span class="small muted">${esc(c.de_nom || c.de)}</span></summary>
+      <div class="pan-c"><pre class="quote">${esc(c.texte||'')}</pre>${(c.pieces||[]).length ? `<p class="small muted" style="margin:0">Pièces jointes (dans Gmail) : ${c.pieces.map(p => esc(p.nom)).join(', ')}</p>` : ''}
+      <div class="row"><a class="btn ghost petit" href="mailto:${esc(c.de)}?subject=${encodeURIComponent('Re: ' + (c.sujet||''))}">Répondre</a><button class="lien" type="button" data-co-detacher="${esc(c.id)}">Retirer de ce dossier</button></div></div></details>`).join('')}</div>`
+    : `<div class="card"><p class="muted" style="margin:0">Aucun courriel pour ce dossier. Les e-mails reçus de ${esc(d.contact.email || 'la famille')} sur contact@ y sont rangés automatiquement.</p></div>`;
+  box.querySelectorAll('[data-co-detacher]').forEach(b => b.onclick = async () => {
+    const { error: e2 } = await sb.from('courriels').update({ dossier_id: null, statut: 'nouveau' }).eq('id', b.dataset.coDetacher);
+    if(e2){ showToast(e2.message); return; }
+    tb.charge = false; chargerCourrielsDossier(d); showToast('Courriel remis dans la boîte « À traiter ».');
+  });
 }
 
 /* ---------- Liste des dossiers ---------- */
@@ -793,7 +898,7 @@ function bandeauProchaine(d, e){
 }
 
 /* ---------- Fiche dossier : en-tête, étapes, onglets ---------- */
-const ONGLETS = [['synthese','Synthèse'],['appel','Appel et logement'],['diag','Sur place'],['devis','Devis'],['prepa','Préparation'],['courriers','Documents types'],['journal','Journal et décisions'],['objets','Objets conservés'],['bons','Interventions'],['suivi','Suivi et paiement'],['espace','Espace client']];
+const ONGLETS = [['synthese','Synthèse'],['appel','Appel et logement'],['diag','Sur place'],['devis','Devis'],['prepa','Préparation'],['courriers','Documents types'],['journal','Journal et décisions'],['courriels','Courriels'],['objets','Objets conservés'],['bons','Interventions'],['suivi','Suivi et paiement'],['espace','Espace client']];
 const ONGLETS_ESPACE = ['synthese','prepa','journal','objets','espace'];
 function enteteDossier(d, c){
   const e = espaces[d.id]?.ligne ? espaces[d.id] : null;
@@ -1014,12 +1119,14 @@ function renderDossier(){
   </div>`; }
   if(tab==='bons') body = `<div id="bons-onglet" style="display:flex;flex-direction:column;gap:18px"></div>`;
   if(tab==='courriers') body = htmlCourriers(d);
+  if(tab==='courriels') body = htmlCourrielsDossier(d);
   if(ONGLETS_ESPACE.includes(tab)) body = `<div id="espace" style="display:flex;flex-direction:column;gap:18px">${espaces[d.id]?.ligne ? '' : `<div class="card"><p class="muted" style="margin:0">${navigator.onLine ? 'Chargement…' : 'Hors ligne : cet onglet se consulte avec du réseau. Les onglets Appel, Sur place, Devis et Suivi restent utilisables.'}</p></div>`}</div>`;
   const avecResume = ['appel','diag','devis','suivi'].includes(tab);
   app.innerHTML = enteteDossier(d, c) + (avecResume ? resume + `<div class="deux-col">${body}</div>` : body);
   bind(d);
   if(tab==='appel') bindOrganismes(d);
   if(tab==='courriers') bindCourriers(d);
+  if(tab==='courriels') chargerCourrielsDossier(d);
   $('#fil-liste').onclick = () => { view = {name:'list'}; render(); window.scrollTo(0,0); };
   $('#b-vers-bons').onclick = () => { tab = 'bons'; render(); window.scrollTo(0,0); };
   const ap = app.querySelector('[data-aller-prepa]'); if(ap) ap.onclick = () => { tab = 'prepa'; render(); window.scrollTo(0,0); };

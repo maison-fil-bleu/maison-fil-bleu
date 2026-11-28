@@ -1,0 +1,11 @@
+# Worker des e-mails reçus (contact@, pro@) : transfert vers Gmail + copie dans l'appli.
+# Déploiement : npx wrangler deploy --config workers/courriels/wrangler.toml
+# Secrets (à saisir par le fondateur, jamais dans le code) :
+#   npx wrangler secret put TRANSFERT_VERS --config workers/courriels/wrangler.toml
+#   npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY --config workers/courriels/wrangler.toml
+name = "fil-bleu-courriels"
+main = "index.js"
+compatibility_date = "2026-11-01"
+
+[vars]
+SUPABASE_URL = "https://qsrchtkdlxzkjjoszmwd.supabase.co"

@@ -295,6 +295,21 @@ do $$ begin
 end $$;
 reset role;
 
+-- ---------- 13. Courriels : rattachement automatique, réservés aux administrateurs ----------
+insert into public.courriels (de, sujet, message_id) values ('Famille.A@essai.test', 'Question', 'm-1'), ('inconnu@ailleurs.test', 'Demande', 'm-2');
+do $$ begin
+  if (select dossier_id from public.courriels where message_id = 'm-1') is distinct from 'dA' then raise exception 'ÉCHEC 13a : courriel de la famille A non rattaché à dA'; end if;
+  if (select statut from public.courriels where message_id = 'm-2') <> 'nouveau' then raise exception 'ÉCHEC 13b : courriel inconnu rattaché'; end if;
+  begin insert into public.courriels (de, message_id) values ('x@y.test', 'm-1'); raise exception 'ÉCHEC 13c : doublon de message accepté';
+  exception when unique_violation then null; end;
+end $$;
+set local role authenticated;
+set local request.jwt.claims = '{"role":"authenticated","sub":"00000000-0000-0000-0000-00000000000a","email":"famille.a@essai.test","aal":"aal1"}';
+do $$ begin
+  if (select count(*) from public.courriels) <> 0 then raise exception 'ÉCHEC 13d : la famille lit les courriels'; end if;
+end $$;
+reset role;
+
 rollback;
 
 select 'TOUS LES TESTS D''ACCÈS SONT PASSÉS' as resultat;
