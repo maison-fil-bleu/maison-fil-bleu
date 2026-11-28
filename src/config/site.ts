@@ -19,7 +19,7 @@ export const SITE = {
   siret: '[n°]',
   rcs: '[ville] [n°]',
   // Clé publique Cloudflare Turnstile (anti-robots des formulaires). Vide : pas de vérification affichée.
-  turnstile: '',
+  turnstile: '0x4AAAAAAGW-Ll2vKa6FbgGn',
   tva: '[n°]',
   rcPro: '[assureur, contrat]',
   recepisseDechets: '[...]',
