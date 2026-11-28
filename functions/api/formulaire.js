@@ -6,7 +6,9 @@
  * Anti-robots :
  *   - champ piège invisible « bot-field » : s'il est rempli, on remercie sans rien enregistrer ;
  *   - Cloudflare Turnstile, dès que la clé secrète TURNSTILE_SECRET est configurée dans Cloudflare
- *     (et la clé publique dans src/config/site.ts) ; sans elle, seul le champ piège filtre.
+ *     (et la clé publique dans src/config/site.ts) ;
+ *   - repérage des messages de démarchage (référencement, liens, anglais…) : l'envoi suspect ne crée
+ *     pas de dossier et ne déclenche pas de notification ; il est gardé dans les courriels « ignorés ».
  *
  * Notification par e-mail (facultative) : si RESEND_API_KEY, NOTIF_EMAIL et NOTIF_FROM sont configurées
  * dans Cloudflare, un e-mail part à chaque demande avec le lien direct vers le dossier. Sans elles,
@@ -14,6 +16,7 @@
  */
 import { serveur } from '../_lib/commun.js';
 import { FORMULAIRES, dossierDepuisDemande } from '../_lib/demandes.js';
+import { estSpam } from '../_lib/antispam.js';
 
 const MERCI = { rappel: '/merci', partenaire: '/merci-partenaire', 'devis-pro': '/pro/merci-devis', 'grille-pro': '/pro/merci-grille' };
 const TITRES = { rappel: 'Être rappelé', partenaire: 'Dossier confié par un partenaire', 'devis-pro': 'Devis Fil Bleu Pro', 'grille-pro': 'Grille tarifaire Fil Bleu Pro' };
@@ -61,6 +64,16 @@ export async function onRequestPost({ request, env, waitUntil }) {
   if (!env.SUPABASE_SERVICE_ROLE_KEY) return page('Envoi impossible', "Le formulaire n'est pas encore relié au back-office. Appelez-nous directement, nous vous répondons tout de suite.", 503);
 
   const sb = serveur(env), maintenant = new Date().toISOString();
+
+  const spam = estSpam(data);
+  if (spam.suspect) {
+    const lignes = Object.entries(data).filter(([k, v]) => !IGNORES.has(k) && String(v).trim()).map(([k, v]) => `${k} : ${String(v).slice(0, 2000)}`);
+    await sb.from('courriels').insert({
+      sens: 'recu', adresse: 'formulaire du site', de: String(data.email || 'formulaire@site').toLowerCase().slice(0, 320), de_nom: String(data.nom || '').slice(0, 200),
+      sujet: `Formulaire suspect : ${TITRES[form]}`, texte: `Classé comme démarchage (${spam.raisons.join(' ; ')}).\n\n${lignes.join('\n')}`.slice(0, 20000), statut: 'ignore',
+    }).then(() => {}, () => {});
+    return Response.redirect(merci, 303);
+  }
   const ref = String(data.reference || '');
   let id = /^d[a-z0-9]{6,24}$/.test(ref) ? ref : nouvelId();
   for (let essai = 0; essai < 3; essai++) {
