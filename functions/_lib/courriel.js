@@ -2,10 +2,15 @@
 
 export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
-/** Adresse d'envoi : pro@ pour Fil Bleu Pro, sinon l'expéditeur configuré (NOTIF_FROM, contact@). */
+/**
+ * Adresse d'envoi vers les clients : « Fil Bleu Pro <pro@…> » pour ce qui arrive sur pro@, sinon
+ * « Maison Fil Bleu <adresse de NOTIF_FROM> ». Le nom affiché de NOTIF_FROM (ex. « Site Maison Fil Bleu »)
+ * reste réservé aux notifications internes des formulaires.
+ */
 export function expediteur(env, adresseRecue) {
   if (String(adresseRecue || '').toLowerCase().startsWith('pro@')) return 'Fil Bleu Pro <pro@maisonfilbleu.fr>';
-  return env.NOTIF_FROM;
+  const adresse = String(env.NOTIF_FROM || '').match(/<([^>]+)>/)?.[1] || String(env.NOTIF_FROM || '').trim() || 'contact@maisonfilbleu.fr';
+  return `Maison Fil Bleu <${adresse}>`;
 }
 
 export function htmlMessage(texte, { marque, lien, citation } = {}) {

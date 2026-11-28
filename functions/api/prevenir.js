@@ -9,7 +9,7 @@
  *   - copie cachée vers Gmail (COPIE_ENVOIS) et trace dans l'onglet Courriels du dossier.
  */
 import { json, estAdmin, serveur } from '../_lib/commun.js';
-import { envoyer, tracer } from '../_lib/courriel.js';
+import { envoyer, tracer, expediteur } from '../_lib/courriel.js';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -49,10 +49,10 @@ export async function onRequestPost({ request, env }) {
 
   const marque = dossier.data?.formule === 'P' ? 'Fil Bleu Pro' : 'Maison Fil Bleu';
   const site = env.URL_SITE || new URL(request.url).origin;
-  const envois = await Promise.all(dest.map((to) => envoyer(env, { from: env.NOTIF_FROM, to, sujet, texte: `${texte}\n\nVotre espace client : ${site}/espace-client`, html: html(texte, `${site}/espace-client`, marque) })));
+  const envois = await Promise.all(dest.map((to) => envoyer(env, { from: dossier.data?.formule === 'P' ? expediteur(env, 'pro@') : expediteur(env, ''), to, sujet, texte: `${texte}\n\nVotre espace client : ${site}/espace-client`, html: html(texte, `${site}/espace-client`, marque) })));
   const ok = dest.filter((_, i) => envois[i]);
   if (!ok.length) return json(502, { erreur: "L'e-mail n'a pas pu partir. Réessayez dans un instant." });
-  await tracer(sb, { dossierId, from: env.NOTIF_FROM, to: ok, sujet, texte }).catch(() => {});
+  await tracer(sb, { dossierId, from: dossier.data?.formule === 'P' ? expediteur(env, 'pro@') : expediteur(env, ''), to: ok, sujet, texte }).catch(() => {});
   return json(200, { ok: true, envoyes: ok, echecs: dest.filter((_, i) => !envois[i]) });
 }
 export const onRequest = () => json(405, { erreur: 'Méthode non autorisée.' });
