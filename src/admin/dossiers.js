@@ -9,6 +9,7 @@ import { creerBons } from './bons.js';
 import { PHASES, parcoursPour, completerParcours, infosManquantes, prochaineTache } from './parcours.js';
 import { documentsDuDossier, champsParDefaut, dessinerDocument, DOC_DE_TACHE } from './courriers.js';
 import { trierCourriel, reponsesTypes } from './tri.js';
+import { DEMO_ID, DEMO_EMAIL, creerDemo } from './demo.js';
 
 export function demarrerAppli({ sb, utilisateur, actions }) {
 const $ = (s, el=document) => el.querySelector(s);
@@ -373,7 +374,7 @@ function evenementsAgenda(){
 }
 function renderAccueil(){
   if(!tb.charge) chargerTableau();
-  const all = Object.values(dossiers), j0 = auj(), mois = j0.getMonth(), an = j0.getFullYear();
+  const all = Object.values(dossiers).filter(d => !d.demo), j0 = auj(), mois = j0.getMonth(), an = j0.getFullYear();
   const actifs = all.filter(d => ['Diagnostic','Devis envoyé','Signé'].includes(d.statut));
   const appels = all.filter(d => d.statut==='Appel').sort((a,b) => (b.created||'').localeCompare(a.created||''));
   const devis = all.filter(d => d.statut==='Devis envoyé');
@@ -2270,6 +2271,9 @@ function renderSettings(){
   <div class="card"><h3>Coûts</h3><div class="grid2">${f('interim','Intérim, €/h')}${f('porteur','Vos heures, €/h chargé')}${f('decheterie','Déchèterie, €/m³')}${f('camionJour','Camion, €/jour','1')}${f('kmCout','Trajet, €/km')}${f('consommables','Consommables par chantier','1')}</div></div>
   <div class="card"><h3>Rythmes de travail</h3><div class="grid2">${f('rythmeM3','Débarras, h/m³')}${f('rythmeM2','Nettoyage, h/m²')}${f('baie','Baie vitrée, h')}${f('partPorteur','Votre part des heures (0 à 1)')}</div>
   <p class="small muted" style="margin:0">Après vos 5 premiers chantiers, remplacez le rythme prudent (1,3 h/m³) par votre vraie vitesse.</p></div>
+  <div class="card"><h3>Dossier de démonstration</h3>
+    <p class="small muted" style="margin:0">Un faux dossier « Succession » complet (tâches, journal, décisions, listing d'objets) pour voir l'espace client comme une famille. Pour vous connecter comme un client : page <b>Espace client</b> du site, adresse <b>${esc(DEMO_EMAIL)}</b>, le code arrive dans votre Gmail. Il n'apparaît pas dans les chiffres de l'accueil. Supprimez-le avant l'ouverture.</p>
+    <div class="row">${dossiers[DEMO_ID] ? `<button class="btn ghost" type="button" data-ouvrir-demo>Ouvrir le dossier</button><a class="btn ghost" href="/espace-client#apercu=${DEMO_ID}" target="_blank" rel="noopener">Voir comme la famille</a><button class="btn ghost" type="button" id="b-demo">Remettre à zéro</button><button class="btn ghost" type="button" id="b-demo-suppr">Supprimer</button>` : '<button class="btn" type="button" id="b-demo">Créer le dossier de démo</button>'}</div></div>
   <button class="btn ghost" id="b-reset">Revenir aux réglages d'origine</button>
   <div class="card"><h3>Sauvegarde</h3><p class="small muted" style="margin:0">Téléchargez tous vos dossiers et réglages dans un fichier (format JSON). Gardez-le en lieu sûr : il contient des données personnelles de vos clients. Les photos et documents restent dans le stockage en ligne.</p>
     <button class="btn ghost" id="b-export" type="button">Exporter mes dossiers</button></div>
@@ -2291,6 +2295,18 @@ function renderSettings(){
   $('#b-deco').onclick = () => actions.deconnexion();
   app.querySelectorAll('[data-s]').forEach(el => el.addEventListener('change', () => { setPath(S, el.dataset.s, parseFloat(el.value)||0); persistSettings(); showToast('Réglage enregistré.'); }));
   app.querySelectorAll('[data-st]').forEach(el => el.addEventListener('change', () => { S.soc = {...DEFAULTS.soc, ...(S.soc||{}), [el.dataset.st]: el.value.trim()}; persistSettings(); showToast('Réglage enregistré.'); }));
+  const bDemo = $('#b-demo');
+  if(bDemo) bDemo.onclick = async () => {
+    if(!navigator.onLine){ showToast('Connexion nécessaire pour créer le dossier de démo.'); return; }
+    if(dossiers[DEMO_ID] && !confirm('Remettre le dossier de démo dans son état d\'origine ? Vos essais dessus (réponses, signatures, notes) seront effacés.')) return;
+    bDemo.disabled = true; bDemo.textContent = 'Préparation…';
+    try{ const d = await creerDemo(sb, newDossier(), envoyer); dossiers[DEMO_ID] = d; localSet(K_CACHE, dossiers); delete espaces[DEMO_ID]; tb.charge = false; showToast(`Dossier de démo prêt. Connexion sur le site avec ${DEMO_EMAIL}.`); }
+    catch(e){ console.warn(e); showToast("Le dossier de démo n'a pas pu être créé. Réessayez dans un instant."); }
+    render();
+  };
+  const bDemoSuppr = $('#b-demo-suppr');
+  if(bDemoSuppr) bDemoSuppr.onclick = async () => { if(!confirm('Supprimer le dossier de démo ?')) return; await removeDossier(DEMO_ID); tb.charge = false; showToast('Dossier de démo supprimé.'); render(); };
+  app.querySelector('[data-ouvrir-demo]')?.addEventListener('click', () => { view = {name:'dossier', id:DEMO_ID}; tab = 'synthese'; render(); });
   $('#b-reset').onclick =() => { S = structuredClone(DEFAULTS); persistSettings(); render(); };
   $('#b-prix-site').onclick = async (e) => {
     const b = e.currentTarget; if(!navigator.onLine){ showToast('Pas de réseau : réessayez plus tard.'); return; }
