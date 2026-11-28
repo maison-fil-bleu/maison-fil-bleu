@@ -8,6 +8,7 @@ import { CGV_PARTICULIERS, CGV_PRO, texte as texteCgv } from '../config/cgv';
 import { creerBons } from './bons.js';
 import { PHASES, parcoursPour, completerParcours, infosManquantes, prochaineTache } from './parcours.js';
 import { documentsDuDossier, champsParDefaut, dessinerDocument, DOC_DE_TACHE } from './courriers.js';
+import { trierCourriel, reponsesTypes } from './tri.js';
 
 export function demarrerAppli({ sb, utilisateur, actions }) {
 const $ = (s, el=document) => el.querySelector(s);
@@ -556,6 +557,26 @@ async function majCourriel(c, champs){
   Object.assign(c, data); tb.courriels = (tb.courriels||[]).filter(x => x.id !== c.id || data.statut === 'nouveau'); majBadgeCourriels();
   return data;
 }
+const CL_TRI = { demande:'attente', demande_pro:'attente', famille:'cours', organisme:'diag', automatique:'', publicite:'', autre:'', envoye:'cours' };
+const SITU_TRI = { deces:'Décès, succession', residence:'Entrée en résidence', demenage:'Déménagement', vente:'Vente du logement', vide:'Débarras' };
+const triDe = c => trierCourriel(c, { carnet, dossiers: Object.values(dossiers), communes: Object.keys(COORDS) });
+function blocTri(c, t){
+  if(t.categorie === 'envoye') return '';
+  const i = t.infos || {};
+  const puces = [
+    t.situation && ['Situation', SITU_TRI[t.situation]], t.formule && ['Formule suggérée', FORM[t.formule]],
+    i.tel && ['Téléphone', i.tel], (i.ville || i.cp) && ['Commune', i.ville || i.cp],
+    (i.typeLog || i.pieces) && ['Logement', [i.typeLog==='maison' ? 'Maison' : i.typeLog ? 'Appartement' : '', i.pieces ? i.pieces + ' pièces' : i.taille===0 ? 'petit' : ''].filter(Boolean).join(', ')],
+    i.surface && ['Surface', i.surface + ' m²'], i.etage != null && ['Étage', i.etage + (i.ascenseur === false ? ', sans ascenseur' : i.ascenseur ? ', ascenseur' : '')],
+    i.echeance && ['Échéance', i.echeance], i.urgence && ['Urgence', 'oui'], i.annexes && ['Annexes', 'cave, garage ou jardin'],
+  ].filter(Boolean);
+  const modeles = reponsesTypes(t, { signature: signatureReponse(c), nom: c.de_nom ? c.de_nom.split(' ')[0] : '' });
+  return `<div class="tri"><div class="tri-h"><span class="sur" style="margin:0">Tri automatique</span><span class="badge ${CL_TRI[t.categorie]||''}">${esc(t.libelle)}</span><span class="small muted">confiance ${esc(t.confiance)}</span></div>
+    ${puces.length ? `<div class="tri-puces">${puces.map(([k,v]) => `<span><b>${esc(k)}</b> ${esc(v)}</span>`).join('')}</div>` : ''}
+    ${t.dossierPropose && t.dossierPropose !== c.dossier_id && dossiers[t.dossierPropose] ? `<button class="btn ghost petit" type="button" data-tri-ranger="${esc(t.dossierPropose)}">Ranger dans « ${esc(nomDossier(t.dossierPropose))} »</button>` : ''}
+    ${modeles.length ? `<div class="row"><span class="small muted">Réponses types :</span>${modeles.map((m, k) => `<button class="btn ghost petit" type="button" data-rep-modele="${k}">${esc(m.titre)}</button>`).join('')}</div>` : ''}
+    <p class="small muted" style="margin:0">Suggestions seulement : rien n'est fait sans votre clic.</p></div>`;
+}
 function renderCourriels(){
   const filtre = view.filtre ?? 'nouveau';
   app.innerHTML = `${header('Courriels', 'contact@ et pro@')}<div class="card"><p class="muted" style="margin:0">${navigator.onLine ? 'Chargement…' : 'Hors ligne : les courriels se consultent avec du réseau.'}</p></div>`;
@@ -575,8 +596,8 @@ function dessinerCourriels(){
   app.innerHTML = `${header('Courriels', 'contact@ et pro@')}
   <div class="pipeline" role="group" aria-label="Filtrer">${[['nouveau','À traiter'],['range','Rangés'],['traite','Traités'],['','Tous']].map(([k,l]) => `<button type="button" data-fc="${k}" aria-pressed="${filtre===k}"><span>${l}</span></button>`).join('')}</div>
   ${sel ? carteCourriel(sel) : ''}
-  ${liste.length ? `<div class="pan tab"><table><thead><tr><th>Reçu</th><th>De</th><th>Objet</th><th>Dossier</th><th>Statut</th></tr></thead><tbody>
-    ${liste.map(c => `<tr class="clic ${c.id===view.ouvert ? 'attente' : ''}" data-co="${esc(c.id)}"><td class="muted" style="white-space:nowrap">${esc(quandFr(c.recu_le))}</td><td>${c.sens==='envoye' ? `<span class="badge cours">Envoyé</span> à ${esc(c.destinataires||'')}` : `<b>${esc(nomDe(c))}</b>${c.de_nom ? `<br><span class="small muted">${esc(c.de)}</span>` : ''}`}</td><td>${esc(c.sujet || '(sans objet)')}<br><span class="small muted">${esc((c.texte||'').replace(/\s+/g,' ').slice(0, 110))}</span></td><td>${c.dossier_id && dossiers[c.dossier_id] ? esc(nomDossier(c.dossier_id)) : '<span class="muted">—</span>'}</td><td><span class="badge ${STATUT_C[c.statut]?.[1]||''}">${STATUT_C[c.statut]?.[0]||''}</span></td></tr>`).join('')}
+  ${liste.length ? `<div class="pan tab"><table><thead><tr><th>Reçu</th><th>De</th><th>Objet</th><th>Tri</th><th>Dossier</th><th>Statut</th></tr></thead><tbody>
+    ${liste.map(c => `<tr class="clic ${c.id===view.ouvert ? 'attente' : ''}" data-co="${esc(c.id)}"><td class="muted" style="white-space:nowrap">${esc(quandFr(c.recu_le))}</td><td>${c.sens==='envoye' ? `<span class="badge cours">Envoyé</span> à ${esc(c.destinataires||'')}` : `<b>${esc(nomDe(c))}</b>${c.de_nom ? `<br><span class="small muted">${esc(c.de)}</span>` : ''}`}</td><td>${esc(c.sujet || '(sans objet)')}<br><span class="small muted">${esc((c.texte||'').replace(/\s+/g,' ').slice(0, 110))}</span></td><td>${(() => { const t = triDe(c); return t.categorie==='envoye' ? '' : `<span class="badge ${CL_TRI[t.categorie]||''}">${esc(t.libelle.replace(/^Organisme : /,''))}</span>${t.infos?.ville ? `<br><span class="small muted">${esc(t.infos.ville)}</span>` : ''}`; })()}</td><td>${c.dossier_id && dossiers[c.dossier_id] ? esc(nomDossier(c.dossier_id)) : '<span class="muted">—</span>'}</td><td><span class="badge ${STATUT_C[c.statut]?.[1]||''}">${STATUT_C[c.statut]?.[0]||''}</span></td></tr>`).join('')}
   </tbody></table></div>` : `<div class="card"><p class="muted" style="margin:0">${filtre==='nouveau' ? 'Aucun courriel à traiter. Les messages reçus sur contact@ apparaissent ici ; ceux des familles connues sont rangés directement dans leur dossier.' : 'Aucun courriel.'}</p></div>`}`;
   app.querySelectorAll('[data-fc]').forEach(b => b.onclick = () => { view.filtre = b.dataset.fc; view.ouvert = null; renderCourriels(); });
   app.querySelectorAll('[data-co]').forEach(r => r.onclick = () => { view.ouvert = view.ouvert === r.dataset.co ? null : r.dataset.co; dessinerCourriels(); window.scrollTo(0,0); });
@@ -586,6 +607,7 @@ function carteCourriel(c){
   const prop = dossiersProposes(c).filter(d => d.id !== c.dossier_id);
   return `<div class="card"><h3>${esc(c.sujet || '(sans objet)')}</h3>
     <p class="small muted" style="margin:0">De <b>${esc(c.de_nom || c.de)}</b>${c.de_nom ? ` &lt;${esc(c.de)}&gt;` : ''} · reçu le ${esc(new Date(c.recu_le).toLocaleString('fr-FR', { dateStyle:'long', timeStyle:'short' }))}${c.adresse ? ` sur ${esc(c.adresse)}` : ''}</p>
+    ${blocTri(c, triDe(c))}
     <pre class="quote" style="max-height:340px;overflow:auto">${esc(c.texte || '')}</pre>
     ${(c.pieces||[]).length ? `<p class="small muted" style="margin:0">Pièces jointes (dans Gmail) : ${c.pieces.map(p => esc(p.nom)).join(', ')}</p>` : ''}
     <div class="grid2" style="align-items:end"><label>Dossier<select id="co-dossier"><option value="">Non rattaché</option>${prop.length ? `<optgroup label="Proposés">${prop.map(d => `<option value="${esc(d.id)}">${esc(d.contact.nom||'Sans nom')} · ${esc(d.ville||'')}</option>`).join('')}</optgroup>` : ''}<optgroup label="Tous les dossiers">${Object.values(dossiers).sort((a,b) => (a.contact.nom||'').localeCompare(b.contact.nom||'')).map(d => `<option value="${esc(d.id)}" ${c.dossier_id===d.id?'selected':''}>${esc(d.contact.nom||'Sans nom')} · ${esc(d.ville||'')}</option>`).join('')}</optgroup></select></label>
@@ -603,15 +625,34 @@ function carteCourriel(c){
 function lierCarteCourriel(c){
   $('#co-fermer').onclick = () => { view.ouvert = null; dessinerCourriels(); };
   lierReponses(app, [c], () => { view.ouvert = null; renderCourriels(); });
+  const t = triDe(c);
+  const tr2 = app.querySelector('[data-tri-ranger]'); if(tr2) tr2.onclick = async () => { if(await majCourriel(c, { dossier_id: tr2.dataset.triRanger, statut: 'range' })){ showToast('Courriel rangé dans le dossier.'); dessinerCourriels(); } };
+  const modeles = reponsesTypes(t, { signature: signatureReponse(c), nom: c.de_nom ? c.de_nom.split(' ')[0] : '' });
+  app.querySelectorAll('[data-rep-modele]').forEach(b => b.onclick = () => {
+    const box = app.querySelector(`[data-rep="${CSS.escape(c.id)}"]`); if(!box) return;
+    box.querySelector('[data-rep-texte]').value = modeles[+b.dataset.repModele].texte;
+    box.hidden = false; const o = app.querySelector(`[data-rep-ouvrir="${CSS.escape(c.id)}"]`); if(o) o.hidden = true;
+    box.scrollIntoView({ behavior:'smooth', block:'center' }); box.querySelector('[data-rep-texte]').focus();
+  });
   $('#co-ranger').onclick = async () => { const id = $('#co-dossier').value; if(!id){ showToast('Choisissez un dossier.'); return; } if(await majCourriel(c, { dossier_id: id, statut: 'range' })){ showToast('Courriel rangé dans le dossier.'); dessinerCourriels(); } };
   const tr = $('#co-traite'); if(tr) tr.onclick = async () => { if(await majCourriel(c, { statut: 'traite' })){ view.ouvert = null; showToast('Marqué comme traité.'); dessinerCourriels(); } };
   const ig = $('#co-ignorer'); if(ig) ig.onclick = async () => { if(await majCourriel(c, { statut: 'ignore' })){ view.ouvert = null; dessinerCourriels(); } };
   const ou = $('#co-ouvrir'); if(ou) ou.onclick = () => ouvrirDossier(c.dossier_id, 'courriels');
   const cr = $('#co-creer'); if(cr) cr.onclick = async () => {
-    const d = newDossier(); d.formule = suggest(d);
-    d.contact.nom = c.de_nom || ''; d.contact.email = c.de;
-    const tel = (c.texte||'').match(/(?:\+33\s?|0)[1-9](?:[\s.-]?\d{2}){4}/); if(tel) d.contact.tel = tel[0];
-    d.notes = `Demande reçue par e-mail le ${new Date(c.recu_le).toLocaleDateString('fr-FR')} : « ${c.sujet || ''} »\n\n${(c.texte||'').slice(0, 1500)}`;
+    const d = newDossier(), t2 = triDe(c), i = t2.infos || {};
+    if(t2.situation) d.situation = t2.situation;
+    if(t2.categorie === 'demande_pro'){ d.situation = 'vide'; d.client = 'agence'; d.diag.volume = 0; d.diag.evac = 100; }
+    d.formule = t2.formule || suggest(d); d.formuleAuto = !t2.formule; d.diag.evac = d.formule==='P' ? 100 : S.evacDefaut[d.formule];
+    d.contact.nom = c.de_nom || ''; d.contact.email = c.de; if(i.tel) d.contact.tel = i.tel;
+    if(i.ville && COORDS.hasOwnProperty(i.ville)){ d.ville = i.ville; d.km = kmEst(siegePt(), COORDS[i.ville]) || d.km; }
+    if(i.typeLog) d.typeLog = i.typeLog;
+    if(i.taille != null){ d.taille = i.taille; d.surface = S.surfDefaut[i.taille]; }
+    if(i.surface) d.surface = i.surface;
+    if(i.etage != null) d.etage = i.etage;
+    if(i.ascenseur != null) d.ascenseur = i.ascenseur;
+    if(i.urgence) d.urgence = true;
+    applyVol(d);
+    d.notes = `Demande reçue par e-mail le ${new Date(c.recu_le).toLocaleDateString('fr-FR')} : « ${c.sujet || ''} »${i.echeance ? `\nÉchéance mentionnée : ${i.echeance}` : ''}${i.annexes ? '\nAnnexes mentionnées (cave, garage ou jardin) : à vérifier au diagnostic.' : ''}\n\n${(c.texte||'').slice(0, 1500)}`;
     persist(d);
     await majCourriel(c, { dossier_id: d.id, statut: 'range' });
     view = { name:'dossier', id: d.id }; tab = 'appel'; render(); window.scrollTo(0,0); showToast('Dossier créé à partir du courriel : complétez le premier appel.');
